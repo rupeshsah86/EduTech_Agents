@@ -1,5 +1,7 @@
 import React from 'react';
-import { Flame, TrendingUp, Target, Award, Zap } from 'lucide-react';
+import { Flame, TrendingUp, Target, Zap, Award } from 'lucide-react';
+import { PomodoroTimer } from './PomodoroTimer';
+import { CodeMentorSandbox } from './CodeMentorSandbox';
 
 export const SkillHeatmap: React.FC = () => {
   const subjects = [
@@ -93,46 +95,35 @@ export const SkillHeatmap: React.FC = () => {
               </div>
             ))}
           </div>
-
-          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
-            <span>Less Active</span>
-            <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-slate-200 dark:bg-slate-800" />
-              <span className="w-3 h-3 rounded bg-indigo-500/20" />
-              <span className="w-3 h-3 rounded bg-indigo-500/60" />
-              <span className="w-3 h-3 rounded bg-indigo-600" />
-            </div>
-            <span>Highly Active</span>
-          </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl space-y-4">
-          <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-            <Award className="w-4 h-4 text-emerald-500" /> Subject Proficiency Matrix
-          </h3>
+        <PomodoroTimer />
+      </div>
 
-          <div className="space-y-4 pt-1">
-            {subjects.map((sub, idx) => (
-              <div key={idx} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-slate-800 dark:text-slate-200">{sub.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-500">{sub.status}</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{sub.level}%</span>
-                  </div>
-                </div>
+      <div className="glass-panel p-6 rounded-2xl space-y-4">
+        <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+          <Award className="w-4 h-4 text-emerald-500" /> Subject Proficiency Matrix
+        </h3>
 
-                <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-700 ${sub.color}`}
-                    style={{ width: `${sub.level}%` }}
-                  />
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {subjects.map((sub, idx) => (
+            <div key={idx} className="p-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/40 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-slate-800 dark:text-slate-200">{sub.name}</span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">{sub.level}%</span>
               </div>
-            ))}
-          </div>
+              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full transition-all duration-700 ${sub.color}`}
+                  style={{ width: `${sub.level}%` }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
+
+      <CodeMentorSandbox />
     </div>
   );
 };

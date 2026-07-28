@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart3, Award } from 'lucide-react';
+import { SM2FlashcardViewer } from './SM2FlashcardViewer';
 
 export const LearningAnalytics: React.FC = () => {
   return (
@@ -39,6 +40,8 @@ export const LearningAnalytics: React.FC = () => {
           <span className="text-[11px] text-slate-400">This month</span>
         </div>
       </div>
+
+      <SM2FlashcardViewer />
 
       <div className="glass-panel p-6 rounded-2xl space-y-4">
         <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
