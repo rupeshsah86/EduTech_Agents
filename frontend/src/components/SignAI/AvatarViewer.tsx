@@ -3,12 +3,6 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Play, Pause, RotateCcw, FastForward } from 'lucide-react';
 
-interface AvatarViewerProps {
-  signText?: string;
-  autoPlay?: boolean;
-}
-
-// ─── Internal Hear_Aid-compatible animation engine ───────────────────────────
 // @ts-ignore
 import * as alphabets from '../../services/animations/alphabets';
 // @ts-ignore
@@ -16,7 +10,27 @@ import * as words from '../../services/animations/words';
 // @ts-ignore
 import { defaultPose } from '../../services/animations/defaultPose';
 
-// ─── AvatarViewer Component ───────────────────────────────────────────────────
+interface AvatarViewerProps {
+  signText?: string;
+  autoPlay?: boolean;
+}
+
+// Hear_Aid uses "mixamorigRightArm" (no colon)
+// Soldier.glb uses "mixamorig:RightArm" (with colon)
+// We normalize by building an alias map and using a bone lookup that checks both.
+function getBone(avatar: THREE.Object3D, name: string): THREE.Object3D | undefined {
+  // Try exact name first
+  let obj = avatar.getObjectByName(name);
+  if (obj) return obj;
+  // Hear_Aid name format: "mixamorigRightArm"  → try "mixamorig:RightArm"
+  if (name.startsWith('mixamorig') && !name.includes(':')) {
+    const colonName = 'mixamorig:' + name.slice('mixamorig'.length);
+    obj = avatar.getObjectByName(colonName);
+    if (obj) return obj;
+  }
+  return undefined;
+}
+
 export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   signText = '',
   autoPlay = true,
@@ -28,11 +42,8 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     animations: [],
     characters: [],
     avatar: null,
-    scene: null,
-    camera: null,
-    renderer: null,
     speed: 0.1,
-    pause: 800,
+    pause: 700,
   });
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -43,138 +54,115 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   const rafRef = useRef<number | null>(null);
   const runSignRef = useRef<(txt: string) => void>(() => {});
 
+  // ── Scene Setup ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const ref = refObj.current;
     const el = mountRef.current;
     if (!el) return;
 
-    // ── Scene Setup ────────────────────────────────────────────────────────
-    ref.scene = new THREE.Scene();
-    ref.scene.background = null;
+    const scene = new THREE.Scene();
+    scene.background = null;
 
     const w = el.clientWidth || 400;
     const h = el.clientHeight || 520;
 
-    // ── Camera (mirrors Hear_Aid Convert.js exactly) ────────────────────────
-    // camera.position.z = 1.6, y = 1.4, FOV 30 → full upper body visible
-    ref.camera = new THREE.PerspectiveCamera(30, w / h, 0.1, 1000);
-    ref.camera.position.set(0, 1.4, 1.6);
+    // Camera: same settings as Hear_Aid Convert.js (y=1.4, z=1.6, FOV=30)
+    // Shows head + full upper body including hands
+    const camera = new THREE.PerspectiveCamera(30, w / h, 0.1, 1000);
+    camera.position.set(0, 1.4, 1.6);
 
-    // ── Renderer ───────────────────────────────────────────────────────────
-    ref.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    ref.renderer.setSize(w, h);
-    ref.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    ref.renderer.shadowMap.enabled = true;
-    ref.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     el.innerHTML = '';
-    el.appendChild(ref.renderer.domElement);
+    el.appendChild(renderer.domElement);
 
-    // ── Lighting ───────────────────────────────────────────────────────────
-    const ambient = new THREE.AmbientLight(0xffffff, 1.5);
-    ref.scene.add(ambient);
+    // Studio Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 1.8));
+    const key = new THREE.DirectionalLight(0xfff0e0, 2.5);
+    key.position.set(2, 5, 4);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xdde8ff, 1.2);
+    fill.position.set(-3, 3, 2);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.7);
+    rim.position.set(0, 5, -3);
+    scene.add(rim);
 
-    const keyLight = new THREE.DirectionalLight(0xfff0e0, 2.5);
-    keyLight.position.set(2, 5, 4);
-    keyLight.castShadow = true;
-    ref.scene.add(keyLight);
-
-    const fillLight = new THREE.DirectionalLight(0xdde8ff, 1.2);
-    fillLight.position.set(-3, 3, 2);
-    ref.scene.add(fillLight);
-
-    const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    rimLight.position.set(0, 5, -3);
-    ref.scene.add(rimLight);
-
-    // ── Load ybot.glb (fully rigged Mixamo humanoid with finger bones) ──────
+    // Load Soldier.glb – real human character with full finger bones
     const loader = new GLTFLoader();
+    loader.load(
+      '/assets/Soldier.glb',
+      (gltf) => {
+        const avatarScene = gltf.scene;
 
-    const loadModel = (url: string, onSuccess: (gltf: any) => void, onFail: () => void) => {
-      loader.load(
-        url,
-        onSuccess,
-        undefined,
-        onFail,
-      );
-    };
-
-    const onModelLoaded = (gltf: any) => {
-      const scene = gltf.scene;
-
-      // Disable frustum culling on all skinned meshes (same as Hear_Aid)
-      scene.traverse((child: any) => {
-        if (child.type === 'SkinnedMesh') {
-          child.frustumCulled = false;
-          // Apply human skin-tone PBR material
-          if (child.material) {
-            const mats = Array.isArray(child.material) ? child.material : [child.material];
-            mats.forEach((mat: any) => {
-              if (mat.name && mat.name.toLowerCase().includes('skin')) {
-                mat.color.setHex(0xe8b99a);
-                mat.roughness = 0.45;
-                mat.metalness = 0.0;
-              } else if (mat.name && (mat.name.toLowerCase().includes('wolf3d') || mat.name.toLowerCase().includes('body'))) {
-                mat.color.setHex(0x23252b);
-                mat.roughness = 0.7;
-              }
-            });
+        // Disable frustum culling (critical – same as Hear_Aid)
+        avatarScene.traverse((child: any) => {
+          if (child.isSkinnedMesh) {
+            child.frustumCulled = false;
+            // Make the visor/helmet transparent so face is visible
+            if (child.name === 'vanguard_visor' && child.material) {
+              const mat = child.material as THREE.MeshStandardMaterial;
+              mat.transparent = true;
+              mat.opacity = 0;
+            }
           }
-        }
-      });
+        });
 
-      ref.avatar = scene;
-      ref.scene.add(ref.avatar);
+        ref.avatar = avatarScene;
+        scene.add(avatarScene);
 
-      // Apply default two-arm pose (exactly as Hear_Aid does it)
-      defaultPose(ref);
+        // Apply default pose (arms spread for signing)
+        applyDefaultPoseToSoldier(ref);
 
-      setModelReady(true);
-    };
-
-    // Try ybot.glb first → fallback to xbot.glb
-    loadModel(
-      '/assets/ybot.glb',
-      onModelLoaded,
-      () => {
-        loadModel(
-          '/assets/xbot.glb',
-          onModelLoaded,
-          () => {
-            setModelError(true);
-          }
-        );
-      }
+        setModelReady(true);
+      },
+      undefined,
+      () => setModelError(true)
     );
 
-    // ── Render Loop ────────────────────────────────────────────────────────
+    // Render loop
     const renderLoop = () => {
       rafRef.current = requestAnimationFrame(renderLoop);
-      if (ref.renderer && ref.scene && ref.camera) {
-        ref.renderer.render(ref.scene, ref.camera);
-      }
+      renderer.render(scene, camera);
     };
     renderLoop();
 
-    // ── Resize Handler ─────────────────────────────────────────────────────
     const onResize = () => {
-      if (!el || !ref.camera || !ref.renderer) return;
+      if (!el) return;
       const nw = el.clientWidth;
       const nh = el.clientHeight;
-      ref.camera.aspect = nw / nh;
-      ref.camera.updateProjectionMatrix();
-      ref.renderer.setSize(nw, nh);
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(nw, nh);
     };
     window.addEventListener('resize', onResize);
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', onResize);
-      ref.renderer?.dispose();
+      renderer.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Animation Engine (mirrors Hear_Aid ref.animate exactly) ─────────────
+  // Default pose for Soldier.glb (arms held up for signing)
+  const applyDefaultPoseToSoldier = (ref: any) => {
+    if (!ref.avatar) return;
+    const poseMap: Record<string, [number, number, number]> = {
+      'mixamorig:Neck':        [Math.PI / 12, 0, 0],
+      'mixamorig:LeftArm':     [0, 0, -Math.PI / 3],
+      'mixamorig:LeftForeArm': [0, -Math.PI / 1.5, 0],
+      'mixamorig:RightArm':    [0, 0, Math.PI / 3],
+      'mixamorig:RightForeArm':[0, Math.PI / 1.5, 0],
+    };
+    Object.entries(poseMap).forEach(([boneName, [x, y, z]]) => {
+      const bone = ref.avatar.getObjectByName(boneName);
+      if (bone) bone.rotation.set(x, y, z);
+    });
+  };
+
+  // ── Animation Engine (mirrors Hear_Aid ref.animate exactly, with bone alias) ──
   useEffect(() => {
     const ref = refObj.current;
 
@@ -193,13 +181,16 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
           } else {
             for (let i = 0; i < ref.animations[0].length;) {
               const [bn, ac, ax, lim, sg] = ref.animations[0][i];
-              const obj = ref.avatar?.getObjectByName(bn);
-              if (!obj) { ref.animations[0].splice(i, 1); continue; }
-              if (sg === '+' && obj[ac][ax] < lim) {
-                obj[ac][ax] = Math.min(obj[ac][ax] + ref.speed, lim);
+              // Use alias-aware bone lookup
+              const bone = ref.avatar ? getBone(ref.avatar, bn) : null;
+              if (!bone) { ref.animations[0].splice(i, 1); continue; }
+              const target = (bone as any)[ac];
+              if (!target) { ref.animations[0].splice(i, 1); continue; }
+              if (sg === '+' && target[ax] < lim) {
+                target[ax] = Math.min(target[ax] + ref.speed, lim);
                 i++;
-              } else if (sg === '-' && obj[ac][ax] > lim) {
-                obj[ac][ax] = Math.max(obj[ac][ax] - ref.speed, lim);
+              } else if (sg === '-' && target[ax] > lim) {
+                target[ax] = Math.max(target[ax] - ref.speed, lim);
                 i++;
               } else {
                 ref.animations[0].splice(i, 1);
@@ -214,14 +205,14 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       }
     };
 
-    // ── runSign function (mirrors Hear_Aid runSignRef) ─────────────────────
+    // Sign playback function
     runSignRef.current = (str: string) => {
       if (!str || !str.trim() || !ref.avatar) return;
       setActiveSign('');
       ref.animations = [];
       ref.characters = [];
-      const wordsArr = str.trim().toUpperCase().split(/\s+/).filter(Boolean);
 
+      const wordsArr = str.trim().toUpperCase().split(/\s+/).filter(Boolean);
       wordsArr.forEach((word: string, wi: number) => {
         const isLast = wi === wordsArr.length - 1;
         if ((words as any)[word]) {
@@ -249,7 +240,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     };
   }, []);
 
-  // ── React to signText prop ─────────────────────────────────────────────────
+  // React to signText prop
   useEffect(() => {
     if (signText && modelReady && autoPlay) {
       runSignRef.current(signText);
@@ -258,10 +249,22 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   }, [signText, modelReady, autoPlay]);
 
   const handlePlay = () => {
-    if (!isPlaying && signText) {
-      runSignRef.current(signText);
-      setIsPlaying(true);
-    }
+    if (signText) { runSignRef.current(signText); setIsPlaying(true); }
+  };
+
+  const resetDefaultPose = (ref: any) => {
+    if (!ref.avatar) return;
+    const poseMap: Record<string, [number, number, number]> = {
+      'mixamorig:Neck':        [Math.PI / 12, 0, 0],
+      'mixamorig:LeftArm':     [0, 0, -Math.PI / 3],
+      'mixamorig:LeftForeArm': [0, -Math.PI / 1.5, 0],
+      'mixamorig:RightArm':    [0, 0, Math.PI / 3],
+      'mixamorig:RightForeArm':[0, Math.PI / 1.5, 0],
+    };
+    Object.entries(poseMap).forEach(([boneName, [x, y, z]]) => {
+      const bone = ref.avatar.getObjectByName(boneName);
+      if (bone) bone.rotation.set(x, y, z);
+    });
   };
 
   const handlePause = () => {
@@ -271,15 +274,11 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     ref.flag = false;
     setIsPlaying(false);
     setActiveSign('');
-    // Restore default pose
-    if (ref.avatar) defaultPose(ref);
+    resetDefaultPose(ref);
   };
 
   const handleReplay = () => {
-    if (signText) {
-      runSignRef.current(signText);
-      setIsPlaying(true);
-    }
+    if (signText) { runSignRef.current(signText); setIsPlaying(true); }
   };
 
   const handleSpeedChange = (s: number) => {
@@ -297,7 +296,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
         </div>
         {activeSign && (
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Now signing</span>
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Signing</span>
             <span className="px-2.5 py-0.5 rounded-full bg-purple-600 text-white font-mono font-extrabold text-xs animate-pulse shadow-md shadow-purple-400/30">
               {activeSign}
             </span>
@@ -309,57 +308,38 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       <div className="relative flex-1 min-h-[420px] bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
         <div ref={mountRef} className="w-full h-full" />
 
-        {/* Loading Overlay */}
         {!modelReady && !modelError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm gap-3">
             <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-semibold text-slate-600 dark:text-neutral-300">Loading Avatar...</p>
+            <p className="text-sm font-semibold text-slate-600 dark:text-neutral-300">Loading Human Avatar...</p>
           </div>
         )}
 
-        {/* Error Overlay */}
         {modelError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
             <span className="text-4xl">⚠️</span>
             <p className="text-sm font-semibold text-red-500">Avatar model failed to load</p>
-            <p className="text-xs text-slate-500 dark:text-neutral-400">
-              Ensure <code className="bg-slate-100 dark:bg-neutral-800 px-1 rounded">ybot.glb</code> is in <code className="bg-slate-100 dark:bg-neutral-800 px-1 rounded">frontend/public/assets/</code>
-            </p>
           </div>
         )}
       </div>
 
-      {/* Playback Controls */}
+      {/* Controls */}
       <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        {/* Play / Pause / Replay */}
         <div className="flex items-center gap-2">
           {isPlaying ? (
-            <button
-              onClick={handlePause}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20"
-            >
-              <Pause className="w-3.5 h-3.5 fill-current" />
-              Pause
+            <button onClick={handlePause} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20">
+              <Pause className="w-3.5 h-3.5 fill-current" /> Pause
             </button>
           ) : (
-            <button
-              onClick={handlePlay}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              Play
+            <button onClick={handlePlay} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20">
+              <Play className="w-3.5 h-3.5 fill-current" /> Play
             </button>
           )}
-          <button
-            onClick={handleReplay}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 transition-all cursor-pointer"
-            title="Replay"
-          >
+          <button onClick={handleReplay} className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 transition-all cursor-pointer" title="Replay">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Speed Selector */}
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-neutral-950 p-1 rounded-xl border border-slate-200 dark:border-neutral-800">
           <FastForward className="w-3 h-3 text-slate-400 ml-1" />
           {[0.5, 1.0, 1.5, 2.0].map((s) => (
