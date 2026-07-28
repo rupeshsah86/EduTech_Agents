@@ -1,23 +1,36 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Hero } from '../components/landing/Hero';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { AgentGrid } from '../components/landing/AgentGrid';
 import { Features } from '../components/landing/Features';
 import { Footer } from '../components/landing/Footer';
 import { BrainCircuit, ArrowRight, Sun, Moon } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface LandingPageProps {
-  onNavigateToDashboard: () => void;
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
+  onNavigateToDashboard: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard, darkMode, setDarkMode }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ darkMode, setDarkMode }) => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleStartLearning = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Navbar */}
       <header className="h-20 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md fixed top-0 left-0 right-0 z-50 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl agent-gradient-master flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <BrainCircuit className="w-6 h-6 text-white" />
           </div>
@@ -25,7 +38,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard,
             <h1 className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">EduVerse AI</h1>
             <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Multi-Agent EdTech Ecosystem</p>
           </div>
-        </div>
+        </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-300">
           <a href="#how-it-works" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">How It Works</a>
@@ -41,26 +54,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard,
             {darkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-700" />}
           </button>
 
-          <button
-            onClick={onNavigateToDashboard}
-            className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            Log In
-          </button>
+          {isAuthenticated ? (
+            <Link
+              to="/dashboard"
+              className="px-6 py-2.5 rounded-xl agent-gradient-master text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity flex items-center gap-2"
+            >
+              <span>Go to Dashboard</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Log In
+              </Link>
 
-          <button
-            onClick={onNavigateToDashboard}
-            className="px-6 py-2.5 rounded-xl agent-gradient-master text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity flex items-center gap-2"
-          >
-            <span>Start Learning</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+              <Link
+                to="/signup"
+                className="px-6 py-2.5 rounded-xl agent-gradient-master text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity flex items-center gap-2"
+              >
+                <span>Start Learning</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1">
-        <Hero onStartLearning={onNavigateToDashboard} />
+        <Hero onStartLearning={handleStartLearning} />
         <HowItWorks />
         <AgentGrid />
         <Features />
@@ -75,7 +100,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToDashboard,
               Join thousands of students leveraging Master AI orchestration for accelerated learning and skill mastery.
             </p>
             <button
-              onClick={onNavigateToDashboard}
+              onClick={handleStartLearning}
               className="px-8 py-4 rounded-2xl bg-white text-indigo-600 font-bold text-base shadow-xl hover:scale-105 transition-all inline-flex items-center gap-2"
             >
               <span>Launch EduVerse AI Now</span>

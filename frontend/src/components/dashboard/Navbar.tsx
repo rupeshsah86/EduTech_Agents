@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Sun, Moon, Bell, BrainCircuit, LogOut } from 'lucide-react';
 
 interface NavbarProps {
@@ -8,18 +10,26 @@ interface NavbarProps {
   onNavigateToLanding: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, activeAgentCount, onNavigateToLanding }) => {
+export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, activeAgentCount }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between transition-colors duration-200">
       {/* Brand Identity */}
       <div className="flex items-center gap-3">
-        <button 
-          onClick={onNavigateToLanding} 
-          className="w-10 h-10 rounded-xl agent-gradient-master flex items-center justify-center shadow-lg shadow-indigo-500/25 cursor-pointer hover:scale-105 transition-transform"
+        <Link 
+          to="/" 
+          className="w-10 h-10 rounded-xl agent-gradient-master flex items-center justify-center shadow-lg shadow-indigo-500/25 hover:scale-105 transition-transform"
           title="Back to Landing Page"
         >
           <BrainCircuit className="w-6 h-6 text-white" />
-        </button>
+        </Link>
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-bold text-lg text-slate-900 dark:text-white tracking-tight">EduVerse AI</h1>
@@ -58,20 +68,22 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, activeAge
         </button>
 
         <button
-          onClick={onNavigateToLanding}
+          onClick={handleLogout}
           className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 text-xs font-semibold"
-          title="Exit to Landing Page"
+          title="Log Out"
         >
           <LogOut className="w-4 h-4 text-rose-500" />
-          <span className="hidden sm:inline">Landing</span>
+          <span className="hidden sm:inline">Log Out</span>
         </button>
 
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-indigo-600 dark:text-indigo-400 border border-slate-300 dark:border-slate-600">
-            ST
+            {user?.fullName ? user.fullName.slice(0, 2).toUpperCase() : 'ST'}
           </div>
           <div className="hidden lg:block text-left">
-            <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">Student User</p>
+            <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
+              {user?.fullName || 'Student User'}
+            </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400">Pro Student Tier</p>
           </div>
         </div>
