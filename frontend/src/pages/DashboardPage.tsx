@@ -10,6 +10,7 @@ import { OrchestrationPanel } from '../components/dashboard/OrchestrationPanel';
 import { SettingsModal } from '../components/dashboard/SettingsModal';
 import { CodeMentorSandbox } from '../components/dashboard/CodeMentorSandbox';
 import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
+import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
 import { ActiveAgentsBar } from '../components/dashboard/ActiveAgentsBar';
 import { ArrowLeft, Bot } from 'lucide-react';
 

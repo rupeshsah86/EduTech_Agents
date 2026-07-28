@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -26,7 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   // Web Speech API initialization
@@ -35,7 +34,6 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
     const SpeechRecognition = windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      setSpeechSupported(false);
       alert("Voice input is not supported in this browser. Please use Google Chrome, Brave, or MS Edge.");
       return;
     }
