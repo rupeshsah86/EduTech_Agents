@@ -120,25 +120,34 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
   // Dynamic Prompt Solver Engine
   const generateDynamicAIResponse = (userQuery: string): { responseText: string; activated: string[] } => {
-    const q = userQuery.toLowerCase();
-    let activated = ['Master AI Orchestrator'];
+    const q = userQuery.trim().toLowerCase().replace(/[.!?,]/g, '');
+    const greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'greetings', 'hey there', 'hi there'];
+    
+    if (greetings.includes(q)) {
+      return {
+        responseText: "Hello! I'm your Master AI Assistant. I orchestrate 9 specialized agents to help you with studies, exams, coding, assignments, and career preparation. How can I help you today?",
+        activated: ['Master AI Assistant']
+      };
+    }
+
+    let activated = ['Master AI Assistant'];
     let content = '';
 
     if (q.includes('sql') || q.includes('join') || q.includes('database') || q.includes('dbms')) {
       activated = ['ConceptClear AI', 'QuizMaster AI'];
-      content = `### ⚡ SQL & Database Systems Solution\n\nHere is your step-by-step breakdown for **"${userQuery}"**:\n\n#### 📌 Key Concept Breakdown:\n1. **INNER JOIN**: Returns records that have matching values in both tables.\n2. **LEFT JOIN**: Returns all records from the left table, and the matched records from the right table.\n\n\`\`\`sql\n-- Example SQL Join Query\nSELECT Students.id, Students.name, Courses.course_name\nFROM Students\nINNER JOIN Courses ON Students.course_id = Courses.id;\n\`\`\`\n\n#### 🎯 Practice Checkpoint:\n- Run this query against your DBMS database engine to verify execution times.`;
+      content = `### ⚡ SQL & Database Systems Solution\n\nHere is your step-by-step breakdown for **"${userQuery}"**:\n\n#### 📌 Key Concept Breakdown:\n1. **INNER JOIN**: Returns records that have matching values in both tables.\n2. **LEFT JOIN**: Returns all records from the left table, and the matched records from the right table.\n\n\`\`\`sql\n-- Example SQL Join Query\nSELECT Students.id, Students.name, Courses.course_name\nFROM Students\nINNER JOIN Courses ON Students.course_id = Courses.id;\n\`\`\`\n\nWould you like me to create a 5-question quiz on SQL joins or generate structured revision notes?`;
     } else if (q.includes('os') || q.includes('deadlock') || q.includes('paging') || q.includes('operating system') || q.includes('memory')) {
       activated = ['ExamAce AI', 'ConceptClear AI'];
-      content = `### 📚 Operating Systems Analysis\n\nHere is your authoritative solution for **"${userQuery}"**:\n\n#### 🔑 Deadlock / Memory Invariants:\n1. **Mutual Exclusion**: At least one resource held in non-shareable mode.\n2. **Hold & Wait**: Process holding resources while requesting others.\n3. **No Preemption**: Resources released only voluntarily.\n4. **Circular Wait**: Closed loop of process-resource requests.\n\n\`\`\`text\n[Process P1] ---> (Resource R1) ---> [Process P2] ---> (Resource R2) ---> [Process P1]\n\`\`\``;
+      content = `### 📚 Operating Systems Analysis\n\nHere is your authoritative solution for **"${userQuery}"**:\n\n#### 🔑 Deadlock Four Invariants:\n1. **Mutual Exclusion**: At least one resource held in non-shareable mode.\n2. **Hold & Wait**: Process holding resources while requesting others.\n3. **No Preemption**: Resources released only voluntarily.\n4. **Circular Wait**: Closed loop of process-resource requests.\n\nWould you like an exam preparation roadmap for Operating Systems?`;
     } else if (q.includes('resume') || q.includes('interview') || q.includes('ats') || q.includes('career')) {
       activated = ['CareerPath AI'];
-      content = `### 💼 CareerPath ATS Resume & Interview Report\n\nAnalysis for **"${userQuery}"**:\n\n#### 📈 Key Recommendations:\n1. **Quantify Impact**: Use metrics (e.g. *"Optimized API latency by 35%"* instead of *"Improved API"*).\n2. **Keyword Optimization**: Include core tech keywords: Python, React, PostgreSQL, Docker, Data Structures.\n3. **Formatting**: Use clean single-column markdown/PDF layout without graphics for maximum ATS parsing accuracy.`;
+      content = `### 💼 CareerPath ATS Resume & Placement Report\n\nAnalysis for **"${userQuery}"**:\n\n#### 📈 Key Recommendations:\n1. **Quantify Impact**: Use metrics (e.g. *"Optimized API latency by 35%"* instead of *"Improved API"*).\n2. **Keyword Optimization**: Include core tech keywords: Python, React, PostgreSQL, Docker, Data Structures.\n3. **Formatting**: Use clean single-column markdown/PDF layout without graphics for maximum ATS parsing accuracy.\n\nWould you like me to simulate a technical mock interview session?`;
     } else if (q.includes('binary') || q.includes('tree') || q.includes('graph') || q.includes('dijkstra') || q.includes('code') || q.includes('cpp') || q.includes('python')) {
       activated = ['CodeMentor AI', 'ConceptClear AI'];
-      content = `### 💻 CodeMentor Algorithm Solution\n\nHere is your custom solution for **"${userQuery}"**:\n\n#### ⚡ Complexity Analysis:\n- **Time Complexity**: O(log N) or O((V+E) log V) depending on structure.\n- **Space Complexity**: O(1) auxiliary space.\n\n\`\`\`python\n# Dynamic Code Execution Output\ndef custom_solution(input_data):\n    # Process query: "${userQuery}"\n    print("Executing optimized algorithmic solution...")\n    return True\n\`\`\``;
+      content = `### 💻 CodeMentor Algorithm Solution\n\nHere is your custom algorithmic solution for **"${userQuery}"**:\n\n#### ⚡ Complexity Analysis:\n- **Time Complexity**: O(log N) or O((V+E) log V) depending on graph density.\n- **Space Complexity**: O(V) auxiliary space.\n\n\`\`\`python\n# Dynamic Code Execution Output\ndef custom_solution(input_data):\n    # Process query: "${userQuery}"\n    print("Executing optimized algorithmic solution...")\n    return True\n\`\`\`\n\nShould I run big-O complexity analysis or test edge cases?`;
     } else {
-      activated = ['Master AI Assistant', 'NoteCraft AI'];
-      content = `### 🧠 Master AI Synthesized Answer\n\nHere is the detailed learning response for **"${userQuery}"**:\n\n#### 📌 Step-by-Step Explanation:\n1. **Core Principle**: Addressed through Socratic breakdown.\n2. **Practical Application**: Tailored to your learning velocity in your Knowledge Graph.\n3. **Key Takeaway**: Regularly test your active recall on this topic using SM-2 flashcards.`;
+      activated = ['Master AI Assistant', 'ConceptClear AI'];
+      content = `### 🧠 Master AI Synthesized Answer\n\nHere is the detailed learning response for **"${userQuery}"**:\n\n#### 📌 Step-by-Step Explanation:\n1. **Core Principle**: Addressed through Socratic concept breakdown.\n2. **Practical Application**: Tailored to your learning velocity in your Knowledge Graph.\n3. **Key Takeaway**: Regularly test your active recall on this topic using SM-2 flashcards.\n\nHow else can I assist your study session today?`;
     }
 
     return { responseText: content, activated };
