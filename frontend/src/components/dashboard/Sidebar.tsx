@@ -17,6 +17,7 @@ import {
   BarChart3, 
   Settings, 
   ChevronsLeft,
+  ChevronsRight,
   Crown,
   ArrowRight,
   ChevronDown
@@ -25,9 +26,11 @@ import {
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  collapsed: boolean;
+  setCollapsed: (val: boolean) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
   const [agentsDropdownOpen, setAgentsDropdownOpen] = useState(true);
 
   const agentsList = [
@@ -43,8 +46,90 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'agent_career', name: 'CareerPath AI', icon: Briefcase, color: 'bg-orange-500 text-white' },
   ];
 
+  if (collapsed) {
+    return (
+      <aside className="w-16 border-r border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex flex-col items-center justify-between py-4 hidden lg:flex min-h-screen shrink-0 select-none transition-all duration-200">
+        <div className="space-y-6 flex flex-col items-center w-full">
+          {/* Logo & Expand Button */}
+          <div className="flex flex-col items-center gap-2 border-b border-slate-100 dark:border-neutral-900 pb-3 w-full">
+            <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <button 
+              onClick={() => setCollapsed(false)}
+              className="text-slate-400 hover:text-purple-600 p-1 cursor-pointer transition-colors"
+              title="Expand Sidebar"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Icon-Only Navigation */}
+          <nav className="space-y-2 flex flex-col items-center w-full px-2">
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'chat'
+                  ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                  : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+              }`}
+              title="Dashboard / Master AI"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('agents')}
+              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                activeTab.startsWith('agent')
+                  ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                  : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+              }`}
+              title="AI Agents (9)"
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('knowledge')}
+              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'knowledge'
+                  ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                  : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+              }`}
+              title="Knowledge Graph"
+            >
+              <Network className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'analytics'
+                  ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                  : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+              }`}
+              title="Learning Analytics"
+            >
+              <BarChart3 className="w-4 h-4" />
+            </button>
+          </nav>
+        </div>
+
+        {/* Upgrade Icon */}
+        <button 
+          onClick={() => setCollapsed(false)}
+          className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 cursor-pointer"
+          title="Upgrade to Pro"
+        >
+          <Crown className="w-4 h-4" />
+        </button>
+      </aside>
+    );
+  }
+
   return (
-    <aside className="w-64 border-r border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex flex-col justify-between p-4 hidden lg:flex min-h-screen shrink-0 select-none">
+    <aside className="w-64 border-r border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex flex-col justify-between p-4 hidden lg:flex min-h-screen shrink-0 select-none transition-all duration-200">
       <div className="space-y-4">
         
         {/* Brand Header */}
@@ -58,7 +143,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
               <p className="text-[10px] text-slate-400 dark:text-neutral-500 font-medium">One Master AI Assistant</p>
             </div>
           </div>
-          <button className="text-slate-400 hover:text-slate-600 dark:hover:text-neutral-300 p-1 cursor-pointer">
+          <button 
+            onClick={() => setCollapsed(true)}
+            className="text-slate-400 hover:text-purple-600 p-1 cursor-pointer transition-colors"
+            title="Collapse Sidebar"
+          >
             <ChevronsLeft className="w-4 h-4" />
           </button>
         </div>
