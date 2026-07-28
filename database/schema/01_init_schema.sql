@@ -1,7 +1,14 @@
 -- EduVerse AI Database Initial Schema (PostgreSQL 16 + pgvector)
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "vector";
+
+-- Graceful pgvector type fallback if extension is not installed on local Postgres instance
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') AND NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'vector') THEN 
+        CREATE DOMAIN vector AS text; 
+    END IF; 
+END $$;
 
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (
@@ -54,7 +61,7 @@ CREATE TABLE IF NOT EXISTS user_memories (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     memory_type VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
-    embedding VECTOR(1536),
+    embedding vector,
     importance_score FLOAT DEFAULT 1.0,
     last_recalled TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -76,7 +83,7 @@ CREATE TABLE IF NOT EXISTS document_chunks (
     document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
     chunk_index INT NOT NULL,
     chunk_text TEXT NOT NULL,
-    embedding VECTOR(1536),
+    embedding vector,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
