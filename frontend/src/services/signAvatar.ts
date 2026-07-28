@@ -1,32 +1,51 @@
 // Text-to-Sign 3D Avatar Animation Engine Wrapper (Project 2 Integration)
 import * as THREE from 'three';
+// @ts-ignore
+import * as alphabets from './animations/alphabets';
+// @ts-ignore
+import * as words from './animations/words';
+// @ts-ignore
+import { defaultPose } from './animations/defaultPose';
 
 export type BoneAnimationStep = [string, 'rotation' | 'position', 'x' | 'y' | 'z', number, '+' | '-'];
 
 export class AvatarAnimationEngine {
   private avatar: THREE.Object3D | null = null;
-  private animationQueue: Array<BoneAnimationStep[] | string> = [];
   private isAnimating: boolean = false;
   private isPaused: boolean = false;
   private speed: number = 1.0; // 0.5x, 1.0x, 1.5x, 2.0x multiplier
-  private baseStepDelta: number = 0.08;
-  private currentStepIndex: number = 0;
   private onStepChange?: (textChunk: string) => void;
   private breathingAngle: number = 0;
+  
+  // Internal ref object required by Hear_Aid animation modules
+  public ref: any;
 
   constructor(avatarObj?: THREE.Object3D) {
+    this.ref = {
+      animations: [],
+      characters: [],
+      pending: false,
+      flag: false,
+      pause: 600,
+      speed: 0.1,
+      avatar: null,
+      animate: () => this.runAnimationLoop(),
+    };
+
     if (avatarObj) {
-      this.avatar = avatarObj;
+      this.setAvatar(avatarObj);
     }
   }
 
   public setAvatar(avatarObj: THREE.Object3D) {
     this.avatar = avatarObj;
+    this.ref.avatar = avatarObj;
     this.applyDefaultPose();
   }
 
   public setSpeed(speedMultiplier: number) {
     this.speed = speedMultiplier;
+    this.ref.speed = 0.1 * speedMultiplier;
   }
 
   public getSpeed(): number {
@@ -42,49 +61,83 @@ export class AvatarAnimationEngine {
   }
 
   /**
-   * Applies baseline natural posture to avatar
+   * Applies baseline natural posture to avatar using Hear_Aid defaultPose
    */
   public applyDefaultPose() {
     if (!this.avatar) return;
 
-    const defaultRotations: Record<string, [number, number, number]> = {
-      mixamorigNeck: [Math.PI / 12, 0, 0],
-      mixamorigLeftArm: [0, 0, -Math.PI / 3.5],
-      mixamorigLeftForeArm: [0, -Math.PI / 2.2, 0],
-      mixamorigRightArm: [0, 0, Math.PI / 3.5],
-      mixamorigRightForeArm: [0, Math.PI / 2.2, 0],
-      mixamorigLeftHand: [0, 0, 0],
-      mixamorigRightHand: [0, 0, 0],
-    };
+    try {
+      this.ref.animations = [];
+      this.ref.pending = true;
+      defaultPose(this.ref);
+    } catch {
+      // Fallback pose
+      const defaultRotations: Record<string, [number, number, number]> = {
+        mixamorigNeck: [Math.PI / 12, 0, 0],
+        mixamorigLeftArm: [0, 0, -Math.PI / 3.5],
+        mixamorigLeftForeArm: [0, -Math.PI / 2.2, 0],
+        mixamorigRightArm: [0, 0, Math.PI / 3.5],
+        mixamorigRightForeArm: [0, Math.PI / 2.2, 0],
+      };
 
-    Object.entries(defaultRotations).forEach(([boneName, [x, y, z]]) => {
-      const bone = this.avatar?.getObjectByName(boneName);
-      if (bone) {
-        bone.rotation.set(x, y, z);
-      }
-    });
+      Object.entries(defaultRotations).forEach(([boneName, [x, y, z]]) => {
+        const bone = this.avatar?.getObjectByName(boneName);
+        if (bone) {
+          bone.rotation.set(x, y, z);
+        }
+      });
+    }
   }
 
   /**
-   * Generates keyframes for a sentence and starts animation queue playback
+   * Translates text into Hear_Aid sign language keyframe animations
    */
   public playSentence(sentence: string, onStepText?: (txt: string) => void) {
-    if (!this.avatar) return;
+    if (!this.avatar || !sentence.trim()) return;
     this.onStepChange = onStepText;
-    this.animationQueue = [];
-    this.currentStepIndex = 0;
     this.isPaused = false;
     this.isAnimating = true;
 
-    const words = sentence.trim().toUpperCase().split(/\s+/).filter(Boolean);
+    this.ref.animations = [];
+    this.ref.flag = false;
+    this.ref.pending = true;
 
-    words.forEach((word) => {
-      // Check for word sign keyframe frames
-      const wordFrames = this.generateWordFrames(word);
-      this.animationQueue.push(...wordFrames);
+    const wordsArr = sentence.trim().toUpperCase().split(/\s+/).filter(Boolean);
+
+    wordsArr.forEach((word, wi) => {
+      const isLastWord = wi === wordsArr.length - 1;
+
+      if (words[word]) {
+        words[word](this.ref);
+        this.ref.animations.push(['add-text', isLastWord ? word : word + ' ']);
+      } else {
+        word.split('').forEach((ch, idx) => {
+          const digitMap: Record<string, string> = {
+            '0': 'ZERO',
+            '1': 'ONE',
+            '2': 'TWO',
+            '3': 'THREE_NUM',
+            '4': 'FOUR',
+            '5': 'FIVE',
+            '6': 'SIX',
+            '7': 'SEVEN',
+            '8': 'EIGHT',
+            '9': 'NINE',
+          };
+          const key = digitMap[ch] || ch;
+          const isLastChar = idx === word.length - 1;
+
+          if (alphabets[key]) {
+            alphabets[key](this.ref);
+          } else if (alphabets['A']) {
+            alphabets['A'](this.ref);
+          }
+          this.ref.animations.push(['add-text', isLastChar && !isLastWord ? ch + ' ' : ch]);
+        });
+      }
     });
 
-    this.processNextStep();
+    this.runAnimationLoop();
   }
 
   public updateIdleBreathing(delta: number) {
@@ -100,102 +153,90 @@ export class AvatarAnimationEngine {
     }
   }
 
-  private processNextStep() {
-    if (!this.avatar || this.animationQueue.length === 0 || this.isPaused) {
-      if (this.animationQueue.length === 0) {
+  private runAnimationLoop() {
+    if (!this.avatar || !this.ref.animations || !this.ref.animations.length || this.isPaused) {
+      if (!this.ref.animations || !this.ref.animations.length) {
         this.isAnimating = false;
-        this.applyDefaultPose();
+        this.ref.pending = false;
       }
       return;
     }
 
-    const currentItem = this.animationQueue.shift();
-    this.currentStepIndex++;
+    const currentFrameGroup = this.ref.animations[0];
 
-    if (typeof currentItem === 'string') {
-      if (this.onStepChange) this.onStepChange(currentItem);
-      setTimeout(() => this.processNextStep(), 300 / this.speed);
+    if (!currentFrameGroup || !currentFrameGroup.length) {
+      this.ref.flag = true;
+      setTimeout(() => {
+        this.ref.flag = false;
+        this.ref.animations.shift();
+        this.runAnimationLoop();
+      }, (this.ref.pause || 600) / this.speed);
       return;
     }
 
-    if (Array.isArray(currentItem)) {
-      this.animateFrameGroup(currentItem, () => {
-        this.processNextStep();
-      });
+    // Check if text marker frame
+    if (currentFrameGroup[0] === 'add-text') {
+      const textChunk = currentFrameGroup[1];
+      if (this.onStepChange) this.onStepChange(textChunk);
+      this.ref.animations.shift();
+      this.runAnimationLoop();
+      return;
     }
-  }
 
-  private animateFrameGroup(frames: BoneAnimationStep[], onComplete: () => void) {
-    if (!this.avatar) return;
+    // Step bone rotations toward target angles
+    if (!this.ref.flag && Array.isArray(currentFrameGroup)) {
+      let anyMoved = false;
+      const stepDelta = (this.ref.speed || 0.1) * this.speed;
 
-    let stepsDone = 0;
-    const stepAmount = this.baseStepDelta * this.speed;
-
-    const interval = setInterval(() => {
-      if (this.isPaused) return;
-
-      let allReached = true;
-
-      frames.forEach(([boneName, prop, axis, limit, sign]) => {
-        const bone = this.avatar?.getObjectByName(boneName);
-        if (!bone) return;
-
-        const currentVal = bone[prop][axis];
-
-        if (sign === '+' && currentVal < limit) {
-          bone[prop][axis] = Math.min(currentVal + stepAmount, limit);
-          allReached = false;
-        } else if (sign === '-' && currentVal > limit) {
-          bone[prop][axis] = Math.max(currentVal - stepAmount, limit);
-          allReached = false;
+      for (let i = 0; i < currentFrameGroup.length; ) {
+        const item = currentFrameGroup[i];
+        if (!Array.isArray(item) || item.length < 5) {
+          currentFrameGroup.splice(i, 1);
+          continue;
         }
-      });
 
-      stepsDone++;
+        const [boneName, prop, axis, limit, sign] = item;
+        const bone = this.avatar.getObjectByName(boneName);
 
-      if (allReached || stepsDone > 30) {
-        clearInterval(interval);
-        onComplete();
+        if (!bone) {
+          currentFrameGroup.splice(i, 1);
+          continue;
+        }
+
+        const targetObj = (bone as any)[prop];
+        if (!targetObj) {
+          currentFrameGroup.splice(i, 1);
+          continue;
+        }
+
+        const currVal = targetObj[axis];
+
+        if (sign === '+' && currVal < limit) {
+          targetObj[axis] = Math.min(currVal + stepDelta, limit);
+          anyMoved = true;
+          i++;
+        } else if (sign === '-' && currVal > limit) {
+          targetObj[axis] = Math.max(currVal - stepDelta, limit);
+          anyMoved = true;
+          i++;
+        } else {
+          currentFrameGroup.splice(i, 1);
+        }
       }
-    }, 25);
-  }
 
-  private generateWordFrames(word: string): Array<BoneAnimationStep[] | string> {
-    const queue: Array<BoneAnimationStep[] | string> = [];
-
-    // Common words sign dictionary
-    if (word === 'HELLO' || word === 'HI') {
-      queue.push([
-        ['mixamorigRightArm', 'rotation', 'x', -Math.PI / 4, '-'],
-        ['mixamorigRightForeArm', 'rotation', 'z', Math.PI / 3, '+'],
-        ['mixamorigRightHand', 'rotation', 'z', Math.PI / 6, '+'],
-      ]);
-      queue.push('HELLO ');
-      queue.push([
-        ['mixamorigRightHand', 'rotation', 'z', -Math.PI / 6, '-'],
-      ]);
-      return queue;
+      if (!anyMoved || currentFrameGroup.length === 0) {
+        this.ref.flag = true;
+        setTimeout(() => {
+          this.ref.flag = false;
+          this.ref.animations.shift();
+          this.runAnimationLoop();
+        }, (this.ref.pause || 400) / this.speed);
+        return;
+      }
     }
 
-    // Spell out letters A-Z for arbitrary words
-    const chars = word.split('');
-    chars.forEach((ch, idx) => {
-      queue.push(this.generateLetterFrame(ch));
-      queue.push(ch + (idx === chars.length - 1 ? ' ' : ''));
-    });
-
-    return queue;
-  }
-
-  private generateLetterFrame(ch: string): BoneAnimationStep[] {
-    const charCode = ch.toUpperCase().charCodeAt(0);
-    const angleOffset = ((charCode % 10) * Math.PI) / 30;
-
-    return [
-      ['mixamorigRightArm', 'rotation', 'x', -Math.PI / 6 - angleOffset, '-'],
-      ['mixamorigRightForeArm', 'rotation', 'y', Math.PI / 4 + angleOffset / 2, '+'],
-      ['mixamorigRightHand', 'rotation', 'x', Math.PI / 8, '+'],
-      ['mixamorigLeftArm', 'rotation', 'x', -Math.PI / 8, '-'],
-    ];
+    setTimeout(() => {
+      this.runAnimationLoop();
+    }, 25);
   }
 }
