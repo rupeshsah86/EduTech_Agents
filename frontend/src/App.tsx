@@ -10,9 +10,13 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 
 export const App: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('eduverse_theme');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   useEffect(() => {
+    localStorage.setItem('eduverse_theme', JSON.stringify(darkMode));
     if (darkMode) {
       document.documentElement.classList.add('dark');
     } else {

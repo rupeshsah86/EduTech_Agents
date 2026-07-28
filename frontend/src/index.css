@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --bg-color: #f8fafc;
   --text-color: #0f172a;
@@ -8,10 +10,10 @@
 }
 
 .dark {
-  --bg-color: #0b0f17;
+  --bg-color: #030712;
   --text-color: #f8fafc;
-  --card-bg: rgba(19, 27, 46, 0.75);
-  --border-color: rgba(30, 41, 59, 0.8);
+  --card-bg: rgba(17, 24, 39, 0.75);
+  --border-color: rgba(31, 41, 55, 0.8);
 }
 
 body {
@@ -19,6 +21,7 @@ body {
   color: var(--text-color);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Glassmorphism & Custom Styling */
