@@ -553,7 +553,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
             />
 
             {/* Input Toolbar */}
-            <div className="flex items-center justify-between border-t border-slate-100 dark:border-neutral-800/80 pt-3">
+            <div className="flex items-center justify-between pt-2">
               {/* Left Action Buttons */}
               <div className="flex items-center gap-2">
                 <button 
