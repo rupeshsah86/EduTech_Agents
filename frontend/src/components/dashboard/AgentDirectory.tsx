@@ -11,6 +11,8 @@ import {
   Briefcase,
   Sparkles
 } from 'lucide-react';
+import { PDFTutorUploader } from './PDFTutorUploader';
+import { CareerPathResumeScanner } from './CareerPathResumeScanner';
 
 export const AgentDirectory: React.FC = () => {
   const agents = [
@@ -99,6 +101,10 @@ export const AgentDirectory: React.FC = () => {
           Master AI Assistant seamlessly orchestrates these 9 agents behind the scenes for unified learning.
         </p>
       </div>
+
+      <PDFTutorUploader />
+
+      <CareerPathResumeScanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {agents.map((agent, idx) => {
