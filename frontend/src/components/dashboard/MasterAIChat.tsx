@@ -81,6 +81,35 @@ export const MasterAIChat: React.FC = () => {
     setPrompt('');
     setIsProcessing(true);
 
+    try {
+      // Attempt call to Django REST Master AI Endpoint
+      const response = await fetch('http://localhost:8000/api/v1/master-ai/chat/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: userPrompt })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const meta = data.orchestration_metadata || {};
+        const aiMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'master_ai',
+          text: data.master_ai_response,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          activeAgents: meta.active_agents || ['Master AI Assistant'],
+          knowledgeGraphNodesAdded: [userPrompt.slice(0, 20)],
+          flashcardsCreated: meta.flashcards_created || 0
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        setIsProcessing(false);
+        return;
+      }
+    } catch (e) {
+      console.log("Django API offline, using local Orchestrator simulation:", e);
+    }
+
+    // Fallback local Master AI intent classification simulation
     let activated: string[] = [];
     const lower = userPrompt.toLowerCase();
     if (lower.includes('exam') || lower.includes('revision') || lower.includes('roadmap')) activated.push('ExamAce AI', 'StudyFlow AI');
@@ -103,7 +132,7 @@ export const MasterAIChat: React.FC = () => {
 
       setMessages((prev) => [...prev, aiResponse]);
       setIsProcessing(false);
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -167,7 +196,7 @@ export const MasterAIChat: React.FC = () => {
                   {msg.text}
                 </div>
 
-                {msg.flashcardsCreated && (
+                {msg.flashcardsCreated ? (
                   <div className="mt-3 pt-3 border-t border-slate-200/40 dark:border-slate-800 flex flex-wrap gap-2 text-xs">
                     <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20">
                       <CheckCircle2 className="w-3.5 h-3.5" /> +{msg.flashcardsCreated} Flashcards Scheduled
@@ -176,7 +205,7 @@ export const MasterAIChat: React.FC = () => {
                       <Share2 className="w-3.5 h-3.5" /> Knowledge Graph Updated
                     </span>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
@@ -222,7 +251,7 @@ export const MasterAIChat: React.FC = () => {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Ask Master AI... (e.g. 'Explain binary search trees, create a 5-question quiz, and write Python code')"
-              className="w-full pl-4 pr-10 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 transition-colors"
+              className="w-full pl-4 pr-10 py-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 focus:outline-none focus:border-indigo-500 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 transition-colors"
             />
           </div>
 
