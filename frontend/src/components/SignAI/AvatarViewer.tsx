@@ -1,433 +1,365 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { AvatarAnimationEngine } from '../../services/signAvatar';
-import { Play, Pause, RotateCcw, FastForward, UserCheck, Sparkles } from 'lucide-react';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { Play, Pause, RotateCcw, FastForward } from 'lucide-react';
 
 interface AvatarViewerProps {
   signText?: string;
   autoPlay?: boolean;
 }
 
-/**
- * Constructs a clean 3D Human Character Avatar with prominent, clearly visible hands and fingers
- * positioned for sign language gesture visibility.
- */
-function buildHandsomeHumanAvatar(): THREE.Group {
-  const root = new THREE.Group();
-  root.name = 'handsomeHumanAvatarRoot';
-  root.position.set(0, -0.08, 0);
-  root.scale.set(0.92, 0.92, 0.92);
+// ─── Internal Hear_Aid-compatible animation engine ───────────────────────────
+// @ts-ignore
+import * as alphabets from '../../services/animations/alphabets';
+// @ts-ignore
+import * as words from '../../services/animations/words';
+// @ts-ignore
+import { defaultPose } from '../../services/animations/defaultPose';
 
-  // Materials
-  const skinMat = new THREE.MeshStandardMaterial({
-    color: 0xedd0be, // Smooth warm skin tone
-    roughness: 0.35,
-    metalness: 0.0,
+// ─── AvatarViewer Component ───────────────────────────────────────────────────
+export const AvatarViewer: React.FC<AvatarViewerProps> = ({
+  signText = '',
+  autoPlay = true,
+}) => {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const refObj = useRef<any>({
+    flag: false,
+    pending: false,
+    animations: [],
+    characters: [],
+    avatar: null,
+    scene: null,
+    camera: null,
+    renderer: null,
+    speed: 0.1,
+    pause: 800,
   });
 
-  const shirtMat = new THREE.MeshStandardMaterial({
-    color: 0x23252b, // Charcoal navy crewneck shirt
-    roughness: 0.8,
-    metalness: 0.05,
-  });
-
-  const hairMat = new THREE.MeshStandardMaterial({
-    color: 0x261d1a, // Dark brown hair
-    roughness: 0.6,
-    metalness: 0.05,
-  });
-
-  const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
-  const eyeIrisMat = new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.2 });
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
-  const lipMat = new THREE.MeshStandardMaterial({ color: 0xd47a70, roughness: 0.4 });
-  const baseMat = new THREE.MeshStandardMaterial({ color: 0x16161a, metalness: 0.75, roughness: 0.2 });
-
-  // 1. Pedestal Stand Base
-  const baseGroup = new THREE.Group();
-  const baseGeo = new THREE.CylinderGeometry(0.28, 0.36, 0.12, 32);
-  const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-  baseMesh.position.y = -0.58;
-  baseGroup.add(baseMesh);
-
-  const stemGeo = new THREE.CylinderGeometry(0.14, 0.22, 0.22, 32);
-  const stemMesh = new THREE.Mesh(stemGeo, baseMat);
-  stemMesh.position.y = -0.44;
-  baseGroup.add(stemMesh);
-
-  root.add(baseGroup);
-
-  // 2. Torso (Fitted Crewneck Shirt)
-  const chestGeo = new THREE.CylinderGeometry(0.26, 0.2, 0.4, 32);
-  const chestMesh = new THREE.Mesh(chestGeo, shirtMat);
-  chestMesh.position.y = -0.22;
-  root.add(chestMesh);
-
-  // Shoulders
-  const leftShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.065, 16, 16), shirtMat);
-  leftShoulder.position.set(0.24, -0.05, 0);
-  const rightShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.065, 16, 16), shirtMat);
-  rightShoulder.position.set(-0.24, -0.05, 0);
-  root.add(leftShoulder, rightShoulder);
-
-  // Collar Ring
-  const collarGeo = new THREE.TorusGeometry(0.09, 0.018, 16, 32);
-  const collarMesh = new THREE.Mesh(collarGeo, shirtMat);
-  collarMesh.rotation.x = Math.PI / 2;
-  collarMesh.position.y = 0.02;
-  root.add(collarMesh);
-
-  // Neck
-  const neckGeo = new THREE.CylinderGeometry(0.065, 0.075, 0.14, 16);
-  const neckMesh = new THREE.Mesh(neckGeo, skinMat);
-  neckMesh.position.y = 0.06;
-  root.add(neckMesh);
-
-  // 3. Head & Face Group (mixamorigHead)
-  const headGroup = new THREE.Group();
-  headGroup.name = 'mixamorigHead';
-  headGroup.position.y = 0.25;
-
-  // Head Oval
-  const headGeo = new THREE.SphereGeometry(0.14, 32, 32);
-  headGeo.scale(0.9, 1.1, 0.92);
-  const headMesh = new THREE.Mesh(headGeo, skinMat);
-  headGroup.add(headMesh);
-
-  // Chin / Jawline Contour
-  const chinGeo = new THREE.SphereGeometry(0.08, 16, 16);
-  chinGeo.scale(0.8, 0.8, 0.8);
-  const chinMesh = new THREE.Mesh(chinGeo, skinMat);
-  chinMesh.position.set(0, -0.09, 0.06);
-  headGroup.add(chinMesh);
-
-  // Ears
-  const earGeo = new THREE.SphereGeometry(0.03, 12, 12);
-  earGeo.scale(0.3, 0.8, 0.5);
-  const leftEar = new THREE.Mesh(earGeo, skinMat);
-  leftEar.position.set(-0.13, 0.01, 0);
-  const rightEar = leftEar.clone();
-  rightEar.position.set(0.13, 0.01, 0);
-  headGroup.add(leftEar, rightEar);
-
-  // Eyes (Left & Right)
-  const createEye = () => {
-    const eyeG = new THREE.Group();
-    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.022, 16, 16), eyeWhiteMat);
-    const iris = new THREE.Mesh(new THREE.CircleGeometry(0.012, 16), eyeIrisMat);
-    iris.position.z = 0.021;
-    const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.006, 16), pupilMat);
-    pupil.position.z = 0.022;
-    eyeG.add(sclera, iris, pupil);
-    return eyeG;
-  };
-
-  const leftEye = createEye();
-  leftEye.position.set(-0.048, 0.02, 0.118);
-
-  const rightEye = createEye();
-  rightEye.position.set(0.048, 0.02, 0.118);
-
-  headGroup.add(leftEye, rightEye);
-
-  // Eyebrows
-  const browGeo = new THREE.BoxGeometry(0.042, 0.008, 0.008);
-  const leftBrow = new THREE.Mesh(browGeo, hairMat);
-  leftBrow.position.set(-0.048, 0.055, 0.125);
-  leftBrow.rotation.z = 0.06;
-
-  const rightBrow = new THREE.Mesh(browGeo, hairMat);
-  rightBrow.position.set(0.048, 0.055, 0.125);
-  rightBrow.rotation.z = -0.06;
-
-  headGroup.add(leftBrow, rightBrow);
-
-  // Nose
-  const noseGeo = new THREE.ConeGeometry(0.016, 0.04, 12);
-  const noseMesh = new THREE.Mesh(noseGeo, skinMat);
-  noseMesh.position.set(0, -0.015, 0.135);
-  noseMesh.rotation.x = -0.12;
-  headGroup.add(noseMesh);
-
-  // Natural Smile Line
-  const mouthGeo = new THREE.CylinderGeometry(0.005, 0.005, 0.04, 8);
-  const mouthMesh = new THREE.Mesh(mouthGeo, lipMat);
-  mouthMesh.rotation.z = Math.PI / 2;
-  mouthMesh.position.set(0, -0.055, 0.125);
-  headGroup.add(mouthMesh);
-
-  // Hair Styling (Positioned strictly above the forehead)
-  const hairGroup = new THREE.Group();
-
-  const hairCapGeo = new THREE.SphereGeometry(0.142, 24, 24);
-  hairCapGeo.scale(0.92, 0.65, 0.92);
-  const hairCap = new THREE.Mesh(hairCapGeo, hairMat);
-  hairCap.position.set(0, 0.075, -0.015);
-  hairGroup.add(hairCap);
-
-  const wave1 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), hairMat);
-  wave1.scale.set(1.2, 0.5, 0.8);
-  wave1.position.set(-0.04, 0.135, 0.08);
-  wave1.rotation.set(-0.2, 0.2, -0.2);
-
-  const wave2 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), hairMat);
-  wave2.scale.set(1.2, 0.5, 0.8);
-  wave2.position.set(0.04, 0.14, 0.07);
-  wave2.rotation.set(-0.15, -0.2, 0.2);
-
-  hairGroup.add(wave1, wave2);
-  headGroup.add(hairGroup);
-
-  root.add(headGroup);
-
-  // 4. Prominent, Clearly Visible Left & Right Arms & Hands for Sign Language
-  // Right Arm
-  const rightArmGroup = new THREE.Group();
-  rightArmGroup.name = 'mixamorigRightArm';
-  rightArmGroup.position.set(-0.24, -0.02, 0.05);
-
-  const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.22, 16), shirtMat);
-  rightUpperArm.position.y = -0.11;
-  rightArmGroup.add(rightUpperArm);
-
-  const rightForeArmGroup = new THREE.Group();
-  rightForeArmGroup.name = 'mixamorigRightForeArm';
-  rightForeArmGroup.position.set(0, -0.22, 0);
-
-  const rightForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.2, 16), skinMat);
-  rightForeArm.position.y = -0.1;
-  rightForeArmGroup.add(rightForeArm);
-
-  const rightHandGroup = new THREE.Group();
-  rightHandGroup.name = 'mixamorigRightHand';
-  rightHandGroup.position.set(0, -0.2, 0);
-
-  // Enlarged Palm for Clear Hand Sign Visibility
-  const rightPalm = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.035), skinMat);
-  rightPalm.position.y = -0.04;
-  rightHandGroup.add(rightPalm);
-
-  // 5 Distinct Fingers
-  for (let f = 0; f < 5; f++) {
-    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.009, 0.075, 8), skinMat);
-    finger.position.set(-0.032 + f * 0.016, -0.09, 0);
-    rightHandGroup.add(finger);
-  }
-
-  rightForeArmGroup.add(rightHandGroup);
-  rightArmGroup.add(rightForeArmGroup);
-  root.add(rightArmGroup);
-
-  // Left Arm
-  const leftArmGroup = new THREE.Group();
-  leftArmGroup.name = 'mixamorigLeftArm';
-  leftArmGroup.position.set(0.24, -0.02, 0.05);
-
-  const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.22, 16), shirtMat);
-  leftUpperArm.position.y = -0.11;
-  leftArmGroup.add(leftUpperArm);
-
-  const leftForeArmGroup = new THREE.Group();
-  leftForeArmGroup.name = 'mixamorigLeftForeArm';
-  leftForeArmGroup.position.set(0, -0.22, 0);
-
-  const leftForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.2, 16), skinMat);
-  leftForeArm.position.y = -0.1;
-  leftForeArmGroup.add(leftForeArm);
-
-  const leftHandGroup = new THREE.Group();
-  leftHandGroup.name = 'mixamorigLeftHand';
-  leftHandGroup.position.set(0, -0.2, 0);
-
-  // Enlarged Palm for Clear Hand Sign Visibility
-  const leftPalm = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.035), skinMat);
-  leftPalm.position.y = -0.03;
-  leftHandGroup.add(leftPalm);
-
-  // 5 Distinct Fingers
-  for (let f = 0; f < 5; f++) {
-    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.009, 0.075, 8), skinMat);
-    finger.position.set(-0.032 + f * 0.016, -0.09, 0);
-    leftHandGroup.add(finger);
-  }
-
-  leftForeArmGroup.add(leftHandGroup);
-  leftArmGroup.add(leftForeArmGroup);
-  root.add(leftArmGroup);
-
-  return root;
-}
-
-export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoPlay = true }) => {
-  const mountRef = useRef<HTMLDivElement | null>(null);
-  const engineRef = useRef<AvatarAnimationEngine | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [speed, setSpeed] = useState<number>(1.0);
-  const [activeSignChunk, setActiveSignChunk] = useState<string>('');
-  const [modelLoaded, setModelLoaded] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+  const [activeSign, setActiveSign] = useState('');
+  const [modelReady, setModelReady] = useState(false);
+  const [modelError, setModelError] = useState(false);
+  const rafRef = useRef<number | null>(null);
+  const runSignRef = useRef<(txt: string) => void>(() => {});
 
   useEffect(() => {
-    if (!mountRef.current) return;
+    const ref = refObj.current;
+    const el = mountRef.current;
+    if (!el) return;
 
-    const width = mountRef.current.clientWidth || 400;
-    const height = mountRef.current.clientHeight || 450;
+    // ── Scene Setup ────────────────────────────────────────────────────────
+    ref.scene = new THREE.Scene();
+    ref.scene.background = null;
 
-    const scene = new THREE.Scene();
-    scene.background = null;
+    const w = el.clientWidth || 400;
+    const h = el.clientHeight || 520;
 
-    // Zoomed-out camera position (y: -0.05, z: 2.3) so head, chest, arms, hands, and fingers are ALL 100% visible
-    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
-    camera.position.set(0, -0.05, 2.3);
+    // ── Camera (mirrors Hear_Aid Convert.js exactly) ────────────────────────
+    // camera.position.z = 1.6, y = 1.4, FOV 30 → full upper body visible
+    ref.camera = new THREE.PerspectiveCamera(30, w / h, 0.1, 1000);
+    ref.camera.position.set(0, 1.4, 1.6);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // ── Renderer ───────────────────────────────────────────────────────────
+    ref.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    ref.renderer.setSize(w, h);
+    ref.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    ref.renderer.shadowMap.enabled = true;
+    ref.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    el.innerHTML = '';
+    el.appendChild(ref.renderer.domElement);
 
-    mountRef.current.innerHTML = '';
-    mountRef.current.appendChild(renderer.domElement);
+    // ── Lighting ───────────────────────────────────────────────────────────
+    const ambient = new THREE.AmbientLight(0xffffff, 1.5);
+    ref.scene.add(ambient);
 
-    // Studio Three-Point Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
-    scene.add(ambientLight);
+    const keyLight = new THREE.DirectionalLight(0xfff0e0, 2.5);
+    keyLight.position.set(2, 5, 4);
+    keyLight.castShadow = true;
+    ref.scene.add(keyLight);
 
-    const keyLight = new THREE.DirectionalLight(0xfff4e5, 2.2);
-    keyLight.position.set(2.5, 3.5, 3);
-    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0xdde8ff, 1.2);
+    fillLight.position.set(-3, 3, 2);
+    ref.scene.add(fillLight);
 
-    const fillLight = new THREE.DirectionalLight(0xe0e7ff, 1.2);
-    fillLight.position.set(-2.5, 2, 2);
-    scene.add(fillLight);
+    const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    rimLight.position.set(0, 5, -3);
+    ref.scene.add(rimLight);
 
-    const rimLight = new THREE.DirectionalLight(0xffffff, 1.8);
-    rimLight.position.set(0, 4, -2);
-    scene.add(rimLight);
+    // ── Load ybot.glb (fully rigged Mixamo humanoid with finger bones) ──────
+    const loader = new GLTFLoader();
 
-    // Construct Handsome 3D Human Avatar with prominent hands
-    const avatarObj = buildHandsomeHumanAvatar();
-    scene.add(avatarObj);
+    const loadModel = (url: string, onSuccess: (gltf: any) => void, onFail: () => void) => {
+      loader.load(
+        url,
+        onSuccess,
+        undefined,
+        onFail,
+      );
+    };
 
-    const engine = new AvatarAnimationEngine();
-    engineRef.current = engine;
-    engine.setAvatar(avatarObj);
-    setModelLoaded(true);
+    const onModelLoaded = (gltf: any) => {
+      const scene = gltf.scene;
 
-    if (signText && autoPlay) {
-      engine.playSentence(signText, (chunk) => setActiveSignChunk(chunk));
-      setIsPlaying(true);
-    }
+      // Disable frustum culling on all skinned meshes (same as Hear_Aid)
+      scene.traverse((child: any) => {
+        if (child.type === 'SkinnedMesh') {
+          child.frustumCulled = false;
+          // Apply human skin-tone PBR material
+          if (child.material) {
+            const mats = Array.isArray(child.material) ? child.material : [child.material];
+            mats.forEach((mat: any) => {
+              if (mat.name && mat.name.toLowerCase().includes('skin')) {
+                mat.color.setHex(0xe8b99a);
+                mat.roughness = 0.45;
+                mat.metalness = 0.0;
+              } else if (mat.name && (mat.name.toLowerCase().includes('wolf3d') || mat.name.toLowerCase().includes('body'))) {
+                mat.color.setHex(0x23252b);
+                mat.roughness = 0.7;
+              }
+            });
+          }
+        }
+      });
 
-    // Animation Loop
-    let reqId: number;
-    let clock = new THREE.Clock();
+      ref.avatar = scene;
+      ref.scene.add(ref.avatar);
 
-    const animate = () => {
-      reqId = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
+      // Apply default two-arm pose (exactly as Hear_Aid does it)
+      defaultPose(ref);
 
-      if (engineRef.current) {
-        engineRef.current.updateIdleBreathing(delta);
+      setModelReady(true);
+    };
+
+    // Try ybot.glb first → fallback to xbot.glb
+    loadModel(
+      '/assets/ybot.glb',
+      onModelLoaded,
+      () => {
+        loadModel(
+          '/assets/xbot.glb',
+          onModelLoaded,
+          () => {
+            setModelError(true);
+          }
+        );
       }
+    );
 
-      renderer.render(scene, camera);
+    // ── Render Loop ────────────────────────────────────────────────────────
+    const renderLoop = () => {
+      rafRef.current = requestAnimationFrame(renderLoop);
+      if (ref.renderer && ref.scene && ref.camera) {
+        ref.renderer.render(ref.scene, ref.camera);
+      }
     };
+    renderLoop();
 
-    animate();
-
-    const handleResize = () => {
-      if (!mountRef.current) return;
-      const w = mountRef.current.clientWidth;
-      const h = mountRef.current.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
+    // ── Resize Handler ─────────────────────────────────────────────────────
+    const onResize = () => {
+      if (!el || !ref.camera || !ref.renderer) return;
+      const nw = el.clientWidth;
+      const nh = el.clientHeight;
+      ref.camera.aspect = nw / nh;
+      ref.camera.updateProjectionMatrix();
+      ref.renderer.setSize(nw, nh);
     };
-
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', onResize);
 
     return () => {
-      cancelAnimationFrame(reqId);
-      window.removeEventListener('resize', handleResize);
-      renderer.dispose();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', onResize);
+      ref.renderer?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Play animation when signText prop updates
+  // ── Animation Engine (mirrors Hear_Aid ref.animate exactly) ─────────────
   useEffect(() => {
-    if (signText && engineRef.current && modelLoaded) {
-      engineRef.current.playSentence(signText, (chunk) => setActiveSignChunk(chunk));
+    const ref = refObj.current;
+
+    ref.animate = () => {
+      if (!ref.animations.length) {
+        ref.pending = false;
+        return;
+      }
+      requestAnimationFrame(ref.animate);
+
+      if (ref.animations[0].length) {
+        if (!ref.flag) {
+          if (ref.animations[0][0] === 'add-text') {
+            setActiveSign(ref.animations[0][1]);
+            ref.animations.shift();
+          } else {
+            for (let i = 0; i < ref.animations[0].length;) {
+              const [bn, ac, ax, lim, sg] = ref.animations[0][i];
+              const obj = ref.avatar?.getObjectByName(bn);
+              if (!obj) { ref.animations[0].splice(i, 1); continue; }
+              if (sg === '+' && obj[ac][ax] < lim) {
+                obj[ac][ax] = Math.min(obj[ac][ax] + ref.speed, lim);
+                i++;
+              } else if (sg === '-' && obj[ac][ax] > lim) {
+                obj[ac][ax] = Math.max(obj[ac][ax] - ref.speed, lim);
+                i++;
+              } else {
+                ref.animations[0].splice(i, 1);
+              }
+            }
+          }
+        }
+      } else {
+        ref.flag = true;
+        setTimeout(() => { ref.flag = false; }, ref.pause);
+        ref.animations.shift();
+      }
+    };
+
+    // ── runSign function (mirrors Hear_Aid runSignRef) ─────────────────────
+    runSignRef.current = (str: string) => {
+      if (!str || !str.trim() || !ref.avatar) return;
+      setActiveSign('');
+      ref.animations = [];
+      ref.characters = [];
+      const wordsArr = str.trim().toUpperCase().split(/\s+/).filter(Boolean);
+
+      wordsArr.forEach((word: string, wi: number) => {
+        const isLast = wi === wordsArr.length - 1;
+        if ((words as any)[word]) {
+          (words as any)[word](ref);
+          ref.animations.push(['add-text', isLast ? word : word + ' ']);
+        } else {
+          word.split('').forEach((ch: string, ci: number) => {
+            const isLastCh = ci === word.length - 1;
+            const numMap: Record<string, string> = {
+              '0': 'ZERO', '1': 'ONE', '2': 'TWO', '3': 'THREE_NUM',
+              '4': 'FOUR', '5': 'FIVE', '6': 'SIX', '7': 'SEVEN',
+              '8': 'EIGHT', '9': 'NINE',
+            };
+            const key = numMap[ch] || ch;
+            if ((alphabets as any)[key]) (alphabets as any)[key](ref);
+            ref.animations.push(['add-text', isLastCh && !isLast ? ch + ' ' : ch]);
+          });
+        }
+      });
+
+      if (!ref.pending) {
+        ref.pending = true;
+        ref.animate();
+      }
+    };
+  }, []);
+
+  // ── React to signText prop ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (signText && modelReady && autoPlay) {
+      runSignRef.current(signText);
       setIsPlaying(true);
     }
-  }, [signText, modelLoaded]);
+  }, [signText, modelReady, autoPlay]);
 
-  const handleTogglePlay = () => {
-    if (!engineRef.current) return;
-    const nextPause = !isPlaying;
-    engineRef.current.setPaused(!nextPause);
-    setIsPlaying(nextPause);
+  const handlePlay = () => {
+    if (!isPlaying && signText) {
+      runSignRef.current(signText);
+      setIsPlaying(true);
+    }
+  };
+
+  const handlePause = () => {
+    const ref = refObj.current;
+    ref.animations = [];
+    ref.pending = false;
+    ref.flag = false;
+    setIsPlaying(false);
+    setActiveSign('');
+    // Restore default pose
+    if (ref.avatar) defaultPose(ref);
   };
 
   const handleReplay = () => {
-    if (!engineRef.current || !signText) return;
-    engineRef.current.playSentence(signText, (chunk) => setActiveSignChunk(chunk));
-    setIsPlaying(true);
-  };
-
-  const handleSpeedChange = (newSpeed: number) => {
-    setSpeed(newSpeed);
-    if (engineRef.current) {
-      engineRef.current.setSpeed(newSpeed);
+    if (signText) {
+      runSignRef.current(signText);
+      setIsPlaying(true);
     }
   };
 
+  const handleSpeedChange = (s: number) => {
+    setSpeed(s);
+    refObj.current.speed = 0.1 * s;
+  };
+
   return (
-    <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl p-4 shadow-lg flex flex-col justify-between h-full space-y-3">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-2">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800 shrink-0">
         <div className="flex items-center gap-2">
-          <UserCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100">3D Stylized Human Avatar</h3>
+          <span className="text-lg">🤟</span>
+          <span className="font-extrabold text-sm text-slate-900 dark:text-neutral-100">Sign Language Avatar</span>
         </div>
-        {activeSignChunk && (
-          <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-extrabold text-[11px] animate-pulse">
-            Signing: {activeSignChunk}
-          </span>
-        )}
-      </div>
-
-      {/* 3D WebGL Canvas Container */}
-      <div className="relative w-full flex-1 min-h-[300px] rounded-xl bg-gradient-to-b from-slate-200/60 via-slate-100/40 to-slate-200/80 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 border border-slate-300/80 dark:border-neutral-800 overflow-hidden flex items-center justify-center shadow-inner">
-        <div ref={mountRef} className="w-full h-full" />
-
-        {!modelLoaded && (
-          <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
-            <Sparkles className="w-8 h-8 text-purple-400 animate-spin" />
-            <p className="text-xs font-semibold">Loading 3D Human Avatar...</p>
+        {activeSign && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Now signing</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-purple-600 text-white font-mono font-extrabold text-xs animate-pulse shadow-md shadow-purple-400/30">
+              {activeSign}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Playback Controls Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-neutral-800">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleTogglePlay}
-            className="p-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all shadow-md cursor-pointer"
-            title={isPlaying ? 'Pause Animation' : 'Play Animation'}
-          >
-            {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-          </button>
+      {/* 3D Canvas */}
+      <div className="relative flex-1 min-h-[420px] bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+        <div ref={mountRef} className="w-full h-full" />
 
+        {/* Loading Overlay */}
+        {!modelReady && !modelError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm gap-3">
+            <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-semibold text-slate-600 dark:text-neutral-300">Loading Avatar...</p>
+          </div>
+        )}
+
+        {/* Error Overlay */}
+        {modelError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
+            <span className="text-4xl">⚠️</span>
+            <p className="text-sm font-semibold text-red-500">Avatar model failed to load</p>
+            <p className="text-xs text-slate-500 dark:text-neutral-400">
+              Ensure <code className="bg-slate-100 dark:bg-neutral-800 px-1 rounded">ybot.glb</code> is in <code className="bg-slate-100 dark:bg-neutral-800 px-1 rounded">frontend/public/assets/</code>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Playback Controls */}
+      <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        {/* Play / Pause / Replay */}
+        <div className="flex items-center gap-2">
+          {isPlaying ? (
+            <button
+              onClick={handlePause}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20"
+            >
+              <Pause className="w-3.5 h-3.5 fill-current" />
+              Pause
+            </button>
+          ) : (
+            <button
+              onClick={handlePlay}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              Play
+            </button>
+          )}
           <button
             onClick={handleReplay}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-700 dark:text-neutral-300 transition-all cursor-pointer"
-            title="Replay Sign Animation"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 transition-all cursor-pointer"
+            title="Replay"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Speed Selector Buttons */}
+        {/* Speed Selector */}
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-neutral-950 p-1 rounded-xl border border-slate-200 dark:border-neutral-800">
           <FastForward className="w-3 h-3 text-slate-400 ml-1" />
           {[0.5, 1.0, 1.5, 2.0].map((s) => (
@@ -436,8 +368,8 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
               onClick={() => handleSpeedChange(s)}
               className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
                 speed === s
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-neutral-400 hover:text-purple-600'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-neutral-400 hover:text-purple-600'
               }`}
             >
               {s}x
