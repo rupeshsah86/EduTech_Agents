@@ -28,14 +28,14 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
     : nodes.filter(n => n.subject === selectedSubject);
 
   return (
-    <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/50 min-h-[calc(100vh-4rem)]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="w-full bg-white dark:bg-[#0A0A0A] text-slate-900 dark:text-neutral-100 min-h-screen p-6 sm:p-8 space-y-6 font-sans">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-neutral-800 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <Network className="w-6 h-6 text-indigo-500" />
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Personal Knowledge Graph</h2>
+            <Network className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-neutral-100 tracking-tight">Personal Knowledge Graph</h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
             Dynamic AI-maintained topology of your mastered concepts, partial knowledge, and weak spots.
           </p>
         </div>
@@ -45,10 +45,10 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
             <button
               key={sub}
               onClick={() => setSelectedSubject(sub)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 selectedSubject === sub
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-slate-900 dark:border-neutral-100 shadow-xs'
+                  : 'bg-slate-100 dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-800'
               }`}
             >
               {sub}
@@ -60,46 +60,46 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass-panel p-6 rounded-2xl relative min-h-[400px] flex flex-col justify-between overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-500" /> Node Connection Topography
+            <span className="text-xs font-semibold text-slate-500 dark:text-neutral-400 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" /> Node Connection Topography
             </span>
-            <span className="text-[11px] text-emerald-500 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
               Live Synchronized
             </span>
           </div>
 
-          <div className="my-8 grid grid-cols-2 sm:grid-cols-3 gap-4 relative z-10">
+          <div className="my-8 grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
             {filteredNodes.map((node) => (
               <div
                 key={node.id}
-                className="glass-panel p-4 rounded-xl glass-card-hover border border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70"
+                className="glass-panel p-4 rounded-xl glass-card-hover border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                     node.status === 'Mastered'
-                      ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                       : node.status === 'Learning'
-                      ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                      : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                      ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                   }`}>
                     {node.status}
                   </span>
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <span className="text-xs font-bold text-slate-800 dark:text-neutral-200">
                     {node.masteryScore}%
                   </span>
                 </div>
 
-                <h4 className="font-semibold text-sm text-slate-900 dark:text-white leading-tight">
+                <h4 className="font-bold text-sm text-slate-900 dark:text-neutral-100 leading-tight">
                   {node.name}
                 </h4>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-1">
                   Subject: {node.subject}
                 </p>
 
-                <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                <div className="w-full bg-slate-200 dark:bg-neutral-800 rounded-full h-1.5 mt-3 overflow-hidden">
                   <div
                     className={`h-1.5 rounded-full transition-all duration-500 ${
-                      node.masteryScore > 80 ? 'bg-emerald-500' : node.masteryScore > 50 ? 'bg-blue-500' : 'bg-amber-500'
+                      node.masteryScore > 80 ? 'bg-emerald-500' : node.masteryScore > 50 ? 'bg-purple-600' : 'bg-amber-500'
                     }`}
                     style={{ width: `${node.masteryScore}%` }}
                   />
@@ -108,44 +108,44 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-200 dark:border-slate-800/80 pt-3">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-200 dark:border-neutral-800 pt-3 font-medium">
             <span>Graph Nodes: {filteredNodes.length}</span>
             <span>Mastery Velocity: +14% this week</span>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="glass-panel p-5 rounded-2xl space-y-4">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+          <div className="glass-panel p-5 rounded-2xl space-y-4 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-neutral-100 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" /> Mastery Gap Recommendations
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-neutral-400">
               ExamAce AI & QuizMaster AI identified 2 critical weak topics requiring immediate spaced revision:
             </p>
 
             <div className="space-y-2">
               <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs space-y-1">
-                <div className="flex items-center justify-between font-semibold text-amber-600 dark:text-amber-400">
+                <div className="flex items-center justify-between font-bold text-amber-600 dark:text-amber-400">
                   <span>Dijkstra Algorithm</span>
                   <span>45% Score</span>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-[11px]">
+                <p className="text-slate-600 dark:text-neutral-400 text-[11px]">
                   Priority Queue implementation & edge relaxation steps failed in recent quiz.
                 </p>
               </div>
 
               <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs space-y-1">
-                <div className="flex items-center justify-between font-semibold text-amber-600 dark:text-amber-400">
+                <div className="flex items-center justify-between font-bold text-amber-600 dark:text-amber-400">
                   <span>Process Synchronization</span>
                   <span>55% Score</span>
                 </div>
-                <p className="text-slate-500 dark:text-slate-400 text-[11px]">
+                <p className="text-slate-600 dark:text-neutral-400 text-[11px]">
                   Deadlock condition handling needs revision.
                 </p>
               </div>
             </div>
 
-            <button className="w-full py-2.5 rounded-xl agent-gradient-master text-white font-semibold text-xs shadow-md hover:opacity-90 transition-opacity">
+            <button className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer">
               Launch AI Practice Session for Weak Topics
             </button>
           </div>

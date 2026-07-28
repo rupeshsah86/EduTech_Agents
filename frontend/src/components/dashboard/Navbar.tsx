@@ -40,101 +40,31 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, activeTab
   };
 
   return (
-    <header className="border-b border-slate-200/90 dark:border-slate-800/90 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-40 transition-colors duration-200 shadow-xs">
-      {/* Top Main Bar */}
-      <div className="h-16 px-6 flex items-center justify-between gap-4">
-        {/* Left Brand Identity */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Link 
-            to="/" 
-            className="w-10 h-10 rounded-xl agent-gradient-master flex items-center justify-center shadow-md shadow-indigo-500/25 hover:scale-105 transition-transform"
-            title="Back to Landing Page"
-          >
-            <BrainCircuit className="w-6 h-6 text-white" />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight">EduVerse AI</h1>
-              <span className="text-[10px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                ENTERPRISE AI
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
-              One Master AI Assistant • 9 Neural Agents
-            </p>
+    <header className="h-16 border-b border-slate-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between transition-colors duration-200">
+      {/* Left Brand Identity */}
+      <div className="flex items-center gap-3 shrink-0">
+        <Link 
+          to="/" 
+          className="w-9 h-9 rounded-xl agent-gradient-master flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity"
+          title="Back to Landing Page"
+        >
+          <BrainCircuit className="w-5 h-5 text-white" />
+        </Link>
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="font-extrabold text-base text-slate-900 dark:text-neutral-100 tracking-tight">EduVerse AI</h1>
+            <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+              ENTERPRISE AI
+            </span>
           </div>
-        </div>
-
-        {/* Center Navigation Tabs (Moved Upward into Header) */}
-        <nav className="hidden lg:flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/50">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-xs transition-all duration-200 cursor-pointer ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-                {item.badge && (
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded font-black ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-indigo-500'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Right Actions & User Profile */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* Notifications Dropdown (WORKING) */}
-          <NotificationDropdown />
-
-          {/* Dark/Light Theme Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition-all cursor-pointer"
-            title="Toggle Dark/Light Theme"
-          >
-            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
-          </button>
-
-          {/* Log Out */}
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200/60 dark:border-slate-700/60 transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer"
-            title="Log Out"
-          >
-            <LogOut className="w-3.5 h-3.5 text-rose-500" />
-            <span className="hidden sm:inline">Log Out</span>
-          </button>
-
-          {/* User Profile Badge */}
-          <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-slate-800">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
-              {user?.fullName ? user.fullName.slice(0, 2).toUpperCase() : 'ST'}
-            </div>
-            <div className="hidden xl:block text-left">
-              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                {user?.fullName || 'Student User'}
-              </p>
-              <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">Pro Student Tier</p>
-            </div>
-          </div>
+          <p className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium hidden sm:block">
+            One Master AI • 9 Neural Agents
+          </p>
         </div>
       </div>
 
-      {/* Sub Header Navigation for Mobile/Tablet Screens */}
-      <div className="lg:hidden px-4 py-2 border-t border-slate-200/60 dark:border-slate-800/60 overflow-x-auto flex items-center gap-2">
+      {/* Center Main Navigation Links */}
+      <nav className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-slate-100/80 dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -142,17 +72,62 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, activeTab
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-100 hover:bg-slate-200/60 dark:hover:bg-neutral-800'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400 dark:text-neutral-500'}`} />
               <span>{item.label}</span>
+              {item.badge && (
+                <span className={`text-[9px] px-1.5 py-0.2 rounded font-black ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-neutral-800 text-purple-600 dark:text-purple-400'
+                }`}>
+                  {item.badge}
+                </span>
+              )}
             </button>
           );
         })}
+      </nav>
+
+      {/* Right Actions & Profile Menu */}
+      <div className="flex items-center gap-2.5 shrink-0">
+        {/* Working Notifications Dropdown */}
+        <NotificationDropdown />
+
+        {/* Theme Toggle Button (Light / Dark only) */}
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className="p-2 rounded-xl text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-900 border border-slate-200 dark:border-neutral-800 transition-colors cursor-pointer"
+          title="Toggle Light/Dark Mode"
+        >
+          {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+        </button>
+
+        {/* Log Out */}
+        <button
+          onClick={handleLogout}
+          className="px-3 py-1.5 rounded-xl text-slate-700 dark:text-neutral-300 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-neutral-800 transition-colors flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+          title="Log Out"
+        >
+          <LogOut className="w-3.5 h-3.5 text-rose-500" />
+          <span className="hidden sm:inline">Log Out</span>
+        </button>
+
+        {/* User Profile Avatar */}
+        <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-neutral-800">
+          <div className="w-8 h-8 rounded-xl bg-purple-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+            {user?.fullName ? user.fullName.slice(0, 2).toUpperCase() : 'ST'}
+          </div>
+          <div className="hidden xl:block text-left">
+            <p className="text-xs font-bold text-slate-900 dark:text-neutral-100 leading-tight">
+              {user?.fullName || 'Student User'}
+            </p>
+            <p className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">Pro Student Tier</p>
+          </div>
+        </div>
       </div>
     </header>
   );

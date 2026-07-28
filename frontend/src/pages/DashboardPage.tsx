@@ -16,8 +16,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
   const [activeTab, setActiveTab] = useState('chat');
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      {/* Top Navbar Header with Integrated Top Navigation Tabs & Working Notifications */}
+    <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-slate-900 dark:text-neutral-100 flex flex-col font-sans transition-colors duration-200">
+      {/* Fixed Top Navbar Header with Integrated Top Navigation Tabs & Working Notifications */}
       <Navbar 
         darkMode={darkMode} 
         setDarkMode={setDarkMode} 
@@ -26,16 +26,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
         onNavigateToLanding={onNavigateToLanding}
       />
 
-      {/* Main Spacious Canvas View */}
-      <div className="flex-1 flex overflow-hidden">
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {activeTab === 'chat' && <MasterAIChat />}
-          {activeTab === 'knowledge' && <KnowledgeGraphVisualizer />}
-          {activeTab === 'heatmap' && <SkillHeatmap />}
-          {activeTab === 'agents' && <AgentDirectory />}
-          {activeTab === 'analytics' && <LearningAnalytics />}
-        </main>
-      </div>
+      {/* Main Content Area with Smooth Native Scrolling */}
+      <main className="flex-1 w-full flex flex-col">
+        {activeTab === 'chat' && <MasterAIChat />}
+        {activeTab === 'knowledge' && <KnowledgeGraphVisualizer />}
+        {activeTab === 'heatmap' && <SkillHeatmap />}
+        {activeTab === 'agents' && <AgentDirectory />}
+        {activeTab === 'analytics' && <LearningAnalytics />}
+      </main>
     </div>
   );
 };
