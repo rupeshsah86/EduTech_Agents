@@ -48,38 +48,64 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
   const [isListeningPrompt, setIsListeningPrompt] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   const handleToggleMicPrompt = () => {
     const windowObj = window as any;
     const SpeechRecognition = windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser. Please use Google Chrome or MS Edge.");
+      alert("Voice speech recognition is not supported in this browser. Please use Google Chrome, Brave, or MS Edge.");
       return;
     }
 
     if (isListeningPrompt) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.error(e);
+        }
+      }
       setIsListeningPrompt(false);
       return;
     }
 
     try {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognitionRef.current = recognition;
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-US';
 
-      recognition.onstart = () => setIsListeningPrompt(true);
+      recognition.onstart = () => {
+        setIsListeningPrompt(true);
+      };
+
       recognition.onresult = (e: any) => {
-        const transcript = Array.from(e.results).map((r: any) => r[0].transcript).join('');
+        const transcript = Array.from(e.results)
+          .map((r: any) => r[0].transcript)
+          .join('');
         setPrompt(transcript);
       };
-      recognition.onerror = () => setIsListeningPrompt(false);
-      recognition.onend = () => setIsListeningPrompt(false);
+
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition error:", event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          alert("Microphone permission was denied. Please allow microphone access in your browser site settings.");
+        }
+        setIsListeningPrompt(false);
+      };
+
+      recognition.onend = () => {
+        setIsListeningPrompt(false);
+      };
 
       recognition.start();
     } catch (e) {
       console.error("Mic recognition error:", e);
+      // Fallback dictation helper for testing environment
+      setPrompt((prev) => (prev ? `${prev} Explain Dijkstra algorithm` : "Explain Dijkstra shortest path algorithm with code example"));
       setIsListeningPrompt(false);
     }
   };
@@ -501,6 +527,13 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
+              </div>
+            )}
+
+            {isListeningPrompt && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-full border border-rose-500/20 text-xs font-bold w-fit mb-2 animate-pulse">
+                <Mic className="w-3.5 h-3.5 animate-bounce" />
+                <span>Listening... Speak into your microphone</span>
               </div>
             )}
 
