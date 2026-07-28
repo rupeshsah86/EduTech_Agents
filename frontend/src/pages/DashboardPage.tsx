@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Navbar } from '../components/dashboard/Navbar';
-import { Sidebar } from '../components/dashboard/Sidebar';
 import { MasterAIChat } from '../components/dashboard/MasterAIChat';
 import { KnowledgeGraphVisualizer } from '../components/dashboard/KnowledgeGraphVisualizer';
 import { SkillHeatmap } from '../components/dashboard/SkillHeatmap';
@@ -18,20 +17,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      {/* Top Navbar */}
+      {/* Top Navbar Header with Integrated Top Navigation Tabs & Working Notifications */}
       <Navbar 
         darkMode={darkMode} 
         setDarkMode={setDarkMode} 
-        activeAgentCount={9} 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         onNavigateToLanding={onNavigateToLanding}
       />
 
-      {/* Main Content Layout */}
+      {/* Main Spacious Canvas View */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Navigation Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-        {/* Main Canvas View */}
         <main className="flex-1 flex flex-col overflow-hidden">
           {activeTab === 'chat' && <MasterAIChat />}
           {activeTab === 'knowledge' && <KnowledgeGraphVisualizer />}
