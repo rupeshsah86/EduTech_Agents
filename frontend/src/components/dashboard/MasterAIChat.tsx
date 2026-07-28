@@ -216,10 +216,11 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
     return { responseText: content, activated };
   };
 
-  const handleSend = async (userQuery: string) => {
-    if (!userQuery.trim() && !attachedFile) return;
+  const handleSend = async (userQuery?: string) => {
+    const queryToSend = userQuery !== undefined ? userQuery : prompt;
+    if (!queryToSend.trim() && !attachedFile) return;
 
-    let finalPrompt = userQuery;
+    let finalPrompt = queryToSend;
     if (attachedFile) {
       finalPrompt += `\n\n[Attached File: ${attachedFile.name}]\n${attachedFile.content || ''}`;
     }
@@ -227,7 +228,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: 'user',
-      text: userQuery + (attachedFile ? ` (📎 Attached: ${attachedFile.name})` : ''),
+      text: queryToSend + (attachedFile ? ` (📎 Attached: ${attachedFile.name})` : ''),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       attachedFile: attachedFile ? attachedFile.name : undefined
     };
@@ -540,6 +541,12 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               placeholder={isDedicatedAgent ? `Ask ${currentAgentTitle} anything...` : "Ask anything..."}
               rows={2}
               className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none resize-none"

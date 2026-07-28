@@ -102,6 +102,12 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  e.preventDefault();
+                  if (onVoiceSearch) onVoiceSearch(searchQuery);
+                }
+              }}
               placeholder={isListening ? "Listening... Speak now..." : "Search anything or ask Master AI..."}
               className="w-full bg-transparent text-xs text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none font-medium"
             />
