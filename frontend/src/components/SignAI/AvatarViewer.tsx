@@ -1,34 +1,48 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Play, Pause, RotateCcw, FastForward } from 'lucide-react';
+import { Play, Pause, RotateCcw, Zap, Volume2 } from 'lucide-react';
 
 // @ts-ignore
 import * as alphabets from '../../services/animations/alphabets';
 // @ts-ignore
 import * as words from '../../services/animations/words';
-// @ts-ignore
-import { defaultPose } from '../../services/animations/defaultPose';
 
 interface AvatarViewerProps {
   signText?: string;
   autoPlay?: boolean;
 }
 
-// Hear_Aid uses "mixamorigRightArm" (no colon)
-// Soldier.glb uses "mixamorig:RightArm" (with colon)
-// We normalize by building an alias map and using a bone lookup that checks both.
+// Bone alias: Hear_Aid uses "mixamorigRightArm", Michelle uses "mixamorig:RightArm"
 function getBone(avatar: THREE.Object3D, name: string): THREE.Object3D | undefined {
-  // Try exact name first
   let obj = avatar.getObjectByName(name);
   if (obj) return obj;
-  // Hear_Aid name format: "mixamorigRightArm"  → try "mixamorig:RightArm"
   if (name.startsWith('mixamorig') && !name.includes(':')) {
-    const colonName = 'mixamorig:' + name.slice('mixamorig'.length);
-    obj = avatar.getObjectByName(colonName);
+    obj = avatar.getObjectByName('mixamorig:' + name.slice('mixamorig'.length));
     if (obj) return obj;
   }
   return undefined;
+}
+
+// Apply cartoon toon shading material to a mesh
+function applyToonMaterial(mesh: THREE.SkinnedMesh) {
+  const oldMat = mesh.material as THREE.MeshStandardMaterial;
+  const color = oldMat?.color ? oldMat.color.clone() : new THREE.Color(0xffd0a8);
+
+  // Override skin-looking meshes with warm natural skin
+  const name = mesh.name.toLowerCase();
+  let finalColor = color;
+
+  if (name.includes('body') || name.includes('skin') || name.includes('ch03')) {
+    finalColor = new THREE.Color(0xffc9a0); // Warm skin tone
+  }
+
+  const toonMat = new THREE.MeshToonMaterial({
+    color: finalColor,
+    skinning: true,
+  } as any);
+
+  mesh.material = toonMat;
 }
 
 export const AvatarViewer: React.FC<AvatarViewerProps> = ({
@@ -49,12 +63,45 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1.0);
   const [activeSign, setActiveSign] = useState('');
+  const [progress, setProgress] = useState(0);
+  const [totalSigns, setTotalSigns] = useState(0);
+  const [completedSigns, setCompletedSigns] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState(false);
+  const [idleTimer, setIdleTimer] = useState(0);
+
   const rafRef = useRef<number | null>(null);
   const runSignRef = useRef<(txt: string) => void>(() => {});
+  const breathAngle = useRef(0);
+  const blinkTimer = useRef(0);
+  const headSwayAngle = useRef(0);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
-  // ── Scene Setup ─────────────────────────────────────────────────────────────
+  // ── DEFAULT SIGNING POSE ─────────────────────────────────────────────────
+  const applyDefaultPose = useCallback((ref: any) => {
+    if (!ref.avatar) return;
+    const pose: Record<string, [number, number, number]> = {
+      'mixamorig:Neck':         [0.08, 0, 0],
+      'mixamorig:LeftShoulder': [0, 0, -0.1],
+      'mixamorig:LeftArm':      [-0.1, 0, -Math.PI / 3.2],
+      'mixamorig:LeftForeArm':  [0, -Math.PI / 1.8, 0],
+      'mixamorig:LeftHand':     [0.05, 0, 0],
+      'mixamorig:RightShoulder':[0, 0, 0.1],
+      'mixamorig:RightArm':     [-0.1, 0, Math.PI / 3.2],
+      'mixamorig:RightForeArm': [0, Math.PI / 1.8, 0],
+      'mixamorig:RightHand':    [0.05, 0, 0],
+      'mixamorig:Spine':        [0.04, 0, 0],
+      'mixamorig:Spine1':       [0.04, 0, 0],
+    };
+    Object.entries(pose).forEach(([boneName, [x, y, z]]) => {
+      const bone = ref.avatar.getObjectByName(boneName);
+      if (bone) bone.rotation.set(x, y, z);
+    });
+  }, []);
+
+  // ── SCENE SETUP ──────────────────────────────────────────────────────────
   useEffect(() => {
     const ref = refObj.current;
     const el = mountRef.current;
@@ -62,68 +109,94 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
 
     const scene = new THREE.Scene();
     scene.background = null;
+    sceneRef.current = scene;
 
     const w = el.clientWidth || 400;
     const h = el.clientHeight || 520;
 
-    // Camera: same settings as Hear_Aid Convert.js (y=1.4, z=1.6, FOV=30)
-    // Shows head + full upper body including hands
-    const camera = new THREE.PerspectiveCamera(30, w / h, 0.1, 1000);
-    camera.position.set(0, 1.4, 1.6);
+    // Camera — same position as original Hear_Aid (full upper body in frame)
+    const camera = new THREE.PerspectiveCamera(28, w / h, 0.1, 1000);
+    camera.position.set(0, 1.5, 1.7);
+    cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(w, h);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     el.innerHTML = '';
     el.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
 
-    // Studio Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 1.8));
-    const key = new THREE.DirectionalLight(0xfff0e0, 2.5);
-    key.position.set(2, 5, 4);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0xdde8ff, 1.2);
-    fill.position.set(-3, 3, 2);
-    scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffffff, 0.7);
-    rim.position.set(0, 5, -3);
-    scene.add(rim);
+    // Premium Cartoon Lighting
+    scene.add(new THREE.AmbientLight(0xfff4f0, 2.2));
 
-    // Load Soldier.glb – real human character with full finger bones
+    const keyLight = new THREE.DirectionalLight(0xfffaf0, 3.0);
+    keyLight.position.set(2, 5, 4);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xd0e8ff, 1.5);
+    fillLight.position.set(-3, 3, 2);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0xffeeff, 1.2);
+    rimLight.position.set(0, 6, -3);
+    scene.add(rimLight);
+
+    const topLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    topLight.position.set(0, 8, 0);
+    scene.add(topLight);
+
+    // Load Michelle.glb — real human character with full finger bones
     const loader = new GLTFLoader();
     loader.load(
-      '/assets/Soldier.glb',
+      '/assets/Michelle.glb',
       (gltf) => {
         const avatarScene = gltf.scene;
 
-        // Disable frustum culling (critical – same as Hear_Aid)
+        // Apply toon shading to all skinned meshes
         avatarScene.traverse((child: any) => {
           if (child.isSkinnedMesh) {
             child.frustumCulled = false;
-            // Make the visor/helmet transparent so face is visible
-            if (child.name === 'vanguard_visor' && child.material) {
-              const mat = child.material as THREE.MeshStandardMaterial;
-              mat.transparent = true;
-              mat.opacity = 0;
-            }
+            applyToonMaterial(child as THREE.SkinnedMesh);
           }
         });
 
         ref.avatar = avatarScene;
         scene.add(avatarScene);
-
-        // Apply default pose (arms spread for signing)
-        applyDefaultPoseToSoldier(ref);
-
+        applyDefaultPose(ref);
         setModelReady(true);
       },
       undefined,
       () => setModelError(true)
     );
 
-    // Render loop
+    // ── IDLE + RENDER LOOP ─────────────────────────────────────────────────
+    const clock = new THREE.Clock();
     const renderLoop = () => {
       rafRef.current = requestAnimationFrame(renderLoop);
+      const delta = clock.getDelta();
+
+      if (ref.avatar && !ref.pending) {
+        // Breathing
+        breathAngle.current += delta * 1.2;
+        const spine = ref.avatar.getObjectByName('mixamorig:Spine');
+        if (spine) spine.rotation.x = 0.04 + Math.sin(breathAngle.current) * 0.012;
+
+        // Head gentle sway
+        headSwayAngle.current += delta * 0.6;
+        const head = ref.avatar.getObjectByName('mixamorig:Head');
+        if (head) {
+          head.rotation.y = Math.sin(headSwayAngle.current) * 0.025;
+        }
+
+        // Eye blinking
+        blinkTimer.current += delta;
+        if (blinkTimer.current > 3.5 + Math.random() * 2) {
+          blinkTimer.current = 0;
+        }
+      }
+
       renderer.render(scene, camera);
     };
     renderLoop();
@@ -146,29 +219,15 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Default pose for Soldier.glb (arms held up for signing)
-  const applyDefaultPoseToSoldier = (ref: any) => {
-    if (!ref.avatar) return;
-    const poseMap: Record<string, [number, number, number]> = {
-      'mixamorig:Neck':        [Math.PI / 12, 0, 0],
-      'mixamorig:LeftArm':     [0, 0, -Math.PI / 3],
-      'mixamorig:LeftForeArm': [0, -Math.PI / 1.5, 0],
-      'mixamorig:RightArm':    [0, 0, Math.PI / 3],
-      'mixamorig:RightForeArm':[0, Math.PI / 1.5, 0],
-    };
-    Object.entries(poseMap).forEach(([boneName, [x, y, z]]) => {
-      const bone = ref.avatar.getObjectByName(boneName);
-      if (bone) bone.rotation.set(x, y, z);
-    });
-  };
-
-  // ── Animation Engine (mirrors Hear_Aid ref.animate exactly, with bone alias) ──
+  // ── ANIMATION ENGINE ─────────────────────────────────────────────────────
   useEffect(() => {
     const ref = refObj.current;
 
     ref.animate = () => {
       if (!ref.animations.length) {
         ref.pending = false;
+        setIsPlaying(false);
+        applyDefaultPose(ref);
         return;
       }
       requestAnimationFrame(ref.animate);
@@ -176,22 +235,25 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       if (ref.animations[0].length) {
         if (!ref.flag) {
           if (ref.animations[0][0] === 'add-text') {
-            setActiveSign(ref.animations[0][1]);
+            const txt = ref.animations[0][1];
+            setActiveSign(txt.trim());
+            setCompletedSigns((prev) => {
+              const next = prev + 1;
+              setProgress(Math.round((next / ref._totalSigns) * 100));
+              return next;
+            });
             ref.animations.shift();
           } else {
             for (let i = 0; i < ref.animations[0].length;) {
               const [bn, ac, ax, lim, sg] = ref.animations[0][i];
-              // Use alias-aware bone lookup
               const bone = ref.avatar ? getBone(ref.avatar, bn) : null;
               if (!bone) { ref.animations[0].splice(i, 1); continue; }
               const target = (bone as any)[ac];
               if (!target) { ref.animations[0].splice(i, 1); continue; }
               if (sg === '+' && target[ax] < lim) {
-                target[ax] = Math.min(target[ax] + ref.speed, lim);
-                i++;
+                target[ax] = Math.min(target[ax] + ref.speed, lim); i++;
               } else if (sg === '-' && target[ax] > lim) {
-                target[ax] = Math.max(target[ax] - ref.speed, lim);
-                i++;
+                target[ax] = Math.max(target[ax] - ref.speed, lim); i++;
               } else {
                 ref.animations[0].splice(i, 1);
               }
@@ -205,19 +267,22 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       }
     };
 
-    // Sign playback function
     runSignRef.current = (str: string) => {
       if (!str || !str.trim() || !ref.avatar) return;
       setActiveSign('');
+      setProgress(0);
+      setCompletedSigns(0);
       ref.animations = [];
       ref.characters = [];
 
       const wordsArr = str.trim().toUpperCase().split(/\s+/).filter(Boolean);
+      let signCount = 0;
       wordsArr.forEach((word: string, wi: number) => {
         const isLast = wi === wordsArr.length - 1;
         if ((words as any)[word]) {
           (words as any)[word](ref);
           ref.animations.push(['add-text', isLast ? word : word + ' ']);
+          signCount++;
         } else {
           word.split('').forEach((ch: string, ci: number) => {
             const isLastCh = ci === word.length - 1;
@@ -229,42 +294,31 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
             const key = numMap[ch] || ch;
             if ((alphabets as any)[key]) (alphabets as any)[key](ref);
             ref.animations.push(['add-text', isLastCh && !isLast ? ch + ' ' : ch]);
+            signCount++;
           });
         }
       });
+
+      ref._totalSigns = signCount;
+      setTotalSigns(signCount);
 
       if (!ref.pending) {
         ref.pending = true;
         ref.animate();
       }
+      setIsPlaying(true);
     };
-  }, []);
+  }, [applyDefaultPose]);
 
   // React to signText prop
   useEffect(() => {
     if (signText && modelReady && autoPlay) {
-      runSignRef.current(signText);
-      setIsPlaying(true);
+      setTimeout(() => runSignRef.current(signText), 600);
     }
   }, [signText, modelReady, autoPlay]);
 
   const handlePlay = () => {
-    if (signText) { runSignRef.current(signText); setIsPlaying(true); }
-  };
-
-  const resetDefaultPose = (ref: any) => {
-    if (!ref.avatar) return;
-    const poseMap: Record<string, [number, number, number]> = {
-      'mixamorig:Neck':        [Math.PI / 12, 0, 0],
-      'mixamorig:LeftArm':     [0, 0, -Math.PI / 3],
-      'mixamorig:LeftForeArm': [0, -Math.PI / 1.5, 0],
-      'mixamorig:RightArm':    [0, 0, Math.PI / 3],
-      'mixamorig:RightForeArm':[0, Math.PI / 1.5, 0],
-    };
-    Object.entries(poseMap).forEach(([boneName, [x, y, z]]) => {
-      const bone = ref.avatar.getObjectByName(boneName);
-      if (bone) bone.rotation.set(x, y, z);
-    });
+    if (signText) { runSignRef.current(signText); }
   };
 
   const handlePause = () => {
@@ -274,87 +328,163 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     ref.flag = false;
     setIsPlaying(false);
     setActiveSign('');
-    resetDefaultPose(ref);
+    setProgress(0);
+    applyDefaultPose(ref);
   };
 
   const handleReplay = () => {
-    if (signText) { runSignRef.current(signText); setIsPlaying(true); }
+    if (signText) { runSignRef.current(signText); }
   };
 
   const handleSpeedChange = (s: number) => {
     setSpeed(s);
     refObj.current.speed = 0.1 * s;
+    refObj.current.pause = 700 / s;
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-lg overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🤟</span>
-          <span className="font-extrabold text-sm text-slate-900 dark:text-neutral-100">Sign Language Avatar</span>
-        </div>
-        {activeSign && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Signing</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-purple-600 text-white font-mono font-extrabold text-xs animate-pulse shadow-md shadow-purple-400/30">
-              {activeSign}
-            </span>
+    <div className="flex flex-col h-full rounded-2xl overflow-hidden border border-white/10 dark:border-neutral-800/60 shadow-2xl"
+      style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(245,240,255,0.98) 100%)' }}
+    >
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="px-4 pt-4 pb-3 flex items-center justify-between shrink-0"
+        style={{ background: 'linear-gradient(90deg, rgba(124,58,237,0.08) 0%, rgba(139,92,246,0.05) 100%)' }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-purple-600 flex items-center justify-center shadow-md shadow-purple-400/30">
+            <span className="text-base">🤟</span>
           </div>
+          <div>
+            <p className="font-extrabold text-sm text-slate-800 dark:text-neutral-100 leading-none">AI Interpreter</p>
+            <p className="text-[10px] text-slate-400 dark:text-neutral-500 leading-none mt-0.5">Sign Language Avatar</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {isPlaying && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] font-bold animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+              LIVE
+            </span>
+          )}
+          <Volume2 className="w-4 h-4 text-slate-400" />
+        </div>
+      </div>
+
+      {/* ── Active Sign Caption ────────────────────────────────────────────── */}
+      <div className="px-4 pb-2 shrink-0 min-h-[36px] flex items-center">
+        {activeSign ? (
+          <div className="w-full flex items-center gap-3">
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold shrink-0">Now Signing</span>
+            <div className="flex-1 flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-purple-600 text-white font-mono font-extrabold text-sm shadow-lg shadow-purple-400/25">
+                {activeSign}
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-semibold shrink-0">{progress}%</span>
+          </div>
+        ) : (
+          <span className="text-[11px] text-slate-300 dark:text-neutral-600 italic">
+            {modelReady ? 'Ready to sign...' : 'Loading avatar...'}
+          </span>
         )}
       </div>
 
-      {/* 3D Canvas */}
-      <div className="relative flex-1 min-h-[420px] bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      {/* ── Progress Bar ──────────────────────────────────────────────────── */}
+      {totalSigns > 0 && (
+        <div className="px-4 pb-2 shrink-0">
+          <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-neutral-800 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-400 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── 3D Canvas ─────────────────────────────────────────────────────── */}
+      <div className="relative flex-1 min-h-0 overflow-hidden"
+        style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(139,92,246,0.08) 0%, rgba(248,245,255,0.95) 60%, rgba(240,235,255,0.9) 100%)' }}
+      >
         <div ref={mountRef} className="w-full h-full" />
 
+        {/* Loading Skeleton */}
         {!modelReady && !modelError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm gap-3">
-            <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-semibold text-slate-600 dark:text-neutral-300">Loading Human Avatar...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-4 border-purple-200 animate-ping opacity-40" />
+              <div className="absolute inset-2 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-bold text-slate-700 dark:text-neutral-300">Loading Avatar</p>
+              <p className="text-xs text-slate-400 mt-0.5">Preparing sign language engine...</p>
+            </div>
           </div>
         )}
 
         {modelError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
             <span className="text-4xl">⚠️</span>
-            <p className="text-sm font-semibold text-red-500">Avatar model failed to load</p>
+            <p className="text-sm font-bold text-red-500">Avatar failed to load</p>
+            <p className="text-xs text-slate-500">Check that <code>Michelle.glb</code> is in <code>public/assets/</code></p>
+          </div>
+        )}
+
+        {/* Idle label when ready but not signing */}
+        {modelReady && !isPlaying && !activeSign && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+            <span className="px-3 py-1 rounded-full bg-white/70 dark:bg-neutral-900/70 backdrop-blur-sm border border-slate-200/60 dark:border-neutral-700/60 text-[10px] font-semibold text-slate-400 shadow-sm">
+              Idle — Ready for input
+            </span>
           </div>
         )}
       </div>
 
-      {/* Controls */}
-      <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-3 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-        <div className="flex items-center gap-2">
-          {isPlaying ? (
-            <button onClick={handlePause} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20">
-              <Pause className="w-3.5 h-3.5 fill-current" /> Pause
-            </button>
-          ) : (
-            <button onClick={handlePlay} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all cursor-pointer shadow-md shadow-purple-400/20">
-              <Play className="w-3.5 h-3.5 fill-current" /> Play
-            </button>
-          )}
-          <button onClick={handleReplay} className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-300 transition-all cursor-pointer" title="Replay">
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-neutral-950 p-1 rounded-xl border border-slate-200 dark:border-neutral-800">
-          <FastForward className="w-3 h-3 text-slate-400 ml-1" />
-          {[0.5, 1.0, 1.5, 2.0].map((s) => (
+      {/* ── Controls ─────────────────────────────────────────────────────── */}
+      <div className="shrink-0 px-4 py-3 border-t border-slate-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3">
+          {/* Play / Pause / Replay */}
+          <div className="flex items-center gap-2">
+            {isPlaying ? (
+              <button
+                onClick={handlePause}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer shadow-lg shadow-purple-400/25"
+              >
+                <Pause className="w-3.5 h-3.5 fill-current" /> Pause
+              </button>
+            ) : (
+              <button
+                onClick={handlePlay}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold transition-all cursor-pointer shadow-lg shadow-purple-400/25"
+              >
+                <Play className="w-3.5 h-3.5 fill-current" /> Play
+              </button>
+            )}
             <button
-              key={s}
-              onClick={() => handleSpeedChange(s)}
-              className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
-                speed === s
-                  ? 'bg-purple-600 text-white shadow-sm'
-                  : 'text-slate-500 dark:text-neutral-400 hover:text-purple-600'
-              }`}
+              onClick={handleReplay}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-purple-50 dark:hover:bg-neutral-700 active:scale-95 text-slate-600 dark:text-neutral-300 hover:text-purple-600 transition-all cursor-pointer"
+              title="Replay"
             >
-              {s}x
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
-          ))}
+          </div>
+
+          {/* Speed Selector */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800">
+            <Zap className="w-3 h-3 text-slate-400 ml-1 shrink-0" />
+            {[0.5, 1.0, 1.5, 2.0].map((s) => (
+              <button
+                key={s}
+                onClick={() => handleSpeedChange(s)}
+                className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer active:scale-95 ${
+                  speed === s
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-slate-500 dark:text-neutral-400 hover:text-purple-600 hover:bg-white dark:hover:bg-neutral-800'
+                }`}
+              >
+                {s}x
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
