@@ -20,15 +20,15 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
   useEffect(() => {
     if (!mountRef.current) return;
 
-    // Create scene, camera, renderer
     const width = mountRef.current.clientWidth || 400;
     const height = mountRef.current.clientHeight || 450;
 
     const scene = new THREE.Scene();
     scene.background = null;
 
-    const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100);
-    camera.position.set(0, 1.35, 2.2);
+    // Camera setup for studio bust view matching character portrait
+    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100);
+    camera.position.set(0, 1.25, 2.1);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -37,19 +37,48 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
     mountRef.current.innerHTML = '';
     mountRef.current.appendChild(renderer.domElement);
 
-    // Lighting setup
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    // Studio Three-Point Lighting Setup matching 3D character render
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xa855f7, 2.0); // Purple glow accent
-    dirLight1.position.set(2, 4, 3);
-    scene.add(dirLight1);
+    const keyLight = new THREE.DirectionalLight(0xfff4e5, 2.2); // Warm key light
+    keyLight.position.set(2.5, 3.5, 3);
+    scene.add(keyLight);
 
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 1.5);
-    dirLight2.position.set(-2, 2, -2);
-    scene.add(dirLight2);
+    const fillLight = new THREE.DirectionalLight(0xe0e7ff, 1.2); // Cool fill light
+    fillLight.position.set(-2.5, 2, 2);
+    scene.add(fillLight);
 
-    // Load GLB Avatar
+    const rimLight = new THREE.DirectionalLight(0xffffff, 1.8); // Top rim highlight
+    rimLight.position.set(0, 4, -2);
+    scene.add(rimLight);
+
+    // Add Pedestal Base Stand matching character portrait
+    const pedestalGroup = new THREE.Group();
+    const baseGeo = new THREE.CylinderGeometry(0.38, 0.48, 0.28, 32);
+    const baseMat = new THREE.MeshStandardMaterial({
+      color: 0x18181c,
+      metalness: 0.6,
+      roughness: 0.3,
+    });
+    const pedestalMesh = new THREE.Mesh(baseGeo, baseMat);
+    pedestalMesh.position.set(0, -0.68, 0);
+    pedestalGroup.add(pedestalMesh);
+
+    const topRingGeo = new THREE.TorusGeometry(0.38, 0.02, 16, 32);
+    const topRingMat = new THREE.MeshStandardMaterial({
+      color: 0x27272a,
+      metalness: 0.8,
+      roughness: 0.2,
+    });
+    const topRingMesh = new THREE.Mesh(topRingGeo, topRingMat);
+    topRingMesh.rotation.x = Math.PI / 2;
+    topRingMesh.position.set(0, -0.54, 0);
+    pedestalGroup.add(topRingMesh);
+
+    scene.add(pedestalGroup);
+
+    // Load 3D Human Avatar Model & apply custom character materials
     const engine = new AvatarAnimationEngine();
     engineRef.current = engine;
 
@@ -61,9 +90,29 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
         avatarObj.position.set(0, -0.6, 0);
         avatarObj.scale.set(1.1, 1.1, 1.1);
 
+        // Custom Pixar/Stylized character materials matching the user image
+        const skinMat = new THREE.MeshStandardMaterial({
+          color: 0xdca68a,
+          roughness: 0.45,
+          metalness: 0.05,
+        });
+
+        const shirtMat = new THREE.MeshStandardMaterial({
+          color: 0x1f1f24, // Charcoal black long-sleeve sweater
+          roughness: 0.8,
+          metalness: 0.1,
+        });
+
         avatarObj.traverse((child) => {
           if ((child as THREE.SkinnedMesh).isSkinnedMesh) {
-            child.frustumCulled = false;
+            const mesh = child as THREE.SkinnedMesh;
+            mesh.frustumCulled = false;
+
+            if (mesh.name.toLowerCase().includes('surface') || mesh.name.toLowerCase().includes('skin')) {
+              mesh.material = skinMat;
+            } else if (mesh.name.toLowerCase().includes('joint') || mesh.name.toLowerCase().includes('body')) {
+              mesh.material = shirtMat;
+            }
           }
         });
 
@@ -152,7 +201,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-2">
         <div className="flex items-center gap-2">
           <UserCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100">3D Sign Language Avatar</h3>
+          <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100">3D Stylized Sign Avatar</h3>
         </div>
         {activeSignChunk && (
           <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-extrabold text-[11px] animate-pulse">
@@ -161,14 +210,14 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
         )}
       </div>
 
-      {/* 3D WebGL Canvas Container */}
-      <div className="relative w-full flex-1 min-h-[300px] rounded-xl bg-gradient-to-b from-purple-500/5 via-transparent to-purple-500/10 border border-purple-500/20 overflow-hidden flex items-center justify-center">
+      {/* 3D WebGL Canvas Container with Neutral Studio Backdrop matching portrait */}
+      <div className="relative w-full flex-1 min-h-[300px] rounded-xl bg-gradient-to-b from-slate-200/60 via-slate-100/40 to-slate-200/80 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900 border border-slate-300/80 dark:border-neutral-800 overflow-hidden flex items-center justify-center shadow-inner">
         <div ref={mountRef} className="w-full h-full" />
 
         {!modelLoaded && (
           <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
             <Sparkles className="w-8 h-8 text-purple-400 animate-spin" />
-            <p className="text-xs font-semibold">Initializing 3D Human Avatar...</p>
+            <p className="text-xs font-semibold">Loading 3D Stylized Character Bust...</p>
           </div>
         )}
       </div>
