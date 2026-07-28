@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Send, 
@@ -14,7 +14,11 @@ import {
   User,
   PanelRightClose,
   PanelRightOpen,
-  Bot
+  Bot,
+  X,
+  Sparkles,
+  RotateCcw,
+  FileCheck
 } from 'lucide-react';
 import robotAvatar from '../../assets/robot_avatar.png';
 
@@ -25,6 +29,7 @@ interface ChatMessage {
   timestamp: string;
   isThinking?: boolean;
   activeAgents?: string[];
+  attachedFile?: string;
 }
 
 interface MasterAIChatProps {
@@ -37,6 +42,10 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{ name: string; size: string; content?: string } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const studentFirstName = user?.fullName ? user.fullName.split(' ')[0] : 'Student';
 
@@ -73,7 +82,43 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
     { label: 'Study Plan', icon: Calendar, color: 'text-amber-600 bg-amber-100 dark:bg-amber-900/40', query: 'Build a 7-day high-yield exam revision plan with daily time allocations.' },
   ];
 
-  // Dynamic Prompt Solver Engine (Tailor response dynamically based on user prompt!)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const sizeStr = file.size > 1024 * 1024 
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+        : `${Math.round(file.size / 1024)} KB`;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setAttachedFile({
+          name: file.name,
+          size: sizeStr,
+          content: event.target?.result as string
+        });
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleInsertCodeSnippet = () => {
+    setPrompt((prev) => prev + (prev ? '\n' : '') + '```python\n# Write or paste code snippet here\ndef solution():\n    pass\n```');
+    setShowQuickMenu(false);
+  };
+
+  const handleNewChatSession = () => {
+    setMessages([
+      {
+        id: Date.now().toString(),
+        sender: 'master_ai',
+        text: `New Chat Session Started. How can I assist you today? 🚀`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+    setShowQuickMenu(false);
+  };
+
+  // Dynamic Prompt Solver Engine
   const generateDynamicAIResponse = (userQuery: string): { responseText: string; activated: string[] } => {
     const q = userQuery.toLowerCase();
     let activated = ['Master AI Orchestrator'];
@@ -90,8 +135,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
       content = `### 💼 CareerPath ATS Resume & Interview Report\n\nAnalysis for **"${userQuery}"**:\n\n#### 📈 Key Recommendations:\n1. **Quantify Impact**: Use metrics (e.g. *"Optimized API latency by 35%"* instead of *"Improved API"*).\n2. **Keyword Optimization**: Include core tech keywords: Python, React, PostgreSQL, Docker, Data Structures.\n3. **Formatting**: Use clean single-column markdown/PDF layout without graphics for maximum ATS parsing accuracy.`;
     } else if (q.includes('binary') || q.includes('tree') || q.includes('graph') || q.includes('dijkstra') || q.includes('code') || q.includes('cpp') || q.includes('python')) {
       activated = ['CodeMentor AI', 'ConceptClear AI'];
-      content = `### 💻 CodeMentor Algorithm Solution\n\nHere is your custom solution for **"${userQuery}"**:\n\n#### ⚡ Complexity Analysis:\n- **Time Complexity**: O(log N) or O((V+E) log V) depending on structure.\n- **Space Complexity**: O(1) auxiliary space.\n\n\`\`\`python\n# Dynamic Code Execution Output\ndef custom_solution(input_data):\n    # Process query: "${userQuery}"\n    print("Executing optimized algorithmic solution...")
-    return True\n\`\`\``;
+      content = `### 💻 CodeMentor Algorithm Solution\n\nHere is your custom solution for **"${userQuery}"**:\n\n#### ⚡ Complexity Analysis:\n- **Time Complexity**: O(log N) or O((V+E) log V) depending on structure.\n- **Space Complexity**: O(1) auxiliary space.\n\n\`\`\`python\n# Dynamic Code Execution Output\ndef custom_solution(input_data):\n    # Process query: "${userQuery}"\n    print("Executing optimized algorithmic solution...")\n    return True\n\`\`\``;
     } else {
       activated = ['Master AI Assistant', 'NoteCraft AI'];
       content = `### 🧠 Master AI Synthesized Answer\n\nHere is the detailed learning response for **"${userQuery}"**:\n\n#### 📌 Step-by-Step Explanation:\n1. **Core Principle**: Addressed through Socratic breakdown.\n2. **Practical Application**: Tailored to your learning velocity in your Knowledge Graph.\n3. **Key Takeaway**: Regularly test your active recall on this topic using SM-2 flashcards.`;
@@ -101,13 +145,19 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   };
 
   const handleSend = async (userQuery: string) => {
-    if (!userQuery.trim()) return;
+    if (!userQuery.trim() && !attachedFile) return;
+
+    let finalPrompt = userQuery;
+    if (attachedFile) {
+      finalPrompt += `\n\n[Attached File: ${attachedFile.name}]\n${attachedFile.content || ''}`;
+    }
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: 'user',
-      text: userQuery,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      text: userQuery + (attachedFile ? ` (📎 Attached: ${attachedFile.name})` : ''),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      attachedFile: attachedFile ? attachedFile.name : undefined
     };
 
     const thinkingMsg: ChatMessage = {
@@ -120,6 +170,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
     setMessages((prev) => [...prev.filter(m => !m.isThinking), userMsg, thinkingMsg]);
     setPrompt('');
+    setAttachedFile(null);
     setIsProcessing(true);
 
     // Attempt live Backend Django API first
@@ -129,7 +180,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          prompt: userQuery,
+          prompt: finalPrompt,
           groq_api_key: storedGroqKey
         })
       });
@@ -154,7 +205,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
     // Dynamic response tailored to exact query
     setTimeout(() => {
-      const { responseText, activated } = generateDynamicAIResponse(userQuery);
+      const { responseText, activated } = generateDynamicAIResponse(finalPrompt);
       const responseMsg: ChatMessage = {
         id: (Date.now() + 2).toString(),
         sender: 'master_ai',
@@ -171,6 +222,15 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   return (
     <div className="flex-1 flex bg-slate-50/50 dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 overflow-hidden font-sans relative">
       
+      {/* Hidden File Input Picker */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        className="hidden" 
+        accept=".pdf,.txt,.py,.js,.java,.cpp,.md,.json,.csv" 
+      />
+
       {/* Center Main Workspace Canvas */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-5xl mx-auto w-full">
         
@@ -288,7 +348,57 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
         </div>
 
         {/* Question Input Card Container */}
-        <div className="space-y-2 pt-4">
+        <div className="space-y-2 pt-4 relative">
+          
+          {/* Quick Actions Dropdown Menu */}
+          {showQuickMenu && (
+            <div className="absolute bottom-full left-4 mb-2 w-64 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-xl p-2 z-30 font-sans space-y-1 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-1 text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">Quick Actions</div>
+              
+              <button
+                type="button"
+                onClick={handleNewChatSession}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-neutral-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 transition-colors cursor-pointer text-left"
+              >
+                <RotateCcw className="w-4 h-4 text-purple-500" />
+                <span>New Chat Session</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                  setShowQuickMenu(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-neutral-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 transition-colors cursor-pointer text-left"
+              >
+                <Paperclip className="w-4 h-4 text-blue-500" />
+                <span>Attach Notes or PDF</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleInsertCodeSnippet}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-neutral-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 transition-colors cursor-pointer text-left"
+              >
+                <Code className="w-4 h-4 text-indigo-500" />
+                <span>Insert Code Block</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPrompt("Create a 5-question MCQ quiz on Operating Systems and Data Structures.");
+                  setShowQuickMenu(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-neutral-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-600 transition-colors cursor-pointer text-left"
+              >
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Generate Adaptive Quiz</span>
+              </button>
+            </div>
+          )}
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -296,6 +406,22 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
             }}
             className="rounded-3xl border border-purple-200 dark:border-neutral-800 p-4 bg-white dark:bg-neutral-900 shadow-sm focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500 transition-all space-y-3"
           >
+            {/* Attached File Pill Badge */}
+            {attachedFile && (
+              <div className="flex items-center gap-2 p-2 px-3 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 text-xs font-bold text-purple-700 dark:text-purple-300 w-fit">
+                <FileCheck className="w-4 h-4 text-purple-600" />
+                <span>{attachedFile.name}</span>
+                <span className="text-[10px] text-purple-400 font-normal">({attachedFile.size})</span>
+                <button
+                  type="button"
+                  onClick={() => setAttachedFile(null)}
+                  className="p-0.5 rounded-full hover:bg-purple-200/50 dark:hover:bg-purple-800/50 text-purple-500 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
@@ -310,14 +436,18 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
               <div className="flex items-center gap-2">
                 <button 
                   type="button"
+                  onClick={() => setShowQuickMenu(!showQuickMenu)}
                   className="p-2 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-400 text-xs font-bold transition-all cursor-pointer"
+                  title="Quick Actions Menu"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
 
                 <button 
                   type="button"
+                  onClick={() => fileInputRef.current?.click()}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-400 text-xs font-semibold transition-all cursor-pointer"
+                  title="Attach file (PDF, TXT, Code)"
                 >
                   <Paperclip className="w-3.5 h-3.5" />
                   <span>Attach</span>
@@ -325,7 +455,9 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
                 <button 
                   type="button"
+                  onClick={handleInsertCodeSnippet}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-600 dark:text-neutral-400 text-xs font-semibold transition-all cursor-pointer"
+                  title="Insert code block template"
                 >
                   <Code className="w-3.5 h-3.5" />
                   <span>Code</span>
@@ -343,7 +475,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
                 <button
                   type="submit"
-                  disabled={!prompt.trim() || isProcessing}
+                  disabled={(!prompt.trim() && !attachedFile) || isProcessing}
                   className="w-9 h-9 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-500/25 disabled:opacity-40 transition-all cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
