@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { 
   Send, 
   BrainCircuit, 
@@ -25,9 +26,12 @@ interface ChatMessage {
 }
 
 export const MasterAIChat: React.FC = () => {
+  const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
+
+  const studentFirstName = user?.fullName ? user.fullName.split(' ')[0] : 'Student';
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -105,7 +109,7 @@ export const MasterAIChat: React.FC = () => {
           <div className="space-y-4 max-w-lg z-10">
             <div className="space-y-1">
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-neutral-100 tracking-tight flex items-center gap-2">
-                Good morning, nawas! 👋
+                Good morning, {studentFirstName}! 👋
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 leading-relaxed font-medium">
                 I'm your Master AI Assistant.<br />
