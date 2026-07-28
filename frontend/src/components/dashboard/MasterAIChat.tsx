@@ -43,6 +43,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showQuickMenu, setShowQuickMenu] = useState(false);
+  const [mentorPersonality, setMentorPersonality] = useState('Socratic Professor');
   const [attachedFile, setAttachedFile] = useState<{ name: string; size: string; content?: string } | null>(null);
 
   const [isListeningPrompt, setIsListeningPrompt] = useState(false);
@@ -299,6 +300,26 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
                   ? "Specialized mode active. Ask me any direct question in my field." 
                   : "I'm your Master AI Assistant. How can I help you learn smarter today?"}
               </p>
+
+              {/* Unique Feature #11: Agent Personality Selector */}
+              <div className="pt-2 flex items-center gap-2 overflow-x-auto">
+                <span className="text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 uppercase tracking-widest shrink-0">
+                  Mentor Personality:
+                </span>
+                {['Socratic Professor', 'Strict Coach', 'Friendly Senior', 'Chill Senior', 'Industry Mentor'].map((style) => (
+                  <button
+                    key={style}
+                    onClick={() => setMentorPersonality(style)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all shrink-0 cursor-pointer ${
+                      mentorPersonality === style
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'bg-white/80 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-100'
+                    }`}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* 4 Action Preset Cards */}

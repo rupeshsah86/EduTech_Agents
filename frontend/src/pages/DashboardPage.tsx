@@ -12,6 +12,10 @@ import { CodeMentorSandbox } from '../components/dashboard/CodeMentorSandbox';
 import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
 import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
 import { ActiveAgentsBar } from '../components/dashboard/ActiveAgentsBar';
+import { AIDebateMode } from '../components/dashboard/AIDebateMode';
+import { ExamSimulator } from '../components/dashboard/ExamSimulator';
+import { AIStudyTwin } from '../components/dashboard/AIStudyTwin';
+import { ProjectRecommender } from '../components/dashboard/ProjectRecommender';
 import { ArrowLeft, Bot } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -102,6 +106,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
           {activeTab === 'heatmap' && <SkillHeatmap />}
           {activeTab === 'agents' && <AgentDirectory />}
           {activeTab === 'analytics' && <LearningAnalytics />}
+          {activeTab === 'debate' && <AIDebateMode />}
+          {activeTab === 'simulator' && <ExamSimulator />}
+          {activeTab === 'study_twin' && <AIStudyTwin />}
+          {activeTab === 'projects' && <ProjectRecommender />}
 
           {/* Dedicated Individual Specialized Agent Workspaces */}
           {activeTab === 'agent_code' && (
