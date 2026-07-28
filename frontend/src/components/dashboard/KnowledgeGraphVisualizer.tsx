@@ -12,7 +12,10 @@ import {
   Target,
   Zap,
   BookOpen,
-  Filter
+  Filter,
+  X,
+  Code,
+  CheckSquare
 } from 'lucide-react';
 
 interface ConceptNode {
@@ -25,12 +28,16 @@ interface ConceptNode {
   nextRevision: string;
   relatedConcepts: string[];
   description: string;
+  subtopics?: string[];
+  timeComplexity?: string;
+  spaceComplexity?: string;
 }
 
 export const KnowledgeGraphVisualizer: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('All');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeModalConcept, setActiveModalConcept] = useState<ConceptNode | null>(null);
 
   const allConceptNodes: ConceptNode[] = [
     // DSA Topics
@@ -251,7 +258,8 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
             {filteredNodes.map((node) => (
               <div
                 key={node.id}
-                className="glass-panel p-5 rounded-2xl glass-card-hover border border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col justify-between space-y-3.5 shadow-2xs"
+                onClick={() => setActiveModalConcept(node)}
+                className="glass-panel p-5 rounded-2xl glass-card-hover border border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col justify-between space-y-3.5 shadow-2xs cursor-pointer hover:border-purple-400 transition-all"
               >
                 {/* Header Badge */}
                 <div className="flex items-center justify-between">
@@ -402,6 +410,112 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Interactive Concept Detail Modal */}
+      {activeModalConcept && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-neutral-800 pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                    {activeModalConcept.subject}
+                  </span>
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ${
+                    activeModalConcept.status === 'Mastered' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-purple-500/10 text-purple-600'
+                  }`}>
+                    {activeModalConcept.status}
+                  </span>
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-neutral-100">
+                  {activeModalConcept.name}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setActiveModalConcept(null)}
+                className="p-2 rounded-full bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 text-slate-600 dark:text-neutral-400 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Description & Subtopics */}
+            <div className="space-y-4">
+              <p className="text-sm text-slate-700 dark:text-neutral-300 leading-relaxed font-medium">
+                {activeModalConcept.description}
+              </p>
+
+              {/* Sub-topics List */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 space-y-3">
+                <h4 className="text-xs font-extrabold text-slate-900 dark:text-neutral-100 uppercase tracking-wider">
+                  Core Sub-Topics & Milestones
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-700 dark:text-neutral-300">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span>Foundational Data Layout</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span>Time Complexity Analysis</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span>Memory Allocation & Pointers</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-purple-500" />
+                    <span>Edge Cases & Boundary Conditions</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Related Tags */}
+              <div className="space-y-1 pt-1">
+                <p className="text-[10px] font-extrabold uppercase text-slate-400 dark:text-neutral-500">Related Concepts:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {activeModalConcept.relatedConcepts.map((tag, idx) => (
+                    <span key={idx} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-neutral-800 text-purple-600 dark:text-purple-400 border border-slate-200 dark:border-neutral-700">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <button 
+                  onClick={() => setActiveModalConcept(null)}
+                  className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Ask Master AI</span>
+                </button>
+                
+                <button 
+                  onClick={() => setActiveModalConcept(null)}
+                  className="py-3 px-4 rounded-xl bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Code className="w-4 h-4" />
+                  <span>Practice Code</span>
+                </button>
+
+                <button 
+                  onClick={() => setActiveModalConcept(null)}
+                  className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <CheckSquare className="w-4 h-4" />
+                  <span>Take Quiz</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
