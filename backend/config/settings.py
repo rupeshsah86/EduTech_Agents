@@ -1,8 +1,11 @@
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
+sys.path.insert(0, str(BASE_DIR.parent))
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-eduverse-ai-master-secret-key-2026')
 
@@ -27,9 +30,6 @@ INSTALLED_APPS = [
     'apps.authentication',
     'apps.master_ai',
     'apps.agents',
-    'apps.knowledge_graph',
-    'apps.learning_memory',
-    'apps.analytics',
 ]
 
 MIDDLEWARE = [

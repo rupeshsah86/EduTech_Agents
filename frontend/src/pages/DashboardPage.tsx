@@ -10,6 +10,8 @@ import { OrchestrationPanel } from '../components/dashboard/OrchestrationPanel';
 import { CodeMentorSandbox } from '../components/dashboard/CodeMentorSandbox';
 import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
 import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
+import { VoiceAssistantWidget } from '../components/dashboard/VoiceAssistantWidget';
+import { SignAIPage } from './SignAIPage';
 import { ArrowLeft, Bot } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -82,6 +84,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
             />
           )}
 
+          {activeTab === 'sign_ai' && <SignAIPage />}
+
           {activeTab === 'knowledge' && <KnowledgeGraphVisualizer />}
           {activeTab === 'heatmap' && <SkillHeatmap />}
           {activeTab === 'agents' && <AgentDirectory />}
@@ -127,6 +131,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
           )}
         </main>
       </div>
+
+      {/* Master AI Floating Voice Assistant Widget */}
+      <VoiceAssistantWidget />
+
     </div>
   );
 };

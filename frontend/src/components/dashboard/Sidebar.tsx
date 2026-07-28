@@ -20,7 +20,8 @@ import {
   ChevronsRight,
   Crown,
   ArrowRight,
-  ChevronDown
+  ChevronDown,
+  Hand
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -66,6 +67,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
 
           {/* Icon-Only Navigation */}
           <nav className="space-y-2 flex flex-col items-center w-full px-2">
+            <button
+              onClick={() => setActiveTab('sign_ai')}
+              className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                activeTab === 'sign_ai'
+                  ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200 dark:border-purple-800'
+                  : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+              }`}
+              title="Sign AI Assistant (Sign Language)"
+            >
+              <Hand className="w-4 h-4 text-purple-500" />
+            </button>
+
             <button
               onClick={() => setActiveTab('chat')}
               className={`p-2.5 rounded-xl transition-all cursor-pointer ${
@@ -172,6 +185,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
           >
             <Sparkles className="w-4 h-4 text-purple-500" />
             <span>Master AI</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('sign_ai')}
+            className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              activeTab === 'sign_ai'
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60 shadow-xs'
+                : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 hover:text-slate-900 dark:hover:text-neutral-100'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Hand className="w-4 h-4 text-purple-500" />
+              <span>🤟 Sign AI</span>
+            </div>
+            <span className="text-[9px] px-1.5 py-0.5 rounded font-extrabold bg-purple-500 text-white uppercase shadow-xs">
+              Deaf AI
+            </span>
           </button>
         </nav>
 
