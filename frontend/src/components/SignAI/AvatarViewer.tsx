@@ -9,17 +9,18 @@ interface AvatarViewerProps {
 }
 
 /**
- * Constructs a clean, handsome 3D Human Male Character Avatar Bust with proportional head,
- * natural eyes, eyebrows, nose, smile, styled dark hair, crewneck shirt, and pedestal base.
+ * Constructs a clean 3D Human Character Avatar with prominent, clearly visible hands and fingers
+ * positioned for sign language gesture visibility.
  */
 function buildHandsomeHumanAvatar(): THREE.Group {
   const root = new THREE.Group();
   root.name = 'handsomeHumanAvatarRoot';
-  root.position.set(0, -0.1, 0);
+  root.position.set(0, -0.08, 0);
+  root.scale.set(0.92, 0.92, 0.92);
 
   // Materials
   const skinMat = new THREE.MeshStandardMaterial({
-    color: 0xedd0be, // Smooth, natural warm skin tone
+    color: 0xedd0be, // Smooth warm skin tone
     roughness: 0.35,
     metalness: 0.0,
   });
@@ -44,20 +45,20 @@ function buildHandsomeHumanAvatar(): THREE.Group {
 
   // 1. Pedestal Stand Base
   const baseGroup = new THREE.Group();
-  const baseGeo = new THREE.CylinderGeometry(0.26, 0.34, 0.12, 32);
+  const baseGeo = new THREE.CylinderGeometry(0.28, 0.36, 0.12, 32);
   const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-  baseMesh.position.y = -0.55;
+  baseMesh.position.y = -0.58;
   baseGroup.add(baseMesh);
 
-  const stemGeo = new THREE.CylinderGeometry(0.12, 0.2, 0.22, 32);
+  const stemGeo = new THREE.CylinderGeometry(0.14, 0.22, 0.22, 32);
   const stemMesh = new THREE.Mesh(stemGeo, baseMat);
-  stemMesh.position.y = -0.42;
+  stemMesh.position.y = -0.44;
   baseGroup.add(stemMesh);
 
   root.add(baseGroup);
 
   // 2. Torso (Fitted Crewneck Shirt)
-  const chestGeo = new THREE.CylinderGeometry(0.26, 0.2, 0.42, 32);
+  const chestGeo = new THREE.CylinderGeometry(0.26, 0.2, 0.4, 32);
   const chestMesh = new THREE.Mesh(chestGeo, shirtMat);
   chestMesh.position.y = -0.22;
   root.add(chestMesh);
@@ -158,14 +159,12 @@ function buildHandsomeHumanAvatar(): THREE.Group {
   // Hair Styling (Positioned strictly above the forehead)
   const hairGroup = new THREE.Group();
 
-  // Top Hair Cap
   const hairCapGeo = new THREE.SphereGeometry(0.142, 24, 24);
   hairCapGeo.scale(0.92, 0.65, 0.92);
   const hairCap = new THREE.Mesh(hairCapGeo, hairMat);
   hairCap.position.set(0, 0.075, -0.015);
   hairGroup.add(hairCap);
 
-  // Front Hair Waves
   const wave1 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), hairMat);
   wave1.scale.set(1.2, 0.5, 0.8);
   wave1.position.set(-0.04, 0.135, 0.08);
@@ -181,13 +180,13 @@ function buildHandsomeHumanAvatar(): THREE.Group {
 
   root.add(headGroup);
 
-  // 4. Rigged Left & Right Arms for Sign Language
+  // 4. Prominent, Clearly Visible Left & Right Arms & Hands for Sign Language
   // Right Arm
   const rightArmGroup = new THREE.Group();
   rightArmGroup.name = 'mixamorigRightArm';
-  rightArmGroup.position.set(-0.24, -0.04, 0);
+  rightArmGroup.position.set(-0.24, -0.02, 0.05);
 
-  const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.22, 16), shirtMat);
+  const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.22, 16), shirtMat);
   rightUpperArm.position.y = -0.11;
   rightArmGroup.add(rightUpperArm);
 
@@ -195,7 +194,7 @@ function buildHandsomeHumanAvatar(): THREE.Group {
   rightForeArmGroup.name = 'mixamorigRightForeArm';
   rightForeArmGroup.position.set(0, -0.22, 0);
 
-  const rightForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.032, 0.2, 16), skinMat);
+  const rightForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.2, 16), skinMat);
   rightForeArm.position.y = -0.1;
   rightForeArmGroup.add(rightForeArm);
 
@@ -203,13 +202,15 @@ function buildHandsomeHumanAvatar(): THREE.Group {
   rightHandGroup.name = 'mixamorigRightHand';
   rightHandGroup.position.set(0, -0.2, 0);
 
-  const rightPalm = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.06, 0.022), skinMat);
-  rightPalm.position.y = -0.03;
+  // Enlarged Palm for Clear Hand Sign Visibility
+  const rightPalm = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.035), skinMat);
+  rightPalm.position.y = -0.04;
   rightHandGroup.add(rightPalm);
 
+  // 5 Distinct Fingers
   for (let f = 0; f < 5; f++) {
-    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.005, 0.05, 8), skinMat);
-    finger.position.set(-0.02 + f * 0.01, -0.07, 0);
+    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.009, 0.075, 8), skinMat);
+    finger.position.set(-0.032 + f * 0.016, -0.09, 0);
     rightHandGroup.add(finger);
   }
 
@@ -220,9 +221,9 @@ function buildHandsomeHumanAvatar(): THREE.Group {
   // Left Arm
   const leftArmGroup = new THREE.Group();
   leftArmGroup.name = 'mixamorigLeftArm';
-  leftArmGroup.position.set(0.24, -0.04, 0);
+  leftArmGroup.position.set(0.24, -0.02, 0.05);
 
-  const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.22, 16), shirtMat);
+  const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.22, 16), shirtMat);
   leftUpperArm.position.y = -0.11;
   leftArmGroup.add(leftUpperArm);
 
@@ -230,7 +231,7 @@ function buildHandsomeHumanAvatar(): THREE.Group {
   leftForeArmGroup.name = 'mixamorigLeftForeArm';
   leftForeArmGroup.position.set(0, -0.22, 0);
 
-  const leftForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.032, 0.2, 16), skinMat);
+  const leftForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.2, 16), skinMat);
   leftForeArm.position.y = -0.1;
   leftForeArmGroup.add(leftForeArm);
 
@@ -238,13 +239,15 @@ function buildHandsomeHumanAvatar(): THREE.Group {
   leftHandGroup.name = 'mixamorigLeftHand';
   leftHandGroup.position.set(0, -0.2, 0);
 
-  const leftPalm = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.06, 0.022), skinMat);
+  // Enlarged Palm for Clear Hand Sign Visibility
+  const leftPalm = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.035), skinMat);
   leftPalm.position.y = -0.03;
   leftHandGroup.add(leftPalm);
 
+  // 5 Distinct Fingers
   for (let f = 0; f < 5; f++) {
-    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.005, 0.05, 8), skinMat);
-    finger.position.set(-0.02 + f * 0.01, -0.07, 0);
+    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.009, 0.075, 8), skinMat);
+    finger.position.set(-0.032 + f * 0.016, -0.09, 0);
     leftHandGroup.add(finger);
   }
 
@@ -272,9 +275,9 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
     const scene = new THREE.Scene();
     scene.background = null;
 
-    // Upright Camera framing
-    const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
-    camera.position.set(0, 0.18, 1.75);
+    // Zoomed-out camera position (y: -0.05, z: 2.3) so head, chest, arms, hands, and fingers are ALL 100% visible
+    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
+    camera.position.set(0, -0.05, 2.3);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -283,7 +286,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
     mountRef.current.innerHTML = '';
     mountRef.current.appendChild(renderer.domElement);
 
-    // Studio Three-Point Lighting Setup
+    // Studio Three-Point Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
@@ -299,7 +302,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
     rimLight.position.set(0, 4, -2);
     scene.add(rimLight);
 
-    // Construct 3D Handsome Human Character Avatar
+    // Construct Handsome 3D Human Avatar with prominent hands
     const avatarObj = buildHandsomeHumanAvatar();
     scene.add(avatarObj);
 
