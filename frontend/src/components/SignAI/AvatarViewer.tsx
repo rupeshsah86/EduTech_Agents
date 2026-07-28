@@ -9,200 +9,207 @@ interface AvatarViewerProps {
 }
 
 /**
- * Constructs the 3D Stylized Male Human Character Bust with eyes, nose, mouth, dark hair,
- * black long-sleeve sweater, pedestal base, and rigged arm joints for sign language.
+ * Constructs a clean, handsome 3D Human Male Character Avatar Bust with proportional head,
+ * natural eyes, eyebrows, nose, smile, styled dark hair, crewneck shirt, and pedestal base.
  */
-function buildHumanCharacter(): THREE.Group {
+function buildHandsomeHumanAvatar(): THREE.Group {
   const root = new THREE.Group();
-  root.name = 'humanCharacterRoot';
+  root.name = 'handsomeHumanAvatarRoot';
+  root.position.set(0, -0.1, 0);
 
   // Materials
   const skinMat = new THREE.MeshStandardMaterial({
-    color: 0xebaf95,
-    roughness: 0.4,
-    metalness: 0.02,
+    color: 0xedd0be, // Smooth, natural warm skin tone
+    roughness: 0.35,
+    metalness: 0.0,
   });
 
   const shirtMat = new THREE.MeshStandardMaterial({
-    color: 0x1c1c20,
-    roughness: 0.85,
+    color: 0x23252b, // Charcoal navy crewneck shirt
+    roughness: 0.8,
     metalness: 0.05,
   });
 
   const hairMat = new THREE.MeshStandardMaterial({
-    color: 0x221a17,
+    color: 0x261d1a, // Dark brown hair
     roughness: 0.6,
-    metalness: 0.08,
+    metalness: 0.05,
   });
 
-  const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
-  const eyeIrisMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.2 });
+  const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
+  const eyeIrisMat = new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.2 });
   const pupilMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
-  const lipMat = new THREE.MeshStandardMaterial({ color: 0xd48b78, roughness: 0.5 });
+  const lipMat = new THREE.MeshStandardMaterial({ color: 0xd47a70, roughness: 0.4 });
+  const baseMat = new THREE.MeshStandardMaterial({ color: 0x16161a, metalness: 0.75, roughness: 0.2 });
 
-  // 1. Base Pedestal Stand
+  // 1. Pedestal Stand Base
   const baseGroup = new THREE.Group();
-  const baseGeo = new THREE.CylinderGeometry(0.36, 0.46, 0.2, 32);
-  const baseMat = new THREE.MeshStandardMaterial({ color: 0x141418, metalness: 0.7, roughness: 0.25 });
+  const baseGeo = new THREE.CylinderGeometry(0.26, 0.34, 0.12, 32);
   const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-  baseMesh.position.y = -0.7;
+  baseMesh.position.y = -0.55;
   baseGroup.add(baseMesh);
 
-  const stemGeo = new THREE.CylinderGeometry(0.15, 0.28, 0.32, 32);
+  const stemGeo = new THREE.CylinderGeometry(0.12, 0.2, 0.22, 32);
   const stemMesh = new THREE.Mesh(stemGeo, baseMat);
-  stemMesh.position.y = -0.45;
+  stemMesh.position.y = -0.42;
   baseGroup.add(stemMesh);
 
   root.add(baseGroup);
 
-  // 2. Torso (Black Long-Sleeve Sweater)
-  const chestGeo = new THREE.CylinderGeometry(0.34, 0.26, 0.6, 32);
+  // 2. Torso (Fitted Crewneck Shirt)
+  const chestGeo = new THREE.CylinderGeometry(0.26, 0.2, 0.42, 32);
   const chestMesh = new THREE.Mesh(chestGeo, shirtMat);
-  chestMesh.position.y = -0.12;
+  chestMesh.position.y = -0.22;
   root.add(chestMesh);
 
-  // Crewneck Collar
-  const collarGeo = new THREE.TorusGeometry(0.125, 0.022, 16, 32);
+  // Shoulders
+  const leftShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.065, 16, 16), shirtMat);
+  leftShoulder.position.set(0.24, -0.05, 0);
+  const rightShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.065, 16, 16), shirtMat);
+  rightShoulder.position.set(-0.24, -0.05, 0);
+  root.add(leftShoulder, rightShoulder);
+
+  // Collar Ring
+  const collarGeo = new THREE.TorusGeometry(0.09, 0.018, 16, 32);
   const collarMesh = new THREE.Mesh(collarGeo, shirtMat);
   collarMesh.rotation.x = Math.PI / 2;
-  collarMesh.position.y = 0.18;
+  collarMesh.position.y = 0.02;
   root.add(collarMesh);
+
+  // Neck
+  const neckGeo = new THREE.CylinderGeometry(0.065, 0.075, 0.14, 16);
+  const neckMesh = new THREE.Mesh(neckGeo, skinMat);
+  neckMesh.position.y = 0.06;
+  root.add(neckMesh);
 
   // 3. Head & Face Group (mixamorigHead)
   const headGroup = new THREE.Group();
   headGroup.name = 'mixamorigHead';
-  headGroup.position.y = 0.42;
+  headGroup.position.y = 0.25;
 
-  // Neck
-  const neckGeo = new THREE.CylinderGeometry(0.085, 0.105, 0.18, 16);
-  const neckMesh = new THREE.Mesh(neckGeo, skinMat);
-  neckMesh.position.y = -0.15;
-  headGroup.add(neckMesh);
-
-  // Head Base
-  const headGeo = new THREE.SphereGeometry(0.19, 32, 32);
-  headGeo.scale(0.92, 1.15, 0.95);
+  // Head Oval
+  const headGeo = new THREE.SphereGeometry(0.14, 32, 32);
+  headGeo.scale(0.9, 1.1, 0.92);
   const headMesh = new THREE.Mesh(headGeo, skinMat);
   headGroup.add(headMesh);
 
-  // Chin & Jawline
-  const chinGeo = new THREE.SphereGeometry(0.11, 16, 16);
-  chinGeo.scale(0.85, 0.85, 0.85);
+  // Chin / Jawline Contour
+  const chinGeo = new THREE.SphereGeometry(0.08, 16, 16);
+  chinGeo.scale(0.8, 0.8, 0.8);
   const chinMesh = new THREE.Mesh(chinGeo, skinMat);
-  chinMesh.position.set(0, -0.12, 0.08);
+  chinMesh.position.set(0, -0.09, 0.06);
   headGroup.add(chinMesh);
 
   // Ears
-  const earGeo = new THREE.SphereGeometry(0.042, 12, 12);
-  earGeo.scale(0.35, 0.85, 0.55);
+  const earGeo = new THREE.SphereGeometry(0.03, 12, 12);
+  earGeo.scale(0.3, 0.8, 0.5);
   const leftEar = new THREE.Mesh(earGeo, skinMat);
-  leftEar.position.set(-0.18, 0.01, 0);
+  leftEar.position.set(-0.13, 0.01, 0);
   const rightEar = leftEar.clone();
-  rightEar.position.set(0.18, 0.01, 0);
+  rightEar.position.set(0.13, 0.01, 0);
   headGroup.add(leftEar, rightEar);
 
   // Eyes (Left & Right)
   const createEye = () => {
     const eyeG = new THREE.Group();
-    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), eyeWhiteMat);
-    const iris = new THREE.Mesh(new THREE.CircleGeometry(0.016, 16), eyeIrisMat);
-    iris.position.z = 0.029;
-    const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.008, 16), pupilMat);
-    pupil.position.z = 0.03;
+    const sclera = new THREE.Mesh(new THREE.SphereGeometry(0.022, 16, 16), eyeWhiteMat);
+    const iris = new THREE.Mesh(new THREE.CircleGeometry(0.012, 16), eyeIrisMat);
+    iris.position.z = 0.021;
+    const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.006, 16), pupilMat);
+    pupil.position.z = 0.022;
     eyeG.add(sclera, iris, pupil);
     return eyeG;
   };
 
   const leftEye = createEye();
-  leftEye.position.set(-0.065, 0.03, 0.155);
+  leftEye.position.set(-0.048, 0.02, 0.118);
 
   const rightEye = createEye();
-  rightEye.position.set(0.065, 0.03, 0.155);
+  rightEye.position.set(0.048, 0.02, 0.118);
 
   headGroup.add(leftEye, rightEye);
 
   // Eyebrows
-  const browGeo = new THREE.BoxGeometry(0.055, 0.01, 0.01);
+  const browGeo = new THREE.BoxGeometry(0.042, 0.008, 0.008);
   const leftBrow = new THREE.Mesh(browGeo, hairMat);
-  leftBrow.position.set(-0.065, 0.078, 0.165);
-  leftBrow.rotation.z = 0.08;
+  leftBrow.position.set(-0.048, 0.055, 0.125);
+  leftBrow.rotation.z = 0.06;
 
   const rightBrow = new THREE.Mesh(browGeo, hairMat);
-  rightBrow.position.set(0.065, 0.078, 0.165);
-  rightBrow.rotation.z = -0.08;
+  rightBrow.position.set(0.048, 0.055, 0.125);
+  rightBrow.rotation.z = -0.06;
 
   headGroup.add(leftBrow, rightBrow);
 
   // Nose
-  const noseGeo = new THREE.ConeGeometry(0.022, 0.055, 12);
+  const noseGeo = new THREE.ConeGeometry(0.016, 0.04, 12);
   const noseMesh = new THREE.Mesh(noseGeo, skinMat);
-  noseMesh.position.set(0, -0.015, 0.185);
-  noseMesh.rotation.x = -0.15;
+  noseMesh.position.set(0, -0.015, 0.135);
+  noseMesh.rotation.x = -0.12;
   headGroup.add(noseMesh);
 
-  // Mouth/Lips
-  const mouthGeo = new THREE.TorusGeometry(0.03, 0.006, 8, 16, Math.PI);
+  // Natural Smile Line
+  const mouthGeo = new THREE.CylinderGeometry(0.005, 0.005, 0.04, 8);
   const mouthMesh = new THREE.Mesh(mouthGeo, lipMat);
-  mouthMesh.position.set(0, -0.085, 0.165);
-  mouthMesh.rotation.x = 0.2;
-  mouthMesh.rotation.z = Math.PI;
+  mouthMesh.rotation.z = Math.PI / 2;
+  mouthMesh.position.set(0, -0.055, 0.125);
   headGroup.add(mouthMesh);
 
-  // Hair Styling (Layered Wavy Hair Volume)
+  // Hair Styling (Positioned strictly above the forehead)
   const hairGroup = new THREE.Group();
-  const topHair = new THREE.Mesh(new THREE.SphereGeometry(0.205, 24, 24), hairMat);
-  topHair.scale.set(0.95, 1.05, 0.98);
-  topHair.position.set(0, 0.05, -0.02);
-  hairGroup.add(topHair);
 
-  const frontTuft1 = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 16), hairMat);
-  frontTuft1.scale.set(1.2, 0.65, 0.85);
-  frontTuft1.position.set(-0.05, 0.17, 0.12);
-  frontTuft1.rotation.set(-0.3, 0.2, -0.3);
+  // Top Hair Cap
+  const hairCapGeo = new THREE.SphereGeometry(0.142, 24, 24);
+  hairCapGeo.scale(0.92, 0.65, 0.92);
+  const hairCap = new THREE.Mesh(hairCapGeo, hairMat);
+  hairCap.position.set(0, 0.075, -0.015);
+  hairGroup.add(hairCap);
 
-  const frontTuft2 = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 16), hairMat);
-  frontTuft2.scale.set(1.2, 0.65, 0.85);
-  frontTuft2.position.set(0.05, 0.18, 0.11);
-  frontTuft2.rotation.set(-0.2, -0.3, 0.2);
+  // Front Hair Waves
+  const wave1 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), hairMat);
+  wave1.scale.set(1.2, 0.5, 0.8);
+  wave1.position.set(-0.04, 0.135, 0.08);
+  wave1.rotation.set(-0.2, 0.2, -0.2);
 
-  const crownVolume = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 16), hairMat);
-  crownVolume.position.set(0, 0.19, 0.03);
-  crownVolume.scale.set(1.3, 0.75, 1.05);
+  const wave2 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), hairMat);
+  wave2.scale.set(1.2, 0.5, 0.8);
+  wave2.position.set(0.04, 0.14, 0.07);
+  wave2.rotation.set(-0.15, -0.2, 0.2);
 
-  hairGroup.add(frontTuft1, frontTuft2, crownVolume);
+  hairGroup.add(wave1, wave2);
   headGroup.add(hairGroup);
 
   root.add(headGroup);
 
-  // 4. Arms & Hands with Mixamo Bone Hierarchy Names
+  // 4. Rigged Left & Right Arms for Sign Language
   // Right Arm
   const rightArmGroup = new THREE.Group();
   rightArmGroup.name = 'mixamorigRightArm';
-  rightArmGroup.position.set(-0.3, 0.15, 0);
+  rightArmGroup.position.set(-0.24, -0.04, 0);
 
-  const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.048, 0.26, 16), shirtMat);
-  rightUpperArm.position.y = -0.13;
+  const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.22, 16), shirtMat);
+  rightUpperArm.position.y = -0.11;
   rightArmGroup.add(rightUpperArm);
 
   const rightForeArmGroup = new THREE.Group();
   rightForeArmGroup.name = 'mixamorigRightForeArm';
-  rightForeArmGroup.position.set(0, -0.26, 0);
+  rightForeArmGroup.position.set(0, -0.22, 0);
 
-  const rightForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.24, 16), skinMat);
-  rightForeArm.position.y = -0.12;
+  const rightForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.032, 0.2, 16), skinMat);
+  rightForeArm.position.y = -0.1;
   rightForeArmGroup.add(rightForeArm);
 
   const rightHandGroup = new THREE.Group();
   rightHandGroup.name = 'mixamorigRightHand';
-  rightHandGroup.position.set(0, -0.24, 0);
+  rightHandGroup.position.set(0, -0.2, 0);
 
-  const rightPalm = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.08, 0.028), skinMat);
-  rightPalm.position.y = -0.04;
+  const rightPalm = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.06, 0.022), skinMat);
+  rightPalm.position.y = -0.03;
   rightHandGroup.add(rightPalm);
 
   for (let f = 0; f < 5; f++) {
-    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.007, 0.065, 8), skinMat);
-    finger.position.set(-0.028 + f * 0.014, -0.095, 0);
+    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.005, 0.05, 8), skinMat);
+    finger.position.set(-0.02 + f * 0.01, -0.07, 0);
     rightHandGroup.add(finger);
   }
 
@@ -213,31 +220,31 @@ function buildHumanCharacter(): THREE.Group {
   // Left Arm
   const leftArmGroup = new THREE.Group();
   leftArmGroup.name = 'mixamorigLeftArm';
-  leftArmGroup.position.set(0.3, 0.15, 0);
+  leftArmGroup.position.set(0.24, -0.04, 0);
 
-  const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.048, 0.26, 16), shirtMat);
-  leftUpperArm.position.y = -0.13;
+  const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.22, 16), shirtMat);
+  leftUpperArm.position.y = -0.11;
   leftArmGroup.add(leftUpperArm);
 
   const leftForeArmGroup = new THREE.Group();
   leftForeArmGroup.name = 'mixamorigLeftForeArm';
-  leftForeArmGroup.position.set(0, -0.26, 0);
+  leftForeArmGroup.position.set(0, -0.22, 0);
 
-  const leftForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.042, 0.24, 16), skinMat);
-  leftForeArm.position.y = -0.12;
+  const leftForeArm = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.032, 0.2, 16), skinMat);
+  leftForeArm.position.y = -0.1;
   leftForeArmGroup.add(leftForeArm);
 
   const leftHandGroup = new THREE.Group();
   leftHandGroup.name = 'mixamorigLeftHand';
-  leftHandGroup.position.set(0, -0.24, 0);
+  leftHandGroup.position.set(0, -0.2, 0);
 
-  const leftPalm = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.08, 0.028), skinMat);
-  leftPalm.position.y = -0.04;
+  const leftPalm = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.06, 0.022), skinMat);
+  leftPalm.position.y = -0.03;
   leftHandGroup.add(leftPalm);
 
   for (let f = 0; f < 5; f++) {
-    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.007, 0.065, 8), skinMat);
-    finger.position.set(-0.028 + f * 0.014, -0.095, 0);
+    const finger = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.005, 0.05, 8), skinMat);
+    finger.position.set(-0.02 + f * 0.01, -0.07, 0);
     leftHandGroup.add(finger);
   }
 
@@ -265,9 +272,9 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
     const scene = new THREE.Scene();
     scene.background = null;
 
-    // Camera setup framed on character portrait
-    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 100);
-    camera.position.set(0, 0.22, 2.0);
+    // Upright Camera framing
+    const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 100);
+    camera.position.set(0, 0.18, 1.75);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -292,8 +299,8 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({ signText = '', autoP
     rimLight.position.set(0, 4, -2);
     scene.add(rimLight);
 
-    // Build 3D Human Male Character Avatar
-    const avatarObj = buildHumanCharacter();
+    // Construct 3D Handsome Human Character Avatar
+    const avatarObj = buildHandsomeHumanAvatar();
     scene.add(avatarObj);
 
     const engine = new AvatarAnimationEngine();
