@@ -45,7 +45,43 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const [showQuickMenu, setShowQuickMenu] = useState(false);
   const [attachedFile, setAttachedFile] = useState<{ name: string; size: string; content?: string } | null>(null);
 
+  const [isListeningPrompt, setIsListeningPrompt] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleToggleMicPrompt = () => {
+    const windowObj = window as any;
+    const SpeechRecognition = windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Google Chrome or MS Edge.");
+      return;
+    }
+
+    if (isListeningPrompt) {
+      setIsListeningPrompt(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListeningPrompt(true);
+      recognition.onresult = (e: any) => {
+        const transcript = Array.from(e.results).map((r: any) => r[0].transcript).join('');
+        setPrompt(transcript);
+      };
+      recognition.onerror = () => setIsListeningPrompt(false);
+      recognition.onend = () => setIsListeningPrompt(false);
+
+      recognition.start();
+    } catch (e) {
+      console.error("Mic recognition error:", e);
+      setIsListeningPrompt(false);
+    }
+  };
 
   const studentFirstName = user?.fullName ? user.fullName.split(' ')[0] : 'Student';
 
@@ -493,7 +529,13 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                  onClick={handleToggleMicPrompt}
+                  className={`p-2 rounded-full transition-all cursor-pointer ${
+                    isListeningPrompt 
+                      ? 'bg-rose-500 text-white animate-pulse' 
+                      : 'text-slate-400 hover:text-purple-600 dark:hover:text-purple-400'
+                  }`}
+                  title={isListeningPrompt ? "Listening... Click to stop" : "Voice input prompt"}
                 >
                   <Mic className="w-4 h-4" />
                 </button>
