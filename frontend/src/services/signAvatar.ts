@@ -61,32 +61,27 @@ export class AvatarAnimationEngine {
   }
 
   /**
-   * Applies baseline natural posture to avatar using Hear_Aid defaultPose
+   * Applies baseline natural two-handed posture so BOTH hands are held up in front of chest
    */
   public applyDefaultPose() {
     if (!this.avatar) return;
 
-    try {
-      this.ref.animations = [];
-      this.ref.pending = true;
-      defaultPose(this.ref);
-    } catch {
-      // Fallback pose
-      const defaultRotations: Record<string, [number, number, number]> = {
-        mixamorigNeck: [Math.PI / 12, 0, 0],
-        mixamorigLeftArm: [0, 0, -Math.PI / 3.5],
-        mixamorigLeftForeArm: [0, -Math.PI / 2.2, 0],
-        mixamorigRightArm: [0, 0, Math.PI / 3.5],
-        mixamorigRightForeArm: [0, Math.PI / 2.2, 0],
-      };
+    const defaultRotations: Record<string, [number, number, number]> = {
+      mixamorigNeck: [Math.PI / 12, 0, 0],
+      mixamorigLeftArm: [-Math.PI / 4.5, Math.PI / 6, -Math.PI / 6],
+      mixamorigLeftForeArm: [Math.PI / 3, -Math.PI / 5, 0],
+      mixamorigLeftHand: [Math.PI / 8, 0, 0],
+      mixamorigRightArm: [-Math.PI / 4.5, -Math.PI / 6, Math.PI / 6],
+      mixamorigRightForeArm: [Math.PI / 3, Math.PI / 5, 0],
+      mixamorigRightHand: [Math.PI / 8, 0, 0],
+    };
 
-      Object.entries(defaultRotations).forEach(([boneName, [x, y, z]]) => {
-        const bone = this.avatar?.getObjectByName(boneName);
-        if (bone) {
-          bone.rotation.set(x, y, z);
-        }
-      });
-    }
+    Object.entries(defaultRotations).forEach(([boneName, [x, y, z]]) => {
+      const bone = this.avatar?.getObjectByName(boneName);
+      if (bone) {
+        bone.rotation.set(x, y, z);
+      }
+    });
   }
 
   /**
@@ -151,6 +146,16 @@ export class AvatarAnimationEngine {
     if (head) {
       head.rotation.y = Math.sin(this.breathingAngle * 0.5) * 0.03;
     }
+
+    // Subtle breathing movement for both visible hands
+    const leftHand = this.avatar.getObjectByName('mixamorigLeftHand');
+    if (leftHand) {
+      leftHand.position.z = Math.sin(this.breathingAngle) * 0.005;
+    }
+    const rightHand = this.avatar.getObjectByName('mixamorigRightHand');
+    if (rightHand) {
+      rightHand.position.z = Math.sin(this.breathingAngle) * 0.005;
+    }
   }
 
   private runAnimationLoop() {
@@ -158,6 +163,7 @@ export class AvatarAnimationEngine {
       if (!this.ref.animations || !this.ref.animations.length) {
         this.isAnimating = false;
         this.ref.pending = false;
+        this.applyDefaultPose();
       }
       return;
     }
