@@ -1,8 +1,10 @@
+import sys
 import os
 from pathlib import Path
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR.parent))
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-eduverse-ai-master-secret-key-2026')
 
