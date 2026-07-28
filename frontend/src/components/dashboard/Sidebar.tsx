@@ -19,7 +19,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Crown,
-  ArrowRight,
   ChevronDown
 } from 'lucide-react';
 
@@ -124,15 +123,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
             </button>
           </nav>
         </div>
-
-        {/* Upgrade Icon */}
-        <button 
-          onClick={() => setCollapsed(false)}
-          className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 cursor-pointer"
-          title="Upgrade to Pro"
-        >
-          <Crown className="w-4 h-4" />
-        </button>
       </aside>
     );
   }
@@ -307,22 +297,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
         </nav>
       </div>
 
-      {/* Upgrade to Pro Card */}
-      <div className="pt-3 border-t border-slate-100 dark:border-neutral-900">
-        <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2 text-left">
-          <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
-            <Crown className="w-4 h-4" />
-            <span>Upgrade to Pro</span>
-          </div>
-          <p className="text-[11px] text-slate-600 dark:text-neutral-400 leading-snug">
-            Unlock advanced agents, voice mode & more!
-          </p>
-          <button className="w-full py-1.5 rounded-xl bg-white dark:bg-neutral-900 text-purple-600 dark:text-purple-400 font-bold text-xs shadow-xs border border-purple-200 dark:border-purple-900 hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 cursor-pointer">
-            <span>Upgrade Now</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
     </aside>
   );
 };
