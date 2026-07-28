@@ -286,6 +286,22 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
           </div>
         </div>
 
+        {/* Minimal Subject Filters Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {['All Focus Areas', 'Computer Science & Engineering', 'Mathematics & Logic', 'Physics & Electronics', 'Exam Revision', 'Career & ATS'].map((subject, idx) => (
+            <button
+              key={idx}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                idx === 0 
+                  ? 'bg-purple-600 text-white shadow-xs' 
+                  : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300 border border-slate-200/80 dark:border-neutral-800 hover:border-purple-300 dark:hover:border-purple-800'
+              }`}
+            >
+              {subject}
+            </button>
+          ))}
+        </div>
+
         {/* Conversation Message Log */}
         <div className="space-y-6 pt-2">
           {messages.map((msg) => (

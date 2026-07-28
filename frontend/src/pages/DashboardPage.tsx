@@ -10,7 +10,7 @@ import { OrchestrationPanel } from '../components/dashboard/OrchestrationPanel';
 import { SettingsModal } from '../components/dashboard/SettingsModal';
 import { CodeMentorSandbox } from '../components/dashboard/CodeMentorSandbox';
 import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
-import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
+import { ActiveAgentsBar } from '../components/dashboard/ActiveAgentsBar';
 import { ArrowLeft, Bot } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -63,6 +63,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
         <Navbar 
           darkMode={darkMode} 
           setDarkMode={setDarkMode} 
+        />
+
+        {/* Active Agents Status Bar */}
+        <ActiveAgentsBar 
+          activeAgentId={isSpecializedAgent ? activeTab : undefined}
+          onSelectAgent={(agentId) => setActiveTab(agentId)}
         />
 
         {/* Specialized Agent Mode Banner Header */}
