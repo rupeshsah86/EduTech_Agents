@@ -124,10 +124,14 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
     // Attempt live Backend Django API first
     try {
+      const storedGroqKey = localStorage.getItem('eduverse_groq_api_key') || '';
       const response = await fetch('http://localhost:8000/api/v1/master-ai/chat/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: userQuery })
+        body: JSON.stringify({ 
+          prompt: userQuery,
+          groq_api_key: storedGroqKey
+        })
       });
 
       if (response.ok) {

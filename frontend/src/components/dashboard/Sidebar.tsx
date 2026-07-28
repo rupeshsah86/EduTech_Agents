@@ -28,9 +28,10 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   collapsed: boolean;
   setCollapsed: (val: boolean) => void;
+  onOpenSettings?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, collapsed, setCollapsed, onOpenSettings }) => {
   const [agentsDropdownOpen, setAgentsDropdownOpen] = useState(true);
 
   const agentsList = [
@@ -112,6 +113,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
               title="Learning Analytics"
             >
               <BarChart3 className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => onOpenSettings && onOpenSettings()}
+              className="p-2.5 rounded-xl text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 cursor-pointer"
+              title="Settings (Groq API Key)"
+            >
+              <Settings className="w-4 h-4" />
             </button>
           </nav>
         </div>
@@ -253,6 +262,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
           </button>
 
           <button
+            onClick={() => onOpenSettings && onOpenSettings()}
             className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 transition-all cursor-pointer"
           >
             <Settings className="w-4 h-4" />

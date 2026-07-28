@@ -7,6 +7,7 @@ import { SkillHeatmap } from '../components/dashboard/SkillHeatmap';
 import { AgentDirectory } from '../components/dashboard/AgentDirectory';
 import { LearningAnalytics } from '../components/dashboard/LearningAnalytics';
 import { OrchestrationPanel } from '../components/dashboard/OrchestrationPanel';
+import { SettingsModal } from '../components/dashboard/SettingsModal';
 import { CodeMentorSandbox } from '../components/dashboard/CodeMentorSandbox';
 import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
 import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
@@ -22,6 +23,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
   const [activeTab, setActiveTab] = useState('chat');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const agentNamesMap: Record<string, string> = {
     agent_exam: 'ExamAce AI (Exam Roadmap & PYQs)',
@@ -40,12 +42,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 flex font-sans transition-colors duration-200 overflow-hidden relative">
       
+      {/* Settings Modal (Groq API Key Config) */}
+      <SettingsModal 
+        isOpen={settingsOpen} 
+        onClose={() => setSettingsOpen(false)} 
+      />
+
       {/* Left Sidebar Menu with Collapsible State */}
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       {/* Main Right Area */}
