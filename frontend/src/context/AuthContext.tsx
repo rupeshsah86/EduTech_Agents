@@ -12,6 +12,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, pass: string) => Promise<boolean>;
   signup: (name: string, email: string, pass: string) => Promise<boolean>;
+  updateProfile: (data: { fullName?: string; email?: string; password?: string }) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -114,6 +115,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
+  const updateProfile = async (updatedData: { fullName?: string; email?: string; password?: string }): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      const updatedUser: User = {
+        ...user,
+        fullName: updatedData.fullName || user.fullName,
+        email: updatedData.email || user.email,
+      };
+
+      localStorage.setItem('eduverse_user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('eduverse_token');
     localStorage.removeItem('eduverse_user');
@@ -122,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, login, signup, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );
