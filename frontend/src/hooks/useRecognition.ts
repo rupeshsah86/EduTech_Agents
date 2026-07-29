@@ -4,11 +4,16 @@ import { signRecognitionService, type RecognitionResult } from '../services/sign
 export function useRecognition() {
   const [isRecognizing, setIsRecognizing] = useState<boolean>(false);
   const [result, setResult] = useState<RecognitionResult>({
-    detectedSign: '',
+    detectedLetter: '-',
+    expectedLetter: '-',
     confidence: 0,
+    currentAnimation: 'Idle.anim',
+    currentWord: '',
     recognizedSentence: '',
     status: 'Idle',
     handDetected: false,
+    consecutiveFrames: 0,
+    fps: 0,
   });
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -29,9 +34,13 @@ export function useRecognition() {
     signRecognitionService.clear();
     setResult((prev) => ({
       ...prev,
-      detectedSign: '',
+      detectedLetter: '-',
+      expectedLetter: '-',
       confidence: 0,
+      currentAnimation: 'Idle.anim',
+      currentWord: '',
       recognizedSentence: '',
+      consecutiveFrames: 0,
     }));
   }, []);
 

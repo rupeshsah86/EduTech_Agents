@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CameraOff, RefreshCw, Play, Square, Trash2, Activity } from 'lucide-react';
+import { Camera, CameraOff, RefreshCw, Play, Square, Trash2, Activity } from 'lucide-react';
 
 interface WebcamProps {
   isRecognizing: boolean;
@@ -164,19 +164,49 @@ export const WebcamComponent: React.FC<WebcamProps> = ({
       </div>
 
       {/* Camera & Recognition Controls Toolbar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        <button
+          onClick={() => {
+            if (cameraActive) {
+              if (isRecognizing) onStop();
+              stopCameraStream();
+            } else {
+              startCamera(selectedDeviceId);
+            }
+          }}
+          className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
+            cameraActive
+              ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+          }`}
+          title={cameraActive ? "Turn Camera Feed OFF" : "Turn Camera Feed ON"}
+        >
+          {cameraActive ? (
+            <>
+              <CameraOff className="w-4 h-4 text-rose-500" />
+              <span>Camera OFF</span>
+            </>
+          ) : (
+            <>
+              <Camera className="w-4 h-4 text-emerald-500" />
+              <span>Camera ON</span>
+            </>
+          )}
+        </button>
+
         <button
           onClick={handleToggleRecognition}
-          className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
+          disabled={!cameraActive}
+          className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-40 ${
             isRecognizing
-              ? 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30'
+              ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 border border-amber-500/30'
               : 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-600/20'
           }`}
         >
           {isRecognizing ? (
             <>
               <Square className="w-4 h-4 fill-current" />
-              <span>Stop</span>
+              <span>Pause Tracking</span>
             </>
           ) : (
             <>
@@ -205,12 +235,12 @@ export const WebcamComponent: React.FC<WebcamProps> = ({
 
         <button
           onClick={handleSwitchCamera}
-          disabled={devices.length <= 1}
+          disabled={devices.length <= 1 || !cameraActive}
           className="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-neutral-900 hover:bg-slate-200 dark:hover:bg-neutral-800 text-slate-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 border border-slate-200 dark:border-neutral-800"
           title="Switch Camera Device"
         >
           <RefreshCw className="w-3.5 h-3.5 text-purple-500" />
-          <span>Switch Camera</span>
+          <span>Switch</span>
         </button>
       </div>
     </div>

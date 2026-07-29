@@ -1,6 +1,6 @@
 import React from 'react';
 import type { RecognitionResult } from '../../services/signRecognition';
-import { Hand, Cpu, Send, Activity, Zap } from 'lucide-react';
+import { Hand, Cpu, Send, Activity, Zap, Video, Gauge } from 'lucide-react';
 
 interface RecognitionPanelProps {
   result: RecognitionResult;
@@ -13,26 +13,39 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
   onSendToMasterAI,
   isProcessing = false,
 }) => {
-  const { detectedSign, confidence, recognizedSentence, status } = result;
+  const {
+    detectedLetter,
+    expectedLetter,
+    confidence,
+    currentAnimation,
+    currentWord,
+    recognizedSentence,
+    status,
+    consecutiveFrames,
+    fps,
+  } = result;
 
   const handleSend = () => {
-    if (recognizedSentence.trim()) {
-      onSendToMasterAI(recognizedSentence);
+    const textToSend = (recognizedSentence || currentWord).trim();
+    if (textToSend) {
+      onSendToMasterAI(textToSend);
     }
   };
 
   return (
     <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-4 h-full">
       <div className="space-y-4">
-        {/* Panel Header */}
+        {/* Debug Panel Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
               <Hand className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100">Live Sign Telemetry</h3>
-              <p className="text-[10px] text-slate-400 dark:text-neutral-500">Real-time Sign-to-Text classification</p>
+              <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100 flex items-center gap-2">
+                <span>ASL Sign Telemetry & Debug Panel</span>
+              </h3>
+              <p className="text-[10px] text-slate-400 dark:text-neutral-500">21 Landmark MediaPipe Letter Classifier</p>
             </div>
           </div>
 
@@ -42,28 +55,54 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
           </div>
         </div>
 
-        {/* 1. Detected Sign */}
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-neutral-500">
-            Detected Sign
-          </span>
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-black tracking-tight text-purple-600 dark:text-purple-400 font-mono">
-              {detectedSign || 'Waiting for sign...'}
+        {/* Live Debug Metrics Grid */}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          {/* 1. Detected Letter */}
+          <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/20 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-400">
+              Detected Letter
             </span>
-            {detectedSign && (
-              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">
-                Active Sign
-              </span>
-            )}
+            <p className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono">
+              {detectedLetter || '-'}
+            </p>
+          </div>
+
+          {/* 2. Expected Letter */}
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-neutral-500">
+              Expected Letter
+            </span>
+            <p className="text-2xl font-black text-slate-800 dark:text-neutral-200 font-mono">
+              {expectedLetter || '-'}
+            </p>
+          </div>
+
+          {/* 3. Current Animation */}
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-neutral-500 flex items-center gap-1">
+              <Video className="w-3 h-3 text-indigo-500" /> Current Clip
+            </span>
+            <p className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 truncate">
+              {currentAnimation || 'Idle.anim'}
+            </p>
+          </div>
+
+          {/* 4. Live FPS & Frames */}
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-neutral-500 flex items-center gap-1">
+              <Gauge className="w-3 h-3 text-emerald-500" /> FPS / Frame Lock
+            </span>
+            <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              {fps} FPS ({consecutiveFrames}/6 Match)
+            </p>
           </div>
         </div>
 
-        {/* 2. Recognition Confidence */}
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-2">
+        {/* 5. Recognition Confidence (>90% threshold) */}
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-2">
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-neutral-500 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-500" /> Recognition Confidence
+              <Zap className="w-3 h-3 text-amber-500" /> Landmark Confidence
             </span>
             <span className="font-mono text-purple-600 dark:text-purple-400 font-extrabold text-sm">
               {confidence}%
@@ -73,19 +112,31 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
           {/* Progress Bar */}
           <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-neutral-800 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 rounded-full"
+              className={`h-full transition-all duration-300 rounded-full ${
+                confidence >= 90 ? 'bg-emerald-500' : 'bg-amber-500'
+              }`}
               style={{ width: `${confidence}%` }}
             />
           </div>
         </div>
 
-        {/* 3. Recognized Sentence Buffer */}
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
+        {/* 6. Current Word Buffer */}
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-neutral-500">
-            Recognized Sentence
+            Current Word Building
           </span>
-          <p className="text-sm font-semibold text-slate-800 dark:text-neutral-200 leading-relaxed min-h-[48px] font-mono">
-            {recognizedSentence || <span className="text-slate-400 dark:text-neutral-600 italic">Signed text accumulates here... (e.g. Explain Binary Search)</span>}
+          <p className="text-sm font-black text-purple-600 dark:text-purple-400 font-mono min-h-[24px]">
+            {currentWord || <span className="text-slate-400 dark:text-neutral-600 font-normal italic">Letters combine into word...</span>}
+          </p>
+        </div>
+
+        {/* 7. Full Sentence Buffer */}
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-neutral-950 border border-slate-200/80 dark:border-neutral-800 space-y-1">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-neutral-500">
+            Full Recognized Sentence
+          </span>
+          <p className="text-xs font-semibold text-slate-800 dark:text-neutral-200 leading-relaxed min-h-[36px] font-mono">
+            {recognizedSentence || <span className="text-slate-400 dark:text-neutral-600 italic">Signed text accumulates here...</span>}
           </p>
         </div>
       </div>
@@ -93,7 +144,7 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
       {/* Action Button: Send to Master AI */}
       <button
         onClick={handleSend}
-        disabled={!recognizedSentence.trim() || isProcessing}
+        disabled={(!recognizedSentence.trim() && !currentWord.trim()) || isProcessing}
         className="w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-purple-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
       >
         {isProcessing ? (
