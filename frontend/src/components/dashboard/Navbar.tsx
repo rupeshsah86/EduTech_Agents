@@ -27,7 +27,21 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcut Cmd+K / Ctrl+K to focus search input
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Web Speech API initialization
   const handleToggleVoice = () => {
@@ -80,14 +94,21 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
   };
 
   const handleSearchSubmit = () => {
-    if (!searchQuery.trim()) return;
     const queryToSend = searchQuery.trim();
+    if (!queryToSend || isSubmitting) return;
+
+    setIsSubmitting(true);
     setSearchQuery('');
+
     if (onVoiceSearch) {
       onVoiceSearch(queryToSend);
     } else {
       window.dispatchEvent(new CustomEvent('send-master-ai-prompt', { detail: queryToSend }));
     }
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+    }, 600);
   };
 
   const handleLogout = () => {
@@ -106,21 +127,28 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
         
         {/* Search Input Bar with Cmd+K and Send Button */}
         <div className="flex-1 max-w-xl relative">
-          <div className={`relative flex items-center bg-slate-100/80 dark:bg-neutral-900 border ${
-            isListening ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200/80 dark:border-neutral-800'
-          } rounded-2xl px-3.5 py-1.5 transition-all`}>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearchSubmit();
+            }}
+            className={`relative flex items-center bg-slate-100/80 dark:bg-neutral-900 border ${
+              isListening ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200/80 dark:border-neutral-800 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20'
+            } rounded-2xl px-3.5 py-1.5 transition-all`}
+          >
             <Search className="w-4 h-4 text-slate-400 dark:text-neutral-500 mr-2 shrink-0" />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   handleSearchSubmit();
                 }
               }}
-              placeholder={isListening ? "Listening... Speak now..." : "Search anything or ask Master AI..."}
+              placeholder={isListening ? "Listening... Speak now..." : "Search anything or ask Master AI (press Enter to submit)..."}
               className="w-full bg-transparent text-xs text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none font-medium"
             />
             
@@ -135,22 +163,28 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
               {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
             </button>
 
-            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-[10px] font-bold text-slate-400 dark:text-neutral-400 shrink-0 mr-1.5">
+            <button
+              type="button"
+              onClick={() => searchInputRef.current?.focus()}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-[10px] font-bold text-slate-400 dark:text-neutral-400 shrink-0 mr-1.5 cursor-pointer hover:text-purple-600"
+              title="Press Cmd+K to focus search input"
+            >
               <Command className="w-3 h-3" />
               <span>K</span>
-            </div>
+            </button>
 
             {/* Purple Send Button */}
             <button
-              type="button"
-              onClick={handleSearchSubmit}
-              disabled={!searchQuery.trim()}
-              className="w-7 h-7 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-xs shrink-0 disabled:opacity-40 transition-all cursor-pointer"
-              title="Send Search Prompt to Master AI"
+              type="submit"
+              disabled={!searchQuery.trim() || isSubmitting}
+              className={`w-7 h-7 rounded-full text-white flex items-center justify-center shadow-xs shrink-0 disabled:opacity-40 transition-all cursor-pointer ${
+                isSubmitting ? 'bg-purple-400 animate-spin' : 'bg-purple-600 hover:bg-purple-500'
+              }`}
+              title="Send Search Prompt to Master AI (or press Enter)"
             >
               <Send className="w-3.5 h-3.5" />
             </button>
-          </div>
+          </form>
         </div>
 
         {/* Right Controls */}

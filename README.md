@@ -11,33 +11,49 @@ Instead of interacting with disconnected AI tools, users communicate with **One 
 
 Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every chat, EduVerse AI includes persistent, student-focused engines:
 
-1. **🗺️ Interactive Personal Knowledge Graph**
+1. **🧠 Universal Master AI Answering Engine**
+   - Responds intelligently to **ANY** student prompt — concepts, code, exams, assignments, career, PDFs, quizzes, or general study doubts.
+   - Automatically detects greetings ("Hi", "Hello") with warm, professional welcomes outlining platform capabilities and 9 agent delegations.
+   - Provides clear, structured, student-friendly Markdown answers with active agent tags, code blocks, tables, and next-step recommendations.
+
+2. **📑 Interactive MCQ Quiz Game & Results Page**
+   - **Game-like Experience**: Displays one question at a time with smooth Framer Motion transitions.
+   - **Instant Option Feedback**: Selecting an option highlights correct (green) or wrong (red) choices immediately with a detailed explanation card.
+   - **Comprehensive Results Page**: Score percentage, Total Questions, Correct Answers, Wrong Answers, Grade Badges (*Excellent 🌟*, *Good 👍*, *Needs Improvement 💡*), and detailed wrong question review.
+   - **Action Buttons**: 🔄 *Retry Quiz*, 💡 *Review Weak Topics* (auto-queries Master AI), and 🏠 *Back to Dashboard*.
+
+3. **🔍 Modern Enter-Key Search Bar (ChatGPT-style)**
+   - Type queries and press **Enter** key to submit instantly (or click the Send button).
+   - Automatically clears input upon submission, validates against empty strings, and displays live loading states.
+   - Includes global `⌘ + K` / `Ctrl + K` keyboard shortcut for fast focus.
+
+4. **🗺️ Interactive Personal Knowledge Graph**
    - Live visual topography of mastered concepts, partial knowledge, and weak spots across 5 core domains (**DSA**, **Algorithms**, **Operating Systems**, **DBMS**, **System Design**).
    - Topic-level breakdown with mastery percentage scores, status tags, last practiced dates, next revision due dates, and interactive deep-dive modals.
 
-2. **⚔️ AI Multi-Agent Debate Arena**
+5. **⚔️ AI Multi-Agent Debate Arena**
    - Two specialized AI agents debate opposing viewpoints (e.g. *Microservices vs Monolith*, *SQL vs NoSQL*) in real-time to build deep multi-perspective understanding.
 
-3. **⏱️ Real Timed Exam Simulation Mode**
+6. **⏱️ Real Timed Exam Simulation Mode**
    - Timed mock exam environment featuring a live countdown timer, negative marking rules (`+4 / -1`), question navigator, and instant performance analysis.
 
-4. **👤 AI Digital Study Twin & Auto Gap Detection**
+7. **👤 AI Digital Study Twin & Auto Gap Detection**
    - Predictive AI model of your learning patterns, memory retention curves, and auto-detected knowledge gaps discovered even if you didn't explicitly ask about them.
 
-5. **🚀 AI Project & Hackathon Recommender**
+8. **🚀 AI Project & Hackathon Recommender**
    - Recommends real portfolio projects & hackathons dynamically matched to your current Personal Knowledge Graph mastery level.
 
-6. **🔥 Skill Heatmap & SM-2 Spaced Repetition Engine**
+9. **🔥 Skill Heatmap & SM-2 Spaced Repetition Engine**
    - 28-day practice consistency matrix and SuperMemo SM-2 flashcard scheduler for long-term memory consolidation.
 
-7. **🎭 Mentor Personality Switching**
-   - Switch Master AI mentor personality on the fly between **Socratic Professor**, **Strict Coach**, **Friendly Senior**, **Chill Senior**, and **Industry Mentor**.
+10. **🎭 Mentor Personality Switching**
+    - Switch Master AI mentor personality on the fly between **Socratic Professor**, **Strict Coach**, **Friendly Senior**, **Chill Senior**, and **Industry Mentor**.
 
-8. **🎙️ Master AI Voice (Full Voice Conversation)**
-   - Hands-free, two-way voice communication powered by Speech-to-Text (`SpeechRecognition`) and Text-to-Speech (`SpeechSynthesis`). Features live interim transcript preview, voice selection, auto-voice toggle, and per-message answer playback.
+11. **🎙️ Master AI Voice (Full Voice Conversation)**
+    - Hands-free, two-way voice communication powered by Speech-to-Text (`SpeechRecognition`) and Text-to-Speech (`SpeechSynthesis`). Features live interim transcript preview, voice selection, auto-voice toggle, and per-message answer playback.
 
-9. **👤 Interactive User Profile Settings**
-   - Edit Full Name / Username, Email Address, and Password with instant local session persistence.
+12. **👤 Interactive User Profile Settings**
+    - Edit Full Name / Username, Email Address, and Password with instant local session persistence.
 
 ---
 

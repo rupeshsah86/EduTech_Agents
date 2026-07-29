@@ -18,6 +18,7 @@ import { ExamSimulator } from '../components/dashboard/ExamSimulator';
 import { AIStudyTwin } from '../components/dashboard/AIStudyTwin';
 import { ProjectRecommender } from '../components/dashboard/ProjectRecommender';
 import { SignAIPage } from './SignAIPage';
+import { QuizGame } from '../components/dashboard/QuizGame';
 import { ArrowLeft, Bot } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -37,7 +38,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
     agent_assign: 'AssignMate AI (Academic Rewriter)',
     agent_concept: 'ConceptClear AI (Socratic Solver)',
     agent_note: 'NoteCraft AI (Markdown & Mind Maps)',
-    agent_quiz: 'QuizMaster AI (Adaptive MCQs & SM-2)',
+    agent_quiz: 'QuizMaster AI (Adaptive MCQ Game)',
     agent_study: 'StudyFlow AI (Pomodoro Timetable)',
     agent_pdf: 'PDFTutor AI (Multi-Document RAG)',
     agent_code: 'CodeMentor AI (DSA Sandbox & Big-O)',
@@ -115,6 +116,23 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
           {activeTab === 'study_twin' && <AIStudyTwin />}
           {activeTab === 'projects' && <ProjectRecommender />}
 
+          {/* Interactive MCQ Quiz Game */}
+          {(activeTab === 'agent_quiz' || activeTab === 'quiz') && (
+            <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-neutral-950 w-full">
+              <QuizGame 
+                onBackToDashboard={() => setActiveTab('chat')}
+                onReviewWeakTopics={(promptList) => {
+                  setActiveTab('chat');
+                  if (promptList.length > 0) {
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('send-master-ai-prompt', { detail: promptList[0] }));
+                    }, 100);
+                  }
+                }}
+              />
+            </div>
+          )}
+
           {/* Dedicated Individual Specialized Agent Workspaces */}
           {activeTab === 'agent_code' && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 dark:bg-neutral-950 w-full">
@@ -143,7 +161,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
             </div>
           )}
 
-          {(activeTab === 'agent_exam' || activeTab === 'agent_assign' || activeTab === 'agent_concept' || activeTab === 'agent_note' || activeTab === 'agent_quiz' || activeTab === 'agent_study') && (
+          {(activeTab === 'agent_exam' || activeTab === 'agent_assign' || activeTab === 'agent_concept' || activeTab === 'agent_note' || activeTab === 'agent_study') && (
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 dark:bg-neutral-950 w-full">
               <MasterAIChat activeAgentId={activeTab} />
             </div>

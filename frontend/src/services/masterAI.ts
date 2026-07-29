@@ -139,22 +139,18 @@ class MasterAIService {
 
     // Smart responses for demo & offline mode
     let responseText = '';
-    if (targetAgent.id === 'agent_code') {
-      if (lower.includes('binary search')) {
-        responseText = 'Binary Search is an efficient algorithm for finding an element in a sorted array by repeatedly dividing the search interval in half. Time complexity is O(log N).';
-      } else {
-        responseText = `CodeMentor AI analyzed your request "${text}". Here is the optimized algorithm breakdown and time complexity analysis.`;
-      }
+    if (["hi", "hello", "hey", "hello hi", "hi there", "greetings", "good morning", "good evening"].includes(lower)) {
+      responseText = `### 👋 Hello! Welcome to EduVerse AI\n\nI am your **Master AI Learning Assistant**. I orchestrate **9 specialized AI agents** to help you learn, solve doubts, write code, prepare for exams, and build your career.\n\n#### 🚀 How can I help you today?\n- **💡 Concept Doubts**: Ask me to explain any topic in detail.\n- **💻 Coding & DSA**: Ask for Python, C++, Java, or SQL snippets.\n- **📚 Exam Prep**: Ask for high-yield revision roadmaps & PYQs.\n- **📑 MCQ Quizzes**: Ask to launch an adaptive quiz challenge.`;
+    } else if (targetAgent.id === 'agent_code') {
+      responseText = `### 💻 CodeMentor AI — Solution Breakdown\n\nDetailed analysis for **"${text}"**:\n\n#### ⚡ Key Logic & Complexity:\n- **Time Complexity**: O(N log N) / O(log N) optimal traversal.\n- **Space Complexity**: O(N) auxiliary space.\n\n\`\`\`python\n# Optimized Solution Structure for: ${text}\ndef solve_problem(data):\n    # Process input data efficiently\n    result = []\n    for item in data:\n        result.append(item)\n    return result\n\`\`\`\n\n*Try testing this code in the CodeMentor Sandbox tab!*`;
     } else if (targetAgent.id === 'agent_note') {
-      responseText = `NoteCraft AI generated structured notes for "${text}": Key Concepts, Definitions, and Mind Map breakdown ready.`;
-    } else if (targetAgent.id === 'agent_concept') {
-      if (lower.includes('hello') || lower.includes('hi')) {
-        responseText = 'Hello! I am Master AI with 9 specialized AI agents ready to assist you in Sign Language!';
-      } else {
-        responseText = `ConceptClear AI simplified response for "${text}": Core principles explained step-by-step with visual intuition.`;
-      }
+      responseText = `### 📑 NoteCraft AI — Structured Revision Notes\n\nComprehensive notes generated for **"${text}"**:\n\n#### 📌 Core Definitions & Mind Map:\n1. **Fundamental Principle**: Core concept underlying ${text}.\n2. **Key Takeaway**: High-yield formulas, rules, and best practices.\n3. **Summary**: Essential summary points for active recall revision.`;
+    } else if (targetAgent.id === 'agent_exam') {
+      responseText = `### 📚 ExamAce AI — High-Yield Exam Roadmap\n\nStrategy for **"${text}"**:\n\n1. **Topic Weightage**: Priority breakdown based on recent PYQs.\n2. **Revision Blocks**: 3-day rapid review cycle with practice problems.\n3. **Active Recall**: Test key formulas and theoretical proofs under timed conditions.`;
+    } else if (targetAgent.id === 'agent_quiz') {
+      responseText = `### 📑 QuizMaster AI — MCQ Challenge Ready\n\nGenerated evaluation for **"${text}"**.\n\n*Click the QuizMaster AI tab in the left sidebar to play the interactive MCQ Game with instant scoring & results page!*`;
     } else {
-      responseText = `${targetAgent.name} response for: "${text}". Ready for review and sign playback.`;
+      responseText = `### 🧠 Master AI Synthesized Answer\n\nComprehensive breakdown for **"${text}"**:\n\n#### 📌 Step-by-Step Breakdown:\n1. **Core Concept**: Comprehensive explanation tailored for **"${text}"**.\n2. **Practical Application**: Real-world examples, step-by-step logic, and active recall takeaways.\n3. **Next Steps**: You can ask for code examples, request an adaptive quiz, or ask me to simplify any sub-topic!`;
     }
 
     return {
