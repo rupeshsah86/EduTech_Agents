@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import { UserProfileModal } from './UserProfileModal';
-import { LLMSelectorPill } from '../common/LLMSelectorPill';
+
 
 interface NavbarProps {
   darkMode: boolean;
@@ -189,22 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
 
         {/* Right Controls */}
         <div className="flex items-center gap-3 shrink-0">
-          
-          {/* Multi-LLM Provider Switcher Pill */}
-          <LLMSelectorPill />
 
-          {/* Working Voice AI Toggle Button */}
-          <button
-            type="button"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('open-master-ai-voice'));
-            }}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full font-bold text-xs bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/80 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-all cursor-pointer shadow-2xs"
-            title="Open Master AI Voice Panel (Cmd+Shift+V)"
-          >
-            <Mic className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-            <span>Voice AI</span>
-          </button>
 
           {/* Theme Toggle */}
           <button

@@ -481,16 +481,29 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
                   isListening 
-                    ? 'bg-rose-500 text-white animate-pulse' 
+                    ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-500/20' 
                     : 'text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
                 }`}
-                title="Voice Input"
+                title="Dictate / Speech Input"
               >
                 <Mic className="w-4 h-4" />
               </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('open-master-ai-voice'));
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl font-bold text-xs bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-all cursor-pointer shadow-2xs"
+                title="Launch Master AI Voice Assistant"
+              >
+                <Mic className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                <span>Voice AI</span>
+              </button>
             </div>
+
 
             <button
               type="button"
