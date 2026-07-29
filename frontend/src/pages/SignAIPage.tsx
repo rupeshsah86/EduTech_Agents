@@ -78,39 +78,75 @@ export const SignAIPage: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-50/50 dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 w-full min-h-screen font-sans">
       
-      {/* ── Top Professional Header Banner ───────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-600/20 shrink-0">
-            <Hand className="w-5.5 h-5.5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Sign Language AI Tutor
-              </h1>
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 font-bold text-[10px] uppercase tracking-wider">
-                Deaf & Mute Accessibility
-              </span>
+      {/* ── Top Section: Welcome Header & First-Time User Instructions ──────────────── */}
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-600/20 shrink-0">
+              <Hand className="w-5.5 h-5.5" />
             </div>
-            <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium mt-0.5">
-              Communicate using Sign Language. User signs → Master AI translates → Answers in 3D Sign + Voice + Text.
-            </p>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  Sign Language AI Tutor
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 font-bold text-[10px] uppercase tracking-wider">
+                  Deaf & Mute Accessibility
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium mt-0.5">
+                Communicate using Sign Language. User signs → Master AI translates → Answers in 3D Sign + Voice + Text.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature Badges */}
+          <div className="flex items-center gap-2 text-xs font-bold shrink-0">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-600 dark:text-purple-400">
+              <Zap className="w-3.5 h-3.5" />
+              <span>10 ASL Signs Active</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>WebGL 3D Avatar Ready</span>
+            </div>
           </div>
         </div>
 
-        {/* Feature Badges */}
-        <div className="flex items-center gap-2 text-xs font-bold shrink-0">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-600 dark:text-purple-400">
-            <Zap className="w-3.5 h-3.5" />
-            <span>9 AI Tutors Online</span>
+        {/* Quick 3-Step Instruction Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 flex items-center gap-3 text-left">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-black text-xs flex items-center justify-center shrink-0 border border-purple-200 dark:border-purple-800">
+              1
+            </div>
+            <div>
+              <p className="font-bold text-xs text-slate-900 dark:text-white">Start Camera</p>
+              <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 font-medium">Click "Start Recognition" to activate hand tracking.</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>WebGL 3D Avatar Ready</span>
+
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 flex items-center gap-3 text-left">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-black text-xs flex items-center justify-center shrink-0 border border-purple-200 dark:border-purple-800">
+              2
+            </div>
+            <div>
+              <p className="font-bold text-xs text-slate-900 dark:text-white">Show ASL Sign</p>
+              <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 font-medium">Show signs (A, B, C, D, E, F, H, I, L, O) or click letter.</p>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 flex items-center gap-3 text-left">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-black text-xs flex items-center justify-center shrink-0 border border-purple-200 dark:border-purple-800">
+              3
+            </div>
+            <div>
+              <p className="font-bold text-xs text-slate-900 dark:text-white">3D Sign & Voice Answer</p>
+              <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 font-medium">Master AI translates and responds in 3D + Voice.</p>
+            </div>
           </div>
         </div>
       </div>
+
 
       {/* ── Main Dual Workspace Grid (Webcam + Telemetry Left, 3D Avatar Right) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">

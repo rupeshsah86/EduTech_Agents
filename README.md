@@ -85,10 +85,14 @@ Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every ch
 11. **🎙️ Master AI Voice (Full Voice Conversation)**
     - Hands-free, two-way voice communication powered by Speech-to-Text (`SpeechRecognition`) and Text-to-Speech (`SpeechSynthesis`). Features live interim transcript preview, voice selection, auto-voice toggle, and per-message answer playback.
 
-12. **👤 Interactive User Profile Settings**
-    - Edit Full Name / Username, Email Address, and Password with instant local session persistence.
+13. **🖐️ Sign Language AI Tutor (Deaf & Mute Accessibility)**
+    - Real-time ASL (American Sign Language) recognition powered by MediaPipe 21-landmark tracking.
+    - **10 Stable ASL Signs**: Full detection and 3D translation support for **A, B, C, D, E, F, H, I, L, O**.
+    - **Real-Time WebGL 3D Avatar**: Translates Master AI responses into 3D Sign Language animations + Speech Voice + Structured Markdown.
+    - **Multi-Modal Controls**: Seamlessly switch between Sign Language gesture mode, Keyboard mode, and Microphone mode.
 
 ---
+
 
 ## 🎙️ Master AI Voice (Full Voice Conversation)
 

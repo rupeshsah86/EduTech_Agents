@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  BookOpen, 
-  PenTool, 
-  HelpCircle, 
-  FileText, 
-  CheckSquare, 
-  Calendar, 
-  FileCode, 
-  Code, 
+import {
+  BookOpen,
+  PenTool,
+  HelpCircle,
+  FileText,
+  CheckSquare,
+  Calendar,
+  FileCode,
+  Code,
   Briefcase,
   Sparkles
 } from 'lucide-react';
@@ -144,3 +144,5 @@ export const AgentDirectory: React.FC = () => {
     </div>
   );
 };
+
+
