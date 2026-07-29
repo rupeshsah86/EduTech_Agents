@@ -117,8 +117,6 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const [activeSpeakingMsgId, setActiveSpeakingMsgId] = useState<string | null>(null);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
 
-  const recognitionRef = useRef<any>(null);
-
   const studentFirstName = user?.fullName ? user.fullName.split(' ')[0] : 'Student';
 
   const agentTitles: Record<string, string> = {
