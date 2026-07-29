@@ -58,37 +58,37 @@ export const generateDynamicVoiceResponse = (userQuery: string): { responseText:
 
   if (["hi", "hello", "hey", "greetings", "good morning", "good evening"].includes(q)) {
     activeAgents = ['ConceptClear AI', 'StudyFlow AI'];
-    text = `### 👋 Hello! I am Master AI Assistant\n\nI orchestrate 9 specialized AI agents to help you learn Computer Science. Ask me about **Computer Networks (CN)**, **Operating Systems (OS)**, **Data Structures (DSA)**, **DBMS**, or **System Design**!`;
+    text = `### 👋 Hello! I am Master AI Assistant\n\nI orchestrate 9 specialized AI agents to help you learn Computer Science. Ask me about **Data Structures (DSA)**, **Computer Networks (CN)**, **Operating Systems (OS)**, **DBMS**, or **System Design**!`;
   } 
-  // Computer Networks (CN)
-  else if (q === 'cn' || q.includes('computer network') || q.includes('networking') || q.includes('osi') || q.includes('tcp') || q.includes('ip address') || q.includes('subnet')) {
+  // 1. Data Structures & Algorithms (DSA) - Highest Priority Check
+  else if (q.includes('data structure') || q.includes('datastructure') || q.includes('dsa') || q.includes('array') || q.includes('linked list') || q.includes('stack') || q.includes('queue') || q.includes('tree') || q.includes('graph') || q.includes('heap')) {
+    activeAgents = ['CodeMentor AI', 'ConceptClear AI'];
+    text = `### 📊 Data Structures (DS) Complete Breakdown\n\nA **Data Structure** is a specialized format for organizing, storing, and performing operations on data efficiently in computer memory.\n\n#### 📌 Classification of Data Structures:\n1. **Linear Data Structures**:\n   - **Array / Vector**: Contiguous memory allocation (Random Access O(1)).\n   - **Linked List**: Dynamic node pointers (Insert/Delete O(1)).\n   - **Stack & Queue**: LIFO and FIFO constrained access patterns.\n2. **Non-Linear Data Structures**:\n   - **Binary Search Tree (BST)**: Search/Insert O(log N).\n   - **Min/Max Heap**: Priority Queue operations O(log N).\n   - **Graph**: Vertices and Edges with BFS/DFS traversal O(V + E).\n   - **Hash Table**: Fast key-value retrieval via hashing O(1).`;
+  }
+  // 2. Computer Networks (CN)
+  else if (q === 'cn' || q.includes('computer network') || q.includes('networking') || q.includes('osi') || q.includes('tcp') || q.includes('ip address') || q.includes('subnet') || q.includes('dns') || q.includes('http')) {
     activeAgents = ['ConceptClear AI', 'ExamAce AI'];
-    text = `### 🌐 Computer Networks (CN) Concept Breakdown\n\n**Computer Networking** is the interconnection of computing devices that exchange data using standard protocols.\n\n#### 📌 Key Architecture Highlights:\n1. **OSI 7-Layer Model**: Physical ➔ Data Link ➔ Network ➔ Transport ➔ Session ➔ Presentation ➔ Application.\n2. **TCP/IP Model**: 4-Layer stack (Network Access, Internet, Transport, Application).\n3. **Core Protocols**: TCP (Connection-oriented, reliable), UDP (Connectionless, fast), IP (Addressing & Routing), HTTP/HTTPS (Web).\n\n\`\`\`text\n[Client Browser] <--- HTTP/TCP ---> [Router / Firewall] <--- IP ---> [Server Host]\n\`\`\``;
+    text = `### 🌐 Computer Networks (CN) Architecture\n\n**Computer Networking** is the system of interconnected devices that exchange data using communication protocols.\n\n#### 📌 Key Architecture Highlights:\n1. **OSI 7-Layer Model**: Physical ➔ Data Link ➔ Network ➔ Transport ➔ Session ➔ Presentation ➔ Application.\n2. **TCP/IP Model**: 4-Layer Architecture (Network Access, Internet, Transport, Application).\n3. **Core Protocols**: TCP (Reliable, Connection-Oriented), UDP (Fast, Connectionless), IP (Routing & Addressing), HTTP/HTTPS (Web).\n\n\`\`\`text\n[Host Client] <--- TCP/IP ---> [Router / Gateway] <--- IP ---> [Web Server]\n\`\`\``;
   }
-  // Operating Systems (OS)
-  else if (q === 'os' || (q.includes('operating system') && !q.includes('quiz')) || q.includes('kernel') || q.includes('cpu scheduling') || q.includes('paging') || q.includes('virtual memory')) {
+  // 3. Operating Systems (OS)
+  else if ((q === 'os' || q.includes('operating system') || q.includes('kernel') || q.includes('cpu scheduling') || q.includes('paging') || q.includes('virtual memory')) && !q.includes('deadlock')) {
     activeAgents = ['ExamAce AI', 'ConceptClear AI'];
-    text = `### 💻 Operating System (OS) Fundamentals\n\nAn **Operating System** is system software that manages computer hardware, software resources, and provides common services for computer programs.\n\n#### 🔑 Core Subsystems:\n1. **Process Management**: CPU scheduling algorithms (FCFS, SJF, Round-Robin, Priority).\n2. **Memory Management**: Virtual memory, Paging, Segmentation, and Page Replacement (LRU, FIFO).\n3. **Concurrency & Synchronization**: Mutex, Semaphores, and Deadlock Management.\n4. **Storage & File System**: Inodes, Allocation tables, and I/O buffering.`;
+    text = `### 💻 Operating System (OS) Fundamentals\n\nAn **Operating System** is system software that manages computer hardware, software resources, and provides common services for computer programs.\n\n#### 🔑 Core OS Subsystems:\n1. **Process Management**: CPU scheduling algorithms (FCFS, SJF, Round-Robin, Priority).\n2. **Memory Management**: Virtual memory, Paging, Demand Paging, and Page Replacement (LRU, FIFO).\n3. **Concurrency & Synchronization**: Mutex, Semaphores, and Deadlock Management.\n4. **Storage & File System**: Inode allocation and I/O buffering.`;
   }
-  // Deadlock specific OS query
+  // 4. Deadlock specific OS query
   else if (q.includes('deadlock')) {
     activeAgents = ['ExamAce AI', 'ConceptClear AI'];
-    text = `### 🔒 OS Deadlock Analysis\n\nA **Deadlock** occurs when a set of processes are blocked because each process holds a resource and waits for another resource held by another process.\n\n#### 🔑 4 Coffman Conditions for Deadlock:\n1. **Mutual Exclusion**: Resource can only be held by one process at a time.\n2. **Hold & Wait**: Process holds at least one resource while waiting for others.\n3. **No Preemption**: Resources cannot be forcibly taken.\n4. **Circular Wait**: A closed chain of processes exists where each waits for a resource held by the next.`;
+    text = `### 🔒 OS Deadlock Analysis\n\nA **Deadlock** occurs when a set of processes are blocked because each process holds a resource and waits for another resource held by another process.\n\n#### 🔑 4 Coffman Conditions for Deadlock:\n1. **Mutual Exclusion**: Resource can only be held by one process at a time.\n2. **Hold & Wait**: Process holds resources while requesting others.\n3. **No Preemption**: Resources cannot be forcibly revoked.\n4. **Circular Wait**: A closed chain of processes exists where each waits for a resource held by the next.`;
   }
-  // Data Structures & Algorithms (DSA)
-  else if (q.includes('data structure') || q.includes('dsa') || q.includes('array') || q.includes('linked list') || q.includes('stack') || q.includes('queue') || q.includes('tree') || q.includes('graph') || q.includes('heap')) {
-    activeAgents = ['CodeMentor AI', 'ConceptClear AI'];
-    text = `### 📊 Data Structures (DS) Architecture\n\nA **Data Structure** is a specialized format for organizing, processing, retrieving, and storing data efficiently.\n\n#### ⚡ Classification & Time Complexities:\n1. **Linear Data Structures**:\n   - **Array / Vector**: Contiguous memory allocation (Random Access O(1)).\n   - **Linked List**: Dynamic node references (Insert/Delete O(1)).\n   - **Stack & Queue**: LIFO and FIFO access constraints.\n2. **Non-Linear Data Structures**:\n   - **Binary Search Tree (BST)**: Search/Insert O(log N).\n   - **Min/Max Heap**: Priority Queue operations O(log N).\n   - **Graph**: Adjacency List representation (BFS / DFS traversal O(V + E)).`;
-  }
-  // DBMS & SQL
+  // 5. DBMS & SQL
   else if (q.includes('dbms') || q.includes('sql') || q.includes('database') || q.includes('acid') || q.includes('join')) {
     activeAgents = ['ConceptClear AI', 'QuizMaster AI'];
     text = `### 🗄️ Database Management Systems (DBMS)\n\nA **DBMS** is software designed to store, retrieve, define, and manage structured data in databases.\n\n#### 🔑 Key Foundations:\n1. **ACID Properties**: Atomicity, Consistency, Isolation, Durability.\n2. **Normalization**: 1NF (Atomic values), 2NF (No partial dependency), 3NF (No transitive dependency), BCNF.\n3. **Relational Joins**: INNER JOIN, LEFT OUTER JOIN, RIGHT OUTER JOIN, FULL JOIN.`;
   }
-  // Default CS Socratic Fallback
+  // 6. Default Socratic Fallback for other queries
   else {
     activeAgents = ['Master AI Assistant', 'NoteCraft AI'];
-    text = `### 🧠 Master AI Synthesized Explanation for "${userQuery}"\n\n#### 📌 Step-by-Step Educational Breakdown:\n1. **Concept Analysis**: Master AI has processed your query **"${userQuery}"** and routed it through our 9-agent neural engine.\n2. **Key Takeaway**: Understanding this topic involves identifying core principles, reviewing code implementations, and practicing active recall.\n3. **Next Steps**: Feel free to ask for a code sandbox example, request a 5-question adaptive quiz, or explore related topics in your Personal Knowledge Graph!`;
+    text = `### 🧠 Master AI Synthesized Answer for "${userQuery}"\n\n#### 📌 Step-by-Step Educational Breakdown:\n1. **Concept Analysis**: Master AI has processed your query **"${userQuery}"** through our 9-agent neural engine.\n2. **Key Takeaway**: Understanding this topic involves breaking down its fundamental principles, applying real-world examples, and practicing active recall.\n3. **Next Steps**: Feel free to ask for a code sandbox example, request a 5-question adaptive quiz, or explore related topics in your Personal Knowledge Graph!`;
   }
 
   return { responseText: text, activeAgents };

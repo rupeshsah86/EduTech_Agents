@@ -54,6 +54,17 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
+  useEffect(() => {
+    const handleExternalPrompt = (e: any) => {
+      const promptText = e.detail;
+      if (promptText && typeof promptText === 'string') {
+        handleSend(promptText);
+      }
+    };
+    window.addEventListener('send-master-ai-prompt', handleExternalPrompt);
+    return () => window.removeEventListener('send-master-ai-prompt', handleExternalPrompt);
+  }, []);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
