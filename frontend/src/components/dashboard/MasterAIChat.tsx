@@ -18,7 +18,12 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Bot,
-  Key
+  Key,
+  RotateCcw,
+  Code,
+  Sparkles,
+  FileCheck,
+  X
 } from 'lucide-react';
 import robotAvatar from '../../assets/robot_avatar.png';
 
@@ -46,7 +51,6 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const [mentorPersonality, setMentorPersonality] = useState('Socratic Professor');
   const [attachedFile, setAttachedFile] = useState<{ name: string; size: string; content?: string } | null>(null);
 
-  const [isListeningPrompt, setIsListeningPrompt] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -64,65 +68,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
     reader.readAsText(file);
   };
 
-  const handleToggleMicPrompt = () => {
-    const windowObj = window as any;
-    const SpeechRecognition = windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      alert("Voice speech recognition is not supported in this browser. Please use Google Chrome, Brave, or MS Edge.");
-      return;
-    }
-
-    if (isListeningPrompt) {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      setIsListeningPrompt(false);
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognition();
-      recognitionRef.current = recognition;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onstart = () => {
-        setIsListeningPrompt(true);
-      };
-
-      recognition.onresult = (e: any) => {
-        const transcript = Array.from(e.results)
-          .map((r: any) => r[0].transcript)
-          .join('');
-        setPrompt(transcript);
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn("Speech recognition error:", event.error);
-        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-          alert("Microphone permission was denied. Please allow microphone access in your browser site settings.");
-        }
-        setIsListeningPrompt(false);
-      };
-
-      recognition.onend = () => {
-        setIsListeningPrompt(false);
-      };
-
-      recognition.start();
-    } catch (e) {
-      console.error("Mic recognition error:", e);
-      // Fallback dictation helper for testing environment
-      setPrompt((prev) => (prev ? `${prev} Explain Dijkstra algorithm` : "Explain Dijkstra shortest path algorithm with code example"));
-      setIsListeningPrompt(false);
-    }
-  };
 
   // Speech Recognition & Synthesis state
   const [isListening, setIsListening] = useState(false);
@@ -318,6 +264,22 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
     setShowKeyModal(false);
   };
 
+  const handleNewChatSession = () => {
+    setMessages([{
+      id: '1',
+      sender: 'master_ai',
+      text: `Hello! I am your EduVerse Master AI Assistant. I orchestrate 9 specialized AI agents to help you master computer science, software engineering, and GATE exam subjects.\n\nAsk me anything — from building an exam roadmap to debugging code or parsing PDF notes! 🚀`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      activeAgents: ['Master AI Assistant', 'ExamAce AI', 'CodeMentor AI']
+    }]);
+    setShowQuickMenu(false);
+  };
+
+  const handleInsertCodeSnippet = () => {
+    setPrompt((prev) => prev ? `${prev}\n\`\`\`python\n# Write your code snippet here\n\`\`\`` : "```python\n# Write your code snippet here\n```");
+    setShowQuickMenu(false);
+  };
+
   const handleSend = async (userQuery: string) => {
     if (!userQuery.trim()) return;
 
@@ -329,7 +291,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: 'user',
-      text: queryToSend + (attachedFile ? ` (📎 Attached: ${attachedFile.name})` : ''),
+      text: userQuery + (attachedFile ? ` (📎 Attached: ${attachedFile.name})` : ''),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       attachedFile: attachedFile ? attachedFile.name : undefined
     };
@@ -352,7 +314,6 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
 
     // Backend Django API check first (with API Key payload)
     try {
-      const storedGroqKey = localStorage.getItem('eduverse_groq_api_key') || '';
       const response = await fetch('http://localhost:8000/api/v1/master-ai/chat/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -673,7 +634,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
               </div>
             )}
 
-            {isListeningPrompt && (
+            {isListening && (
               <div className="flex items-center gap-2 px-3 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-full border border-rose-500/20 text-xs font-bold w-fit mb-2 animate-pulse">
                 <Mic className="w-3.5 h-3.5 animate-bounce" />
                 <span>Listening... Speak into your microphone</span>

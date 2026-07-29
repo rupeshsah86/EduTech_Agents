@@ -33,11 +33,34 @@ Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every ch
 7. **🎭 Mentor Personality Switching**
    - Switch Master AI mentor personality on the fly between **Socratic Professor**, **Strict Coach**, **Friendly Senior**, **Chill Senior**, and **Industry Mentor**.
 
-8. **🎙️ Web Speech API Voice Input**
-   - Hands-free dictation for chat prompts and header search queries with visual active listening badges.
+8. **🎙️ Master AI Voice (Full Voice Conversation)**
+   - Hands-free, two-way voice communication powered by Speech-to-Text (`SpeechRecognition`) and Text-to-Speech (`SpeechSynthesis`). Features live interim transcript preview, voice selection, auto-voice toggle, and per-message answer playback.
 
 9. **👤 Interactive User Profile Settings**
    - Edit Full Name / Username, Email Address, and Password with instant local session persistence.
+
+---
+
+## 🎙️ Master AI Voice (Full Voice Conversation)
+
+EduVerse AI includes a production-grade, voice-enabled conversation interface that allows students to communicate with the Master AI Assistant entirely hands-free.
+
+### Key Features:
+- **Speech-to-Text (STT)**: Real-time speech recognition with live interim transcript previews while speaking.
+- **Text-to-Speech (TTS)**: Automatic natural voice output with customizable voice selection (Samantha, Google US English, etc.).
+- **Visual Feedback**: Pulsing glowing mic rings, real-time waveform bar visualizer, and active agent badges.
+- **Hands-free Controls**: Toggle **Auto Voice On/Off**, stop speech audio on demand, and trigger quick prompt chips.
+- **Keyboard Shortcuts**: Press `⌘ + Shift + V` (Mac) or `Ctrl + Shift + V` (Windows) to toggle the Master AI Voice panel anywhere.
+
+### How to Use:
+1. Click **Voice AI** in the top header or the floating bot icon in the bottom right corner (or press `⌘+Shift+V`).
+2. Click the large central microphone button and speak your question.
+3. Observe live interim speech text on screen. When silence is detected, your prompt is sent to Master AI.
+4. Listen to Master AI speak the synthesized response from the 9 specialized neural agents.
+5. Click **Speak Answer** on any message to re-listen to any response.
+
+### Browser Support Note:
+Uses browser-native Web Speech API (`SpeechRecognition` & `SpeechSynthesis`). Best supported on **Google Chrome**, **Brave**, and **Microsoft Edge**.
 
 ---
 

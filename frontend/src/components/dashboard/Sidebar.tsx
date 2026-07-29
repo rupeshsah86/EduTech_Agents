@@ -19,7 +19,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Crown,
-  ArrowRight,
   ChevronDown,
   Hand
 } from 'lucide-react';

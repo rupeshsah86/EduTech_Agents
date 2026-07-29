@@ -113,10 +113,9 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   const [activeSign, setActiveSign] = useState('');
   const [progress, setProgress] = useState(0);
   const [totalSigns, setTotalSigns] = useState(0);
-  const [completedSigns, setCompletedSigns] = useState(0);
+  const [_completedSigns, setCompletedSigns] = useState(0);
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState(false);
-  const [idleTimer, setIdleTimer] = useState(0);
 
   const rafRef = useRef<number | null>(null);
   const runSignRef = useRef<(txt: string) => void>(() => {});

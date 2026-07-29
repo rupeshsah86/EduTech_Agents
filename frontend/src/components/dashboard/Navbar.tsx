@@ -136,24 +136,14 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
           {/* Working Voice AI Toggle Button */}
           <button
             type="button"
-            onClick={handleToggleVoice}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full font-bold text-xs transition-all cursor-pointer shadow-2xs ${
-              isListening 
-                ? 'bg-rose-500 text-white border border-rose-600 animate-pulse' 
-                : 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/80 hover:bg-purple-100 dark:hover:bg-purple-900/50'
-            }`}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('open-master-ai-voice'));
+            }}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full font-bold text-xs bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/80 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-all cursor-pointer shadow-2xs"
+            title="Open Master AI Voice Panel (Cmd+Shift+V)"
           >
-            {isListening ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                <span>Listening...</span>
-              </>
-            ) : (
-              <>
-                <Mic className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                <span>Voice AI</span>
-              </>
-            )}
+            <Mic className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <span>Voice AI</span>
           </button>
 
           {/* Theme Toggle */}

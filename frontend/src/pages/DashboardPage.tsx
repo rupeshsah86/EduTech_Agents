@@ -13,6 +13,10 @@ import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
 import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
 import { VoiceAssistantWidget } from '../components/dashboard/VoiceAssistantWidget';
 import { ActiveAgentsBar } from '../components/dashboard/ActiveAgentsBar';
+import { AIDebateMode } from '../components/dashboard/AIDebateMode';
+import { ExamSimulator } from '../components/dashboard/ExamSimulator';
+import { AIStudyTwin } from '../components/dashboard/AIStudyTwin';
+import { ProjectRecommender } from '../components/dashboard/ProjectRecommender';
 import { SignAIPage } from './SignAIPage';
 import { ArrowLeft, Bot } from 'lucide-react';
 
