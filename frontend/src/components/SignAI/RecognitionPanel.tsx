@@ -1,6 +1,6 @@
 import React from 'react';
 import { signRecognitionService, type RecognitionResult } from '../../services/signRecognition';
-import { Hand, Cpu, Send, Activity, CornerDownLeft } from 'lucide-react';
+import { Hand, Cpu, Send, CornerDownLeft } from 'lucide-react';
 
 interface RecognitionPanelProps {
   result: RecognitionResult;
@@ -19,9 +19,8 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
     currentWord,
     recognizedSentence,
     status,
-    consecutiveFrames,
-    fps,
   } = result;
+
 
   const handleSend = () => {
     const textToSend = (recognizedSentence || currentWord).trim();
@@ -33,10 +32,42 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
   // 10 Stable ASL Alphabet Signs supported & validated
   const stable10ASLSigns = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'L', 'O'];
 
+  // Dynamic Status Indicator determination
+  const getStatusBadge = () => {
+    if (confidence > 0 && confidence < 75) {
+      return {
+        label: 'Low Confidence – Please adjust hand',
+        className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 animate-pulse',
+        indicator: 'bg-amber-500'
+      };
+    }
+    if (detectedLetter && detectedLetter !== '-') {
+      return {
+        label: 'Letter Detected',
+        className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-extrabold',
+        indicator: 'bg-emerald-500 animate-ping'
+      };
+    }
+    if (status === 'Listening...' || result.handDetected) {
+      return {
+        label: 'Detecting...',
+        className: 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800/80',
+        indicator: 'bg-purple-500 animate-pulse'
+      };
+    }
+    return {
+      label: 'Ready',
+      className: 'bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 border-slate-200 dark:border-neutral-700',
+      indicator: 'bg-slate-400'
+    };
+  };
+
+  const statusBadge = getStatusBadge();
+
   return (
     <div className="bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 rounded-2xl p-4.5 shadow-sm space-y-3.5 font-sans">
       
-      {/* Telemetry Header */}
+      {/* Clear Detection Status Panel Header */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold border border-purple-200 dark:border-purple-800">
@@ -44,42 +75,46 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
           </div>
           <div>
             <h3 className="font-extrabold text-xs text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-              <span>ASL Telemetry & Classifier</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">10 Signs Active</span>
+              <span>Detection Status Panel</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">10 ASL Signs</span>
             </h3>
-            <p className="text-[10px] text-slate-400 dark:text-neutral-500">21 Landmark MediaPipe Letter Classifier</p>
+            <p className="text-[10px] text-slate-400 dark:text-neutral-500">Live MediaPipe 21-Landmark Classifier</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800 text-[10px] font-bold">
-          <Activity className="w-3 h-3 animate-pulse" />
-          <span>{status}</span>
+        {/* Live Status Indicator Pill */}
+        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold shadow-2xs ${statusBadge.className}`}>
+          <span className={`w-2 h-2 rounded-full ${statusBadge.indicator}`} />
+          <span>{statusBadge.label}</span>
         </div>
       </div>
 
-      {/* Prominent Detected Letter Card */}
-      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-900/10 via-purple-600/10 to-indigo-600/10 border border-purple-500/30 flex items-center justify-between">
+      {/* Prominent Current Detected Letter & Confidence Box */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-900/10 via-purple-600/10 to-indigo-600/10 border border-purple-500/30 flex items-center justify-between">
         <div className="space-y-0.5 text-left">
           <span className="text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400">
-            Prominent Detected Letter
+            Current Detected Letter
           </span>
-          <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
+          <div className="flex items-baseline gap-2.5">
+            <p className="text-4xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
               {detectedLetter && detectedLetter !== '-' ? `[ ${detectedLetter} ]` : '-'}
             </p>
             {detectedLetter && detectedLetter !== '-' && (
-              <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                {confidence || 96}% Match
+              <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                {confidence || 96}% Confidence
               </span>
             )}
           </div>
         </div>
 
-        <div className="text-right space-y-0.5 font-mono text-xs">
-          <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Stream Health</span>
-          <p className="font-extrabold text-slate-700 dark:text-neutral-300">{fps} FPS ({consecutiveFrames}/6)</p>
+        <div className="text-right space-y-1 font-mono text-xs">
+          <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">Current Word</span>
+          <p className="font-extrabold text-purple-600 dark:text-purple-400 text-sm max-w-[120px] truncate">
+            {currentWord ? `Building: ${currentWord}` : 'Empty'}
+          </p>
         </div>
       </div>
+
 
       {/* 10 Stable ASL Signs Selector Palette */}
       <div className="space-y-1.5 pt-0.5 text-left">

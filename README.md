@@ -87,11 +87,13 @@ Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every ch
 
 13. **🖐️ Sign Language AI Tutor (Deaf & Mute Accessibility)**
     - Real-time ASL (American Sign Language) recognition powered by MediaPipe 21-landmark tracking.
+    - **Live Detection Status Panel**: Clear, un-missable live status indicators (*Ready*, *Detecting...*, *Letter Detected*, *Low Confidence – Please adjust hand*), prominent detected letter badge `[ A ]`, confidence percentage, and live word builder.
     - **10 Stable ASL Signs**: Full detection and 3D translation support for **A, B, C, D, E, F, H, I, L, O**.
     - **Real-Time WebGL 3D Avatar**: Translates Master AI responses into 3D Sign Language animations + Speech Voice + Structured Markdown.
     - **Multi-Modal Controls**: Seamlessly switch between Sign Language gesture mode, Keyboard mode, and Microphone mode.
 
 ---
+
 
 
 ## 🎙️ Master AI Voice (Full Voice Conversation)
