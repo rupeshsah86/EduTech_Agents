@@ -32,7 +32,7 @@ export const SignAIPage: React.FC = () => {
   ]);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [activeSignText, setActiveSignText] = useState<string>('HELLO WELCOME TO SIGN LANGUAGE AI');
+  const [activeSignText, setActiveSignText] = useState<string>('');
 
   const handleSendToMasterAI = async (promptText: string) => {
     if (!promptText.trim() || isProcessing) return;
@@ -63,11 +63,8 @@ export const SignAIPage: React.FC = () => {
     setMessages((prev) => [...prev, aiMsg]);
     setIsProcessing(false);
 
-    // 1. Play 3D Avatar Sign Language Animation
+    // Play 3D Avatar Sign Language Animation for response
     setActiveSignText(agentRes.signSummary || agentRes.text);
-
-    // 2. Speak answer automatically with Voice Synthesis
-    speak(agentRes.text);
   };
 
   const handlePlaySignAnimation = (signText: string) => {
