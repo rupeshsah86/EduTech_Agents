@@ -436,7 +436,72 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
           </div>
         )}
 
-        {/* Large Focused Question Input Box (Main Action) */}
+        <div className="space-y-2 text-left pt-1">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+              Quick Actions
+            </h2>
+            <span className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">Click to launch agent</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                id: 'notes',
+                label: 'Generate Notes',
+                desc: 'NoteCraft AI • Markdown & mind maps',
+                icon: FileText,
+                promptText: 'Generate comprehensive, structured Markdown study notes on: '
+              },
+              {
+                id: 'doubt',
+                label: 'Solve Doubt',
+                desc: 'ConceptClear AI • Socratic step-by-step',
+                icon: HelpCircle,
+                promptText: 'Help me solve this doubt step-by-step using Socratic reasoning: '
+              },
+              {
+                id: 'quiz',
+                label: 'Create Quiz',
+                desc: 'QuizMaster AI • Adaptive MCQs',
+                icon: CheckSquare,
+                promptText: 'Generate an adaptive 5-question multiple choice quiz on: '
+              },
+              {
+                id: 'study',
+                label: 'Study Plan',
+                desc: 'StudyFlow AI • Pomodoro timetable',
+                icon: Calendar,
+                promptText: 'Create a 7-day optimized Pomodoro study timetable for: '
+              }
+            ].map((card) => {
+              const Icon = card.icon;
+              return (
+                <button
+                  key={card.id}
+                  onClick={() => {
+                    setPrompt(card.promptText);
+                  }}
+                  className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                      {card.label}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-1 font-medium">
+                      {card.desc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Large Focused Question Input Box (Search Action) */}
         <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 p-4 shadow-lg hover:border-purple-300 dark:hover:border-purple-800 transition-all space-y-3 relative group">
           
           {attachedFile && (
@@ -499,8 +564,6 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
               </button>
             </div>
 
-
-
             <button
               type="button"
               onClick={() => handleSend()}
@@ -513,70 +576,8 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
           </div>
         </div>
 
-        {/* EXACTLY 4 Primary Action Cards Below Input Box */}
-        <div className="space-y-2 text-left">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500 px-1">
-            Quick Actions
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              {
-                id: 'notes',
-                label: 'Generate Notes',
-                desc: 'NoteCraft AI • Markdown & mind maps',
-                icon: FileText,
-                promptText: 'Generate comprehensive, structured Markdown study notes on: '
-              },
-              {
-                id: 'doubt',
-                label: 'Solve Doubt',
-                desc: 'ConceptClear AI • Socratic step-by-step',
-                icon: HelpCircle,
-                promptText: 'Help me solve this doubt step-by-step using Socratic reasoning: '
-              },
-              {
-                id: 'quiz',
-                label: 'Create Quiz',
-                desc: 'QuizMaster AI • Adaptive MCQs',
-                icon: CheckSquare,
-                promptText: 'Generate an adaptive 5-question multiple choice quiz on: '
-              },
-              {
-                id: 'study',
-                label: 'Study Plan',
-                desc: 'StudyFlow AI • Pomodoro timetable',
-                icon: Calendar,
-                promptText: 'Create a 7-day optimized Pomodoro study timetable for: '
-              }
-            ].map((card) => {
-              const Icon = card.icon;
-              return (
-                <button
-                  key={card.id}
-                  onClick={() => {
-                    setPrompt(card.promptText);
-                  }}
-                  className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                      {card.label}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-1 font-medium">
-                      {card.desc}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Speech Recognition Indicator Banner */}
+
         {isListening && (
           <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-between animate-pulse text-left">
             <div className="flex items-center gap-3">
@@ -679,10 +680,9 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
             </div>
           ))}
         </div>
-
       </div>
-
     </div>
   );
 };
+
 
