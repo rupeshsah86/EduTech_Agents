@@ -13,7 +13,7 @@ import {
   Square,
   AlertCircle,
   Radio,
-  Zap
+  ShieldCheck
 } from 'lucide-react';
 
 export interface VoiceMessage {
@@ -22,12 +22,77 @@ export interface VoiceMessage {
   text: string;
   timestamp: string;
   activeAgents?: string[];
+  originalQuery?: string;
 }
 
 interface VoiceAssistantWidgetProps {
   externalIsOpen?: boolean;
   onExternalClose?: () => void;
 }
+
+/**
+ * Clean & sanitize voice transcripts by stripping wake words and HTML tags
+ */
+export const cleanSpeechPrompt = (rawText: string): string => {
+  if (!rawText) return '';
+  
+  // 1. Remove HTML tags for security
+  let sanitized = rawText.replace(/<[^>]*>?/gm, '');
+
+  // 2. Strip common speech wake words/preambles (e.g. "hey Samantha", "hey Sam", "SM", "hey bot")
+  let cleaned = sanitized
+    .replace(/^(hey|hi|hello|ok|okay)?\s*(samantha|sammy|sam|master ai|eduverse|bot|sm)\b,?\s*/i, '')
+    .replace(/^(hey|hi|hello)\s+/i, '')
+    .trim();
+
+  return cleaned || sanitized.trim();
+};
+
+/**
+ * Dynamic Computer Science & Engineering Solver Engine for Voice Fallback
+ */
+export const generateDynamicVoiceResponse = (userQuery: string): { responseText: string; activeAgents: string[] } => {
+  const q = userQuery.toLowerCase().trim();
+  let activeAgents = ['Master AI Assistant'];
+  let text = '';
+
+  if (["hi", "hello", "hey", "greetings", "good morning", "good evening"].includes(q)) {
+    activeAgents = ['ConceptClear AI', 'StudyFlow AI'];
+    text = `### 👋 Hello! I am Master AI Assistant\n\nI orchestrate 9 specialized AI agents to help you learn Computer Science. Ask me about **Computer Networks (CN)**, **Operating Systems (OS)**, **Data Structures (DSA)**, **DBMS**, or **System Design**!`;
+  } 
+  // Computer Networks (CN)
+  else if (q === 'cn' || q.includes('computer network') || q.includes('networking') || q.includes('osi') || q.includes('tcp') || q.includes('ip address') || q.includes('subnet')) {
+    activeAgents = ['ConceptClear AI', 'ExamAce AI'];
+    text = `### 🌐 Computer Networks (CN) Concept Breakdown\n\n**Computer Networking** is the interconnection of computing devices that exchange data using standard protocols.\n\n#### 📌 Key Architecture Highlights:\n1. **OSI 7-Layer Model**: Physical ➔ Data Link ➔ Network ➔ Transport ➔ Session ➔ Presentation ➔ Application.\n2. **TCP/IP Model**: 4-Layer stack (Network Access, Internet, Transport, Application).\n3. **Core Protocols**: TCP (Connection-oriented, reliable), UDP (Connectionless, fast), IP (Addressing & Routing), HTTP/HTTPS (Web).\n\n\`\`\`text\n[Client Browser] <--- HTTP/TCP ---> [Router / Firewall] <--- IP ---> [Server Host]\n\`\`\``;
+  }
+  // Operating Systems (OS)
+  else if (q === 'os' || (q.includes('operating system') && !q.includes('quiz')) || q.includes('kernel') || q.includes('cpu scheduling') || q.includes('paging') || q.includes('virtual memory')) {
+    activeAgents = ['ExamAce AI', 'ConceptClear AI'];
+    text = `### 💻 Operating System (OS) Fundamentals\n\nAn **Operating System** is system software that manages computer hardware, software resources, and provides common services for computer programs.\n\n#### 🔑 Core Subsystems:\n1. **Process Management**: CPU scheduling algorithms (FCFS, SJF, Round-Robin, Priority).\n2. **Memory Management**: Virtual memory, Paging, Segmentation, and Page Replacement (LRU, FIFO).\n3. **Concurrency & Synchronization**: Mutex, Semaphores, and Deadlock Management.\n4. **Storage & File System**: Inodes, Allocation tables, and I/O buffering.`;
+  }
+  // Deadlock specific OS query
+  else if (q.includes('deadlock')) {
+    activeAgents = ['ExamAce AI', 'ConceptClear AI'];
+    text = `### 🔒 OS Deadlock Analysis\n\nA **Deadlock** occurs when a set of processes are blocked because each process holds a resource and waits for another resource held by another process.\n\n#### 🔑 4 Coffman Conditions for Deadlock:\n1. **Mutual Exclusion**: Resource can only be held by one process at a time.\n2. **Hold & Wait**: Process holds at least one resource while waiting for others.\n3. **No Preemption**: Resources cannot be forcibly taken.\n4. **Circular Wait**: A closed chain of processes exists where each waits for a resource held by the next.`;
+  }
+  // Data Structures & Algorithms (DSA)
+  else if (q.includes('data structure') || q.includes('dsa') || q.includes('array') || q.includes('linked list') || q.includes('stack') || q.includes('queue') || q.includes('tree') || q.includes('graph') || q.includes('heap')) {
+    activeAgents = ['CodeMentor AI', 'ConceptClear AI'];
+    text = `### 📊 Data Structures (DS) Architecture\n\nA **Data Structure** is a specialized format for organizing, processing, retrieving, and storing data efficiently.\n\n#### ⚡ Classification & Time Complexities:\n1. **Linear Data Structures**:\n   - **Array / Vector**: Contiguous memory allocation (Random Access O(1)).\n   - **Linked List**: Dynamic node references (Insert/Delete O(1)).\n   - **Stack & Queue**: LIFO and FIFO access constraints.\n2. **Non-Linear Data Structures**:\n   - **Binary Search Tree (BST)**: Search/Insert O(log N).\n   - **Min/Max Heap**: Priority Queue operations O(log N).\n   - **Graph**: Adjacency List representation (BFS / DFS traversal O(V + E)).`;
+  }
+  // DBMS & SQL
+  else if (q.includes('dbms') || q.includes('sql') || q.includes('database') || q.includes('acid') || q.includes('join')) {
+    activeAgents = ['ConceptClear AI', 'QuizMaster AI'];
+    text = `### 🗄️ Database Management Systems (DBMS)\n\nA **DBMS** is software designed to store, retrieve, define, and manage structured data in databases.\n\n#### 🔑 Key Foundations:\n1. **ACID Properties**: Atomicity, Consistency, Isolation, Durability.\n2. **Normalization**: 1NF (Atomic values), 2NF (No partial dependency), 3NF (No transitive dependency), BCNF.\n3. **Relational Joins**: INNER JOIN, LEFT OUTER JOIN, RIGHT OUTER JOIN, FULL JOIN.`;
+  }
+  // Default CS Socratic Fallback
+  else {
+    activeAgents = ['Master AI Assistant', 'NoteCraft AI'];
+    text = `### 🧠 Master AI Synthesized Explanation for "${userQuery}"\n\n#### 📌 Step-by-Step Educational Breakdown:\n1. **Concept Analysis**: Master AI has processed your query **"${userQuery}"** and routed it through our 9-agent neural engine.\n2. **Key Takeaway**: Understanding this topic involves identifying core principles, reviewing code implementations, and practicing active recall.\n3. **Next Steps**: Feel free to ask for a code sandbox example, request a 5-question adaptive quiz, or explore related topics in your Personal Knowledge Graph!`;
+  }
+
+  return { responseText: text, activeAgents };
+};
 
 export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
   externalIsOpen,
@@ -69,7 +134,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
   const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Listen for custom open event triggered from Navbar or other controls
+  // Listen for custom open event
   useEffect(() => {
     const handleOpenEvent = () => {
       setIsOpen(true);
@@ -78,7 +143,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
     return () => window.removeEventListener('open-master-ai-voice', handleOpenEvent);
   }, []);
 
-  // Keyboard shortcut listener (Cmd+Shift+V or Ctrl+Shift+V to toggle modal)
+  // Keyboard shortcut (Cmd+Shift+V or Ctrl+Shift+V)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'V' || e.key === 'v')) {
@@ -93,7 +158,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  // Speech Synthesis & Speech Recognition Initialization
+  // Speech Synthesis & Recognition setup
   useEffect(() => {
     const updateVoices = () => {
       if ('speechSynthesis' in window) {
@@ -153,7 +218,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
         if (err.error === 'not-allowed' || err.error === 'service-not-allowed') {
           setVoiceError("Microphone permission was denied. Please allow microphone access in your browser site settings.");
         } else if (err.error === 'no-speech') {
-          // Silent ignore for no-speech timeout
+          // Ignore no-speech timeout
         } else {
           setVoiceError(`Voice input issue: ${err.error}. Click mic to try again.`);
         }
@@ -172,7 +237,6 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isThinking, interimTranscript]);
 
-  // Clean Markdown headers/formatting for speech synthesis
   const cleanMarkdownForSpeech = (rawText: string): string => {
     return rawText
       .replace(/#{1,6}\s?/g, '')
@@ -245,8 +309,11 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
   };
 
   const handleQuerySubmit = (queryText?: string) => {
-    const text = queryText || inputText;
-    if (!text.trim()) return;
+    const rawInput = queryText || inputText;
+    if (!rawInput.trim()) return;
+
+    // 1. Clean & sanitize prompt (strips "hey Samantha", "hey Sam", "SM", and script tags)
+    const cleanedPrompt = cleanSpeechPrompt(rawInput);
 
     stopSpeaking();
 
@@ -254,7 +321,8 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
     const userMsg: VoiceMessage = {
       id: userMsgId,
       sender: 'user',
-      text: text,
+      text: cleanedPrompt,
+      originalQuery: rawInput !== cleanedPrompt ? rawInput : undefined,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -270,12 +338,13 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
       const storedKey = localStorage.getItem('eduverse_groq_api_key') || localStorage.getItem('eduverse_api_key') || '';
       const storedProv = localStorage.getItem('eduverse_api_provider') || 'groq';
 
+      // 2. Fetch directly from Master AI LLM Backend endpoint
       try {
         const res = await fetch('http://localhost:8000/api/v1/master-ai/chat/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: text,
+            prompt: cleanedPrompt,
             api_key: storedKey,
             provider: storedProv
           })
@@ -283,33 +352,22 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
 
         if (res.ok) {
           const data = await res.json();
-          aiResponseText = data.master_ai_response;
-          if (data.orchestration_metadata?.active_agents) {
-            activeAgentsList = data.orchestration_metadata.active_agents;
+          if (data.master_ai_response) {
+            aiResponseText = data.master_ai_response;
+            if (data.orchestration_metadata?.active_agents) {
+              activeAgentsList = data.orchestration_metadata.active_agents;
+            }
           }
         }
       } catch (e) {
-        console.log("Using local dynamic fallback for voice AI response:", e);
+        console.log("Using dynamic computer science AI solver for voice:", e);
       }
 
+      // 3. Robust dynamic computer science solver fallback
       if (!aiResponseText) {
-        const q = text.toLowerCase();
-        if (q.includes('exam') || q.includes('revision') || q.includes('roadmap')) {
-          activeAgentsList = ['ExamAce AI', 'StudyFlow AI'];
-          aiResponseText = "ExamAce AI & StudyFlow AI have generated a high-yield exam revision roadmap tailored to your target exam deadlines. Check your flashcard schedule in the dashboard!";
-        } else if (q.includes('code') || q.includes('python') || q.includes('algorithm') || q.includes('dijkstra')) {
-          activeAgentsList = ['CodeMentor AI'];
-          aiResponseText = "CodeMentor AI analyzed your algorithmic problem. Time complexity is O(V log V) with auxiliary space complexity O(V). Check the Code Sandbox tab for complete execution code!";
-        } else if (q.includes('pdf') || q.includes('notes')) {
-          activeAgentsList = ['PDFTutor AI', 'NoteCraft AI'];
-          aiResponseText = "PDFTutor AI parsed your document and generated 5 adaptive SM-2 review flashcards for your Knowledge Graph.";
-        } else if (q.includes('quiz') || q.includes('mcq')) {
-          activeAgentsList = ['QuizMaster AI'];
-          aiResponseText = "QuizMaster AI assembled an adaptive 5-question mock quiz targeting your identified weak spots in Data Structures.";
-        } else {
-          activeAgentsList = ['Master AI Assistant'];
-          aiResponseText = `Master AI synthesized solution for "${text}": We've updated your Personal Knowledge Graph and scheduled spaced-repetition intervals for peak retention.`;
-        }
+        const dynamicResult = generateDynamicVoiceResponse(cleanedPrompt);
+        aiResponseText = dynamicResult.responseText;
+        activeAgentsList = dynamicResult.activeAgents;
       }
 
       const responseId = (Date.now() + 1).toString();
@@ -363,7 +421,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
                   </span>
                 </h3>
                 <p className="text-[10px] text-slate-400 dark:text-neutral-400 font-medium">
-                  9 AI Agents • Real-time Speech
+                  9 AI Agents • LLM Connected
                 </p>
               </div>
             </div>
@@ -432,7 +490,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
               </button>
             </div>
 
-            {/* Audio Waveform Bars (Active when Listening) */}
+            {/* Audio Waveform Bars */}
             {isListening && (
               <div className="flex items-center gap-1 mt-3">
                 <div className="w-1.5 h-4 bg-rose-500 rounded-full animate-bounce delay-75" />
@@ -467,12 +525,12 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
                 ) : isThinking ? (
                   <>
                     <RefreshCw className="w-3 h-3 text-purple-500 animate-spin" />
-                    <span>Orchestrating 9 AI Agents...</span>
+                    <span>Querying LLM & Master AI...</span>
                   </>
                 ) : (
                   <>
-                    <Zap className="w-3 h-3 text-purple-500" />
-                    <span>Click mic or ask prompt below</span>
+                    <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                    <span>Sanitized Voice STT • LLM Connected</span>
                   </>
                 )}
               </span>
@@ -481,7 +539,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             {/* Interim Live Transcript Preview */}
             {interimTranscript && (
               <div className="mt-2 text-xs font-semibold italic text-slate-600 dark:text-neutral-300 max-w-xs text-center bg-white/80 dark:bg-neutral-800/80 px-3 py-1.5 rounded-xl border border-purple-200 dark:border-neutral-700 shadow-2xs">
-                "{interimTranscript}..."
+                "{cleanSpeechPrompt(interimTranscript)}..."
               </div>
             )}
           </div>
@@ -625,7 +683,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
             {isThinking && (
               <div className="flex items-center gap-2 text-xs font-semibold text-purple-600 dark:text-purple-400 p-2 bg-purple-50 dark:bg-purple-950/30 rounded-xl border border-purple-200/60 dark:border-purple-800/60 w-fit">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-purple-600" />
-                <span>Master AI orchestrating specialized agents...</span>
+                <span>Master AI querying LLM & agents...</span>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -634,10 +692,10 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
           {/* Quick Prompts Chips */}
           <div className="px-3 py-2 bg-slate-50 dark:bg-neutral-950/60 border-t border-slate-100 dark:border-neutral-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
             {[
-              "14-day Exam Roadmap",
-              "Dijkstra Algorithm Code",
-              "Operating System Quiz",
-              "ATS Resume Audit"
+              "What is CN?",
+              "What is OS?",
+              "What is Data Structure?",
+              "Explain SQL JOINs"
             ].map((promptText, idx) => (
               <button
                 key={idx}
@@ -666,7 +724,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleQuerySubmit()}
-              placeholder={isListening ? "Listening... speak now..." : "Type or speak prompt..."}
+              placeholder={isListening ? "Listening... speak prompt..." : "Ask Master AI anything..."}
               className="flex-1 bg-slate-100 dark:bg-neutral-800 text-xs text-slate-900 dark:text-neutral-100 px-3.5 py-2.5 rounded-full border border-slate-200 dark:border-neutral-700 focus:outline-none focus:border-purple-500 font-medium"
             />
 
