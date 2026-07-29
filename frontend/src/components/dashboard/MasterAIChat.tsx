@@ -667,7 +667,15 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={isListening ? "Listening to your voice..." : isDedicatedAgent ? `Ask ${currentAgentTitle} anything...` : "Ask anything or click mic to speak..."}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if ((prompt.trim() || attachedFile) && !isProcessing) {
+                    handleSend(prompt);
+                  }
+                }
+              }}
+              placeholder={isListening ? "Listening to your voice..." : isDedicatedAgent ? `Ask ${currentAgentTitle} anything...` : "Ask anything or press Enter to send..."}
               rows={2}
               className="w-full bg-transparent text-xs sm:text-sm font-medium text-slate-900 dark:text-neutral-100 placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none resize-none"
             />
