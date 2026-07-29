@@ -50,6 +50,20 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAttachedFile({
+        name: file.name,
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+        content: event.target?.result as string
+      });
+    };
+    reader.readAsText(file);
+  };
+
   const handleToggleMicPrompt = () => {
     const windowObj = window as any;
     const SpeechRecognition = windowObj.SpeechRecognition || windowObj.webkitSpeechRecognition;
@@ -687,6 +701,12 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId, onTog
                   <Plus className="w-4 h-4" />
                 </button>
 
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                />
                 <button 
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
