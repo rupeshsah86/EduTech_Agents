@@ -24,25 +24,73 @@ function getBone(avatar: THREE.Object3D, name: string): THREE.Object3D | undefin
   return undefined;
 }
 
-// Apply cartoon toon shading material to a mesh
-function applyToonMaterial(mesh: THREE.SkinnedMesh) {
-  const oldMat = mesh.material as THREE.MeshStandardMaterial;
-  const color = oldMat?.color ? oldMat.color.clone() : new THREE.Color(0xffd0a8);
+// Body zone color zones — mapped by normalized Y (0 = feet, 1 = top of head)
+function vertexColorFromNormY(normY: number, r: Float32Array, g: Float32Array, b: Float32Array, i: number) {
+  let cr: number, cg: number, cb: number;
 
-  // Override skin-looking meshes with warm natural skin
-  const name = mesh.name.toLowerCase();
-  let finalColor = color;
-
-  if (name.includes('body') || name.includes('skin') || name.includes('ch03')) {
-    finalColor = new THREE.Color(0xffc9a0); // Warm skin tone
+  if (normY > 0.87) {
+    // Hair — deep brown
+    cr = 0.17; cg = 0.10; cb = 0.055;
+  } else if (normY > 0.70) {
+    // Head / face / neck — warm skin
+    cr = 0.96; cg = 0.65; cb = 0.48;
+  } else if (normY > 0.58) {
+    // Shoulders / upper chest — vivid purple
+    cr = 0.43; cg = 0.16; cb = 0.85;
+  } else if (normY > 0.38) {
+    // Mid torso / waist — vivid purple (slightly lighter)
+    cr = 0.55; cg = 0.25; cb = 0.95;
+  } else if (normY > 0.22) {
+    // Thighs / upper legs — rich blue
+    cr = 0.11; cg = 0.31; cb = 0.87;
+  } else if (normY > 0.08) {
+    // Lower legs / shins — slightly darker blue
+    cr = 0.09; cg = 0.22; cb = 0.68;
+  } else {
+    // Feet / shoes — near black
+    cr = 0.11; cg = 0.10; cb = 0.10;
   }
 
-  const toonMat = new THREE.MeshToonMaterial({
-    color: finalColor,
+  r[i] = cr; g[i] = cg; b[i] = cb;
+}
+
+// Paint every vertex in the mesh with a body-zone color based on local Y position
+function applyVertexColorToon(mesh: THREE.SkinnedMesh) {
+  const geo = mesh.geometry;
+  const pos = geo.attributes.position;
+  const count = pos.count;
+
+  // Find local Y bounds
+  let minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < count; i++) {
+    const y = pos.getY(i);
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const height = maxY - minY || 1;
+
+  // Build per-vertex color arrays
+  const cr = new Float32Array(count);
+  const cg = new Float32Array(count);
+  const cb = new Float32Array(count);
+  const packed = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const normY = (pos.getY(i) - minY) / height;
+    vertexColorFromNormY(normY, cr, cg, cb, i);
+    packed[i * 3]     = cr[i];
+    packed[i * 3 + 1] = cg[i];
+    packed[i * 3 + 2] = cb[i];
+  }
+
+  geo.setAttribute('color', new THREE.BufferAttribute(packed, 3));
+
+  const mat = new THREE.MeshToonMaterial({
+    vertexColors: true,
     skinning: true,
   } as any);
 
-  mesh.material = toonMat;
+  mesh.material = mat;
 }
 
 export const AvatarViewer: React.FC<AvatarViewerProps> = ({
@@ -114,38 +162,46 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     const w = el.clientWidth || 400;
     const h = el.clientHeight || 520;
 
-    // Camera — same position as original Hear_Aid (full upper body in frame)
-    const camera = new THREE.PerspectiveCamera(28, w / h, 0.1, 1000);
-    camera.position.set(0, 1.5, 1.7);
+    // Camera — zoomed out for full upper-body view with breathing room
+    const camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 1000);
+    camera.position.set(0, 1.38, 2.6);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(w, h);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.5;
     el.innerHTML = '';
     el.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Premium Cartoon Lighting
-    scene.add(new THREE.AmbientLight(0xfff4f0, 2.2));
+    // Vivid Cartoon Lighting — boosted for rich color saturation
+    scene.add(new THREE.AmbientLight(0xfff8f0, 3.0));
 
-    const keyLight = new THREE.DirectionalLight(0xfffaf0, 3.0);
+    const keyLight = new THREE.DirectionalLight(0xfffde7, 4.5);
     keyLight.position.set(2, 5, 4);
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xd0e8ff, 1.5);
+    const fillLight = new THREE.DirectionalLight(0xc8d8ff, 2.5);
     fillLight.position.set(-3, 3, 2);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xffeeff, 1.2);
+    const rimLight = new THREE.DirectionalLight(0xffe0f0, 2.0);
     rimLight.position.set(0, 6, -3);
     scene.add(rimLight);
 
-    const topLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.5);
     topLight.position.set(0, 8, 0);
     scene.add(topLight);
+
+    const purpleAccent = new THREE.PointLight(0x9333ea, 1.2, 5);
+    purpleAccent.position.set(-1.5, 2.5, 2);
+    scene.add(purpleAccent);
+
+    const warmAccent = new THREE.PointLight(0xff9966, 0.8, 4);
+    warmAccent.position.set(1.5, 1.5, 2);
+    scene.add(warmAccent);
 
     // Load Michelle.glb — real human character with full finger bones
     const loader = new GLTFLoader();
@@ -154,17 +210,25 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       (gltf) => {
         const avatarScene = gltf.scene;
 
-        // Apply toon shading to all skinned meshes
+        // First pass: disable frustum culling
         avatarScene.traverse((child: any) => {
           if (child.isSkinnedMesh) {
             child.frustumCulled = false;
-            applyToonMaterial(child as THREE.SkinnedMesh);
           }
         });
 
         ref.avatar = avatarScene;
         scene.add(avatarScene);
         applyDefaultPose(ref);
+
+        // Second pass: paint every vertex by its local Y position → vivid body zone colors
+        avatarScene.traverse((child: any) => {
+          if (child.isSkinnedMesh) {
+            console.log('[AvatarViewer] mesh:', child.name, '→ vertex coloring');
+            applyVertexColorToon(child as THREE.SkinnedMesh);
+          }
+        });
+
         setModelReady(true);
       },
       undefined,
