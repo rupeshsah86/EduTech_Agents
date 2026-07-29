@@ -1,79 +1,79 @@
 import React from 'react';
-import { MessageSquare, Cpu, GitMerge, Database } from 'lucide-react';
+import { MessageSquare, Cpu, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const HowItWorks: React.FC = () => {
   const steps = [
     {
       step: '01',
-      title: 'Prompt Single Master AI',
-      description: 'You type your goal — whether preparing for exams, analyzing PDFs, debugging DSA code, or building an ATS resume.',
+      title: 'Ask or Upload',
+      description: 'Type any question, paste an assignment, or upload textbook PDFs and lecture slides directly.',
       icon: MessageSquare,
-      color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20'
+      color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800'
     },
     {
       step: '02',
-      title: 'Dynamic Intent & Agent Routing',
-      description: 'Master AI classifies intent and constructs a multi-agent execution plan, selecting the exact agents required.',
+      title: 'AI Agent Orchestration',
+      description: 'Master AI dispatches domain-specialized agents (ExamAce, ConceptClear, NoteCraft, PDFTutor) in parallel.',
       icon: Cpu,
-      color: 'text-purple-500 bg-purple-500/10 border-purple-500/20'
+      color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800'
     },
     {
       step: '03',
-      title: 'Multi-Agent Collaboration',
-      description: 'Selected agents (e.g. PDFTutor + QuizMaster + ConceptClear) execute in parallel and pass intermediate artifacts.',
-      icon: GitMerge,
-      color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
-    },
-    {
-      step: '04',
-      title: 'Synthesized Response & Memory Update',
-      description: 'Master AI delivers a single unified response while updating your Knowledge Graph and SM-2 flashcard schedule.',
-      icon: Database,
-      color: 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+      title: 'Mastery & Retention',
+      description: 'Receive instant step-by-step solutions, structured notes, adaptive MCQs, and personalized study schedules.',
+      icon: Sparkles,
+      color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800'
     }
   ];
 
   return (
-    <section id="how-it-works" className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-200 dark:border-slate-800/80">
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-          Seamless Multi-Agent Orchestration
-        </h2>
-        <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+    <section id="how-it-works" className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-100 dark:border-neutral-800/80 font-sans">
+      <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Simple 3-Step Process</span>
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           How EduVerse AI Works
-        </h3>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-          Students never worry about choosing prompt formats or switching chatbots. One Master AI Assistant handles everything.
+        </h2>
+        <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400">
+          No complex prompt engineering or switching tools. One input orchestrates nine specialized AI tutors.
         </p>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-8">
         {steps.map((item, idx) => {
           const Icon = item.icon;
           return (
-            <div
+            <motion.div
               key={idx}
-              className="glass-panel p-6 rounded-2xl space-y-4 relative glass-card-hover border border-slate-200 dark:border-slate-800/80"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              className="p-7 rounded-2xl bg-white dark:bg-neutral-900/60 border border-slate-200/80 dark:border-neutral-800 space-y-4 relative hover:border-purple-300 dark:hover:border-purple-800 transition-all shadow-sm hover:shadow-md text-left"
             >
               <div className="flex items-center justify-between">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${item.color}`}>
                   <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-2xl font-black text-slate-300 dark:text-slate-700">
+                <span className="text-2xl font-black text-slate-200 dark:text-neutral-800 font-mono">
                   {item.step}
                 </span>
               </div>
 
-              <h4 className="font-bold text-lg text-slate-900 dark:text-white">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white">
                 {item.title}
-              </h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 leading-relaxed">
                 {item.description}
               </p>
-            </div>
+            </motion.div>
           );
         })}
       </div>
     </section>
   );
 };
+

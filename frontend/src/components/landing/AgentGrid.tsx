@@ -8,59 +8,68 @@ import {
   Calendar, 
   FileCode, 
   Code, 
-  Briefcase 
+  Briefcase,
+  Sparkles
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const AgentGrid: React.FC = () => {
   const agents = [
-    { name: "ExamAce AI", role: "PYQs & Revision Strategy", icon: BookOpen, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
-    { name: "AssignMate AI", role: "Academic Writing & Citations", icon: PenTool, color: "text-pink-500 bg-pink-500/10 border-pink-500/20" },
-    { name: "ConceptClear AI", role: "Socratic Doubt Solver", icon: HelpCircle, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" },
-    { name: "NoteCraft AI", role: "Mind Maps & Markdown Notes", icon: FileText, color: "text-purple-500 bg-purple-500/10 border-purple-500/20" },
-    { name: "QuizMaster AI", role: "Adaptive MCQs & Flashcards", icon: CheckSquare, color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" },
-    { name: "StudyFlow AI", role: "AI Timetable & Pomodoro", icon: Calendar, color: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20" },
-    { name: "PDFTutor AI", role: "Multi-Document PDF RAG", icon: FileCode, color: "text-red-500 bg-red-500/10 border-red-500/20" },
-    { name: "CodeMentor AI", role: "DSA Sandbox & Debugger", icon: Code, color: "text-teal-500 bg-teal-500/10 border-teal-500/20" },
-    { name: "CareerPath AI", role: "ATS Resume & Mock Interview", icon: Briefcase, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
+    { name: "ExamAce AI", role: "PYQs & Exam Roadmaps", icon: BookOpen },
+    { name: "AssignMate AI", role: "Academic Rewriter & Citations", icon: PenTool },
+    { name: "ConceptClear AI", role: "Socratic Step-by-Step Doubt Solver", icon: HelpCircle },
+    { name: "NoteCraft AI", role: "Structured Markdown & Mind Maps", icon: FileText },
+    { name: "QuizMaster AI", role: "Adaptive MCQs & Flashcards", icon: CheckSquare },
+    { name: "StudyFlow AI", role: "Pomodoro Schedules & Timetables", icon: Calendar },
+    { name: "PDFTutor AI", role: "Multi-Document PDF RAG & Q&A", icon: FileCode },
+    { name: "CodeMentor AI", role: "DSA Sandbox & Code Optimizer", icon: Code },
+    { name: "CareerPath AI", role: "ATS Resume & Skill Analyzer", icon: Briefcase },
   ];
 
   return (
-    <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-200 dark:border-slate-800/80">
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-          The Specialized Agent Ecosystem
+    <section id="agents" className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-100 dark:border-neutral-800/80 font-sans">
+      <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>9 Autonomous Intelligence Agents</span>
+        </div>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Domain Experts at Your Service
         </h2>
-        <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-          Meet the 9 Neural AI Agents
-        </h3>
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-          Each agent is a specialized domain expert operating under Master AI leadership.
+        <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400">
+          Master AI automatically orchestrates the ideal agent for your specific academic need.
         </p>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {agents.map((agent, idx) => {
           const Icon = agent.icon;
           return (
-            <div
+            <motion.div
               key={idx}
-              className="glass-panel p-6 rounded-2xl flex items-center gap-4 glass-card-hover border border-slate-200 dark:border-slate-800/80"
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
+              whileHover={{ y: -3 }}
+              className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-slate-200/80 dark:border-neutral-800 flex items-center gap-4 hover:border-purple-300 dark:hover:border-purple-800 transition-all shadow-sm hover:shadow-md text-left"
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${agent.color}`}>
-                <Icon className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
+                <Icon className="w-5 h-5" />
               </div>
-              <div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">
                   {agent.name}
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
                   {agent.role}
                 </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
     </section>
   );
 };
+
