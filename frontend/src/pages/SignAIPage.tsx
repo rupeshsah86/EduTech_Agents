@@ -192,7 +192,7 @@ export const SignAIPage: React.FC = () => {
           </h2>
         </div>
 
-        <div className="w-full h-[460px]">
+        <div className="w-full h-[520px]">
           <ChatWindow
             messages={messages}
             onSendMessage={handleSendToMasterAI}
@@ -206,6 +206,7 @@ export const SignAIPage: React.FC = () => {
             isRecognizing={isRecognizing}
           />
         </div>
+
       </div>
 
     </div>
