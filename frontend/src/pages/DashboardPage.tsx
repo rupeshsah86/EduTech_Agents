@@ -12,6 +12,7 @@ import { CodeMentorSandbox } from '../components/dashboard/CodeMentorSandbox';
 import { PDFTutorUploader } from '../components/dashboard/PDFTutorUploader';
 import { CareerPathResumeScanner } from '../components/dashboard/CareerPathResumeScanner';
 import { VoiceAssistantWidget } from '../components/dashboard/VoiceAssistantWidget';
+import { ActiveAgentsBar } from '../components/dashboard/ActiveAgentsBar';
 import { SignAIPage } from './SignAIPage';
 import { ArrowLeft, Bot } from 'lucide-react';
 
