@@ -132,7 +132,12 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
             {testLetters.map((char) => (
               <button
                 key={char}
-                onClick={() => signRecognitionService.triggerASLLetter(char)}
+                onClick={() => {
+                  signRecognitionService.triggerASLLetter(char);
+                  if (onSendToMasterAI) {
+                    onSendToMasterAI(char);
+                  }
+                }}
                 className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-neutral-800 hover:bg-purple-600 hover:text-white font-mono font-extrabold text-xs text-slate-700 dark:text-neutral-300 transition-all cursor-pointer border border-slate-200 dark:border-neutral-700 active:scale-95"
               >
                 {char}

@@ -34,7 +34,6 @@ function getBone(avatar: THREE.Object3D, name: string): THREE.Object3D | undefin
 
 export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   signText = '',
-  autoPlay = true,
 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const refObj = useRef<any>({
@@ -331,13 +330,14 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
 
   // React to signText prop changes
   useEffect(() => {
-    if (signText && modelReady && autoPlay) {
-      setTimeout(() => runSignRef.current(signText), 400);
+    if (signText && modelReady) {
+      setTimeout(() => runSignRef.current(signText), 300);
     }
-  }, [signText, modelReady, autoPlay]);
+  }, [signText, modelReady]);
 
   const handlePlay = () => {
-    if (signText) runSignRef.current(signText);
+    const textToPlay = (signText && signText.trim()) ? signText : 'HELLO';
+    runSignRef.current(textToPlay);
   };
 
   const handlePause = () => {
@@ -352,7 +352,8 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   };
 
   const handleReplay = () => {
-    if (signText) runSignRef.current(signText);
+    const textToPlay = (signText && signText.trim()) ? signText : 'HELLO';
+    runSignRef.current(textToPlay);
   };
 
   const handleSpeedChange = (s: number) => {
