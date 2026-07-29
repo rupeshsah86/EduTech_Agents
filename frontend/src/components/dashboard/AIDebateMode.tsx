@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Swords, Bot, Sparkles, Play } from 'lucide-react';
+import { Swords, Bot, Sparkles, Play, Award, CheckSquare, BookmarkCheck, ShieldCheck } from 'lucide-react';
 
 interface DebateTurn {
   id: string;
@@ -12,6 +12,9 @@ interface DebateTurn {
 export const AIDebateMode: React.FC = () => {
   const [topic, setTopic] = useState('Monolithic Architecture vs Microservices Architecture in Modern Cloud Systems');
   const [isDebating, setIsDebating] = useState(false);
+  const [hasCompletedDebate, setHasCompletedDebate] = useState(true);
+  const [savedStatus, setSavedStatus] = useState<boolean>(false);
+
   const [debateLog, setDebateLog] = useState<DebateTurn[]>([
     {
       id: '1',
@@ -32,6 +35,8 @@ export const AIDebateMode: React.FC = () => {
   const handleStartDebate = () => {
     if (!topic.trim()) return;
     setIsDebating(true);
+    setHasCompletedDebate(false);
+    setSavedStatus(false);
 
     setTimeout(() => {
       const turn1: DebateTurn = {
@@ -52,7 +57,19 @@ export const AIDebateMode: React.FC = () => {
 
       setDebateLog((prev) => [...prev, turn1, turn2]);
       setIsDebating(false);
+      setHasCompletedDebate(true);
     }, 1500);
+  };
+
+  const handleSaveToKnowledgeGraph = () => {
+    setSavedStatus(true);
+    setTimeout(() => setSavedStatus(false), 3000);
+  };
+
+  const handleGenerateQuizFromDebate = () => {
+    window.dispatchEvent(new CustomEvent('send-master-ai-prompt', { 
+      detail: `Generate a 5-question MCQ Quiz based on the debate: ${topic}` 
+    }));
   };
 
   return (
@@ -67,8 +84,8 @@ export const AIDebateMode: React.FC = () => {
               AI Multi-Agent Debate Arena
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1">
-            Watch two specialized AI agents debate two opposing viewpoints (Pro vs Con) to build deep multi-perspective understanding.
+          <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1 font-medium">
+            Watch two specialized AI agents debate opposing viewpoints (Pro vs Con) to build deep multi-perspective understanding.
           </p>
         </div>
 
@@ -84,7 +101,7 @@ export const AIDebateMode: React.FC = () => {
           <span>Enter Debate Topic or Dilemma</span>
         </label>
         
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={topic}
@@ -95,10 +112,10 @@ export const AIDebateMode: React.FC = () => {
           <button
             onClick={handleStartDebate}
             disabled={isDebating || !topic.trim()}
-            className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
+            className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
-            <span>{isDebating ? 'Debating...' : 'Trigger AI Debate'}</span>
+            <span>{isDebating ? 'Debating Arguments...' : 'Trigger AI Debate'}</span>
           </button>
         </div>
       </div>
@@ -136,6 +153,74 @@ export const AIDebateMode: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* 🏆 Post-Debate Analysis & Action Controls (AI Judgment, Key Takeaways, Action Buttons) */}
+      {hasCompletedDebate && (
+        <div className="max-w-4xl mx-auto p-6 sm:p-8 rounded-3xl bg-slate-50 dark:bg-neutral-900 border border-purple-500/30 space-y-6 shadow-md animate-in fade-in duration-300">
+          
+          {/* AI Judgment Banner */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black shrink-0 shadow-md">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-widest block">
+                  AI Master Verdict & Judgment
+                </span>
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                  Balanced Architecture: Modular Monolith ➔ Microservices Strategy
+                </h4>
+              </div>
+            </div>
+
+            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold text-xs border border-emerald-500/20 shrink-0">
+              PRO & CON Synthesized
+            </span>
+          </div>
+
+          {/* Key Takeaways */}
+          <div className="space-y-3">
+            <h4 className="font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-neutral-500 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-purple-500" /> Key Takeaways for Student Learning
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 space-y-1">
+                <strong className="text-purple-600 dark:text-purple-400 font-bold block mb-1">1. Pro Takeaway</strong>
+                <p className="text-slate-600 dark:text-neutral-300 leading-relaxed font-medium">
+                  Microservices grant velocity to large engineering organizations by decoupling deployment pipelines and database schemas.
+                </p>
+              </div>
+              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 space-y-1">
+                <strong className="text-amber-600 dark:text-amber-400 font-bold block mb-1">2. Con Takeaway</strong>
+                <p className="text-slate-600 dark:text-neutral-300 leading-relaxed font-medium">
+                  Microservices add high distributed operational overhead, network latency, and Saga transaction complexity for early startups.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons: Generate Quiz + Save to Knowledge Graph */}
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+            <button
+              onClick={handleSaveToKnowledgeGraph}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 hover:border-purple-500 text-slate-800 dark:text-neutral-200 font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <BookmarkCheck className={`w-4 h-4 ${savedStatus ? 'text-emerald-500' : 'text-purple-500'}`} />
+              <span>{savedStatus ? 'Saved to Knowledge Graph! ✓' : 'Save to Knowledge Graph'}</span>
+            </button>
+
+            <button
+              onClick={handleGenerateQuizFromDebate}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md shadow-purple-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <CheckSquare className="w-4 h-4" />
+              <span>Generate Quiz from Debate</span>
+            </button>
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

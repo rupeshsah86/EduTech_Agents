@@ -7,36 +7,27 @@ import {
   Clock, 
   Calendar, 
   Brain, 
-  ArrowRight, 
-  TrendingUp,
   Target,
-  Zap,
   BookOpen,
-  Filter,
-  X,
-  Code,
-  CheckSquare
+  Compass
 } from 'lucide-react';
 
 interface ConceptNode {
   id: string;
   name: string;
-  subject: string;
+  subject: 'DSA' | 'Algorithms' | 'Operating Systems' | 'DBMS' | 'System Design';
   masteryScore: number; // 0 to 100
   status: 'Mastered' | 'Learning' | 'Needs Review';
   lastPracticed: string;
   nextRevision: string;
   relatedConcepts: string[];
   description: string;
-  subtopics?: string[];
   timeComplexity?: string;
   spaceComplexity?: string;
 }
 
 export const KnowledgeGraphVisualizer: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('All');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeModalConcept, setActiveModalConcept] = useState<ConceptNode | null>(null);
 
   const allConceptNodes: ConceptNode[] = [
@@ -76,30 +67,16 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
   ];
 
   // Filtering Logic
-  const filteredNodes = allConceptNodes.filter((node) => {
-    const matchesSubject = selectedSubject === 'All' || node.subject === selectedSubject;
-    const matchesStatus = selectedStatusFilter === 'All' || node.status === selectedStatusFilter;
-    const matchesQuery = searchQuery === '' || 
-      node.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      node.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSubject && matchesStatus && matchesQuery;
-  });
+  const filteredNodes = selectedSubject === 'All' 
+    ? allConceptNodes 
+    : allConceptNodes.filter((node) => node.subject === selectedSubject);
 
-  // Calculate Top Summary Stats
   const totalCount = allConceptNodes.length;
   const masteredCount = allConceptNodes.filter(n => n.status === 'Mastered').length;
   const learningCount = allConceptNodes.filter(n => n.status === 'Learning').length;
   const reviewCount = allConceptNodes.filter(n => n.status === 'Needs Review').length;
   const overallMasteryAvg = Math.round(
     allConceptNodes.reduce((acc, curr) => acc + curr.masteryScore, 0) / totalCount
-  );
-
-  // Calculate Subject Completion %
-  const currentSubjectNodes = selectedSubject === 'All' 
-    ? allConceptNodes 
-    : allConceptNodes.filter(n => n.subject === selectedSubject);
-  const currentSubjectAvg = Math.round(
-    currentSubjectNodes.reduce((acc, curr) => acc + curr.masteryScore, 0) / (currentSubjectNodes.length || 1)
   );
 
   return (
@@ -141,7 +118,56 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Top Summary Stats Bar (5 Cards) */}
+      {/* 🌟 Weekly Insight + Suggested Focus Topics Summary Banner */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-900/10 via-purple-600/10 to-indigo-600/10 border border-purple-500/20 backdrop-blur-md grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Left Column: Weekly Insight */}
+        <div className="md:col-span-7 space-y-2">
+          <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 font-extrabold text-xs uppercase tracking-wider">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>AI Weekly Learning Insight</span>
+          </div>
+          <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
+            High Retention in DSA (92%), Memory Decay in OS Deadlocks & Dijkstra
+          </h3>
+          <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed font-medium">
+            Your SM-2 memory curve shows strong long-term consolidation for <strong>Arrays, Hash Tables, and SQL Optimization</strong>. However, <strong>Process Synchronization</strong> and <strong>Dijkstra Priority Queue Relaxation</strong> show early memory decay due to missing active recall sessions over the last 5 days.
+          </p>
+        </div>
+
+        {/* Right Column: Suggested Focus Topics */}
+        <div className="md:col-span-5 bg-white/80 dark:bg-neutral-900/80 border border-slate-200 dark:border-neutral-800 rounded-2xl p-4 space-y-2.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-extrabold text-slate-900 dark:text-neutral-100 flex items-center gap-1.5">
+              <Compass className="w-4 h-4 text-purple-600" /> Suggested Focus Topics
+            </span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              SM-2 Priority
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {[
+              { name: 'Dijkstra Algorithm', subject: 'Algorithms', score: 45, status: 'Overdue!' },
+              { name: 'Deadlocks & Coffman Conditions', subject: 'Operating Systems', score: 48, status: 'Overdue!' },
+              { name: 'Process Synchronization', subject: 'Operating Systems', score: 55, status: 'Due Today' },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-neutral-950 text-xs font-semibold">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="text-slate-800 dark:text-neutral-200 font-bold">{item.name}</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono">
+                  <span className="text-[10px] text-slate-400">{item.score}%</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Summary Stats Bar (5 Cards) */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
         <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-2xs space-y-1">
           <div className="flex items-center justify-between text-slate-400 dark:text-neutral-500 text-[10px] font-extrabold uppercase tracking-wider">
@@ -189,330 +215,134 @@ export const KnowledgeGraphVisualizer: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Learning Path Progress Bar */}
-      <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            <span className="text-xs font-extrabold text-slate-900 dark:text-neutral-100 uppercase tracking-wider">
-              {selectedSubject === 'All' ? 'Computer Science Core Path Progress' : `${selectedSubject} Domain Learning Progress`}
-            </span>
-          </div>
-          <span className="text-xs font-black text-purple-600 dark:text-purple-400">
-            {currentSubjectAvg}% Complete
-          </span>
-        </div>
+      {/* Grid of Concept Cards displaying Last Practiced, Next Revision, Related Concepts & Strength */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredNodes.map((node) => (
+          <div
+            key={node.id}
+            onClick={() => setActiveModalConcept(node)}
+            className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-xs hover:border-purple-500/50 transition-all cursor-pointer flex flex-col justify-between space-y-4 group"
+          >
+            <div className="space-y-3">
+              {/* Header Badge */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                  {node.subject}
+                </span>
+                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                  node.status === 'Mastered'
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                    : node.status === 'Learning'
+                    ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                }`}>
+                  {node.status}
+                </span>
+              </div>
 
-        <div className="w-full bg-slate-200 dark:bg-neutral-800 rounded-full h-2.5 overflow-hidden">
-          <div 
-            className="h-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-500 transition-all duration-700 shadow-xs" 
-            style={{ width: `${currentSubjectAvg}%` }} 
-          />
-        </div>
+              {/* Title & Description */}
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-neutral-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  {node.name}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+                  {node.description}
+                </p>
+              </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-neutral-400 font-medium">
-          <span>Foundational Concepts</span>
-          <span>Intermediate Algorithms</span>
-          <span>Advanced Systems</span>
-        </div>
-      </div>
-
-      {/* 4. Main Grid View (Left: Concept Cards Grid, Right: Mastery Gap Recommendations & Weekly Insights) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left Column: Concept Cards Grid */}
-        <div className="lg:col-span-2 space-y-4">
-          
-          {/* Controls Bar: Search & Status Filter */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-neutral-900 p-3.5 rounded-2xl border border-slate-200 dark:border-neutral-800">
-            <div className="flex items-center gap-2 flex-1">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search topics (e.g. Dijkstra, B-Trees, Cache...)"
-                className="w-full bg-transparent text-xs text-slate-900 dark:text-neutral-100 placeholder-slate-400 focus:outline-none font-medium"
-              />
+              {/* Related Concepts */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider block">
+                  Related Concepts
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {node.relatedConcepts.map((rel, idx) => (
+                    <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300">
+                      {rel}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
-              {['All', 'Mastered', 'Learning', 'Needs Review'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setSelectedStatusFilter(status)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all cursor-pointer ${
-                    selectedStatusFilter === status
-                      ? 'bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                      : 'text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filteredNodes.map((node) => (
-              <div
-                key={node.id}
-                onClick={() => setActiveModalConcept(node)}
-                className="glass-panel p-5 rounded-2xl glass-card-hover border border-slate-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-col justify-between space-y-3.5 shadow-2xs cursor-pointer hover:border-purple-400 transition-all"
-              >
-                {/* Header Badge */}
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                    node.status === 'Mastered'
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                      : node.status === 'Learning'
-                      ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
-                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                  }`}>
-                    {node.status}
-                  </span>
-
-                  <span className="text-xs font-black text-slate-900 dark:text-neutral-100 bg-slate-100 dark:bg-neutral-800 px-2 py-0.5 rounded-lg border border-slate-200/60 dark:border-neutral-700">
-                    {node.masteryScore}%
-                  </span>
+            {/* Bottom Parameters: Strength %, Last Practiced, Next Revision */}
+            <div className="border-t border-slate-100 dark:border-neutral-800 pt-3 space-y-2">
+              {/* Strength Mastery Progress Bar */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Concept Strength</span>
+                  <span className="font-mono text-purple-600 dark:text-purple-400">{node.masteryScore}%</span>
                 </div>
-
-                {/* Concept Info */}
-                <div className="space-y-1">
-                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100 leading-snug">
-                    {node.name}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
-                    {node.description}
-                  </p>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-slate-200 dark:bg-neutral-800 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800 overflow-hidden">
                   <div
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
-                      node.masteryScore > 80 ? 'bg-emerald-500' : node.masteryScore > 60 ? 'bg-purple-600' : 'bg-amber-500'
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      node.masteryScore >= 80 ? 'bg-emerald-500' : node.masteryScore >= 60 ? 'bg-purple-500' : 'bg-rose-500'
                     }`}
                     style={{ width: `${node.masteryScore}%` }}
                   />
                 </div>
-
-                {/* Timestamps */}
-                <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-neutral-500 pt-1 border-t border-slate-100 dark:border-neutral-800/80">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Last: {node.lastPracticed}
-                  </span>
-                  <span className="flex items-center gap-1 font-bold text-purple-600 dark:text-purple-400">
-                    <Calendar className="w-3 h-3" /> Next: {node.nextRevision}
-                  </span>
-                </div>
-
-                {/* Related Tags */}
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {node.relatedConcepts.map((tag, tIdx) => (
-                    <span key={tIdx} className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-[11px] text-slate-400 dark:text-neutral-500 text-center font-medium">
-            Showing {filteredNodes.length} of {allConceptNodes.length} concept nodes in topology
-          </p>
-        </div>
-
-        {/* Right Column: Mastery Gap Recommendations & Weekly Insights */}
-        <div className="space-y-6">
-          
-          {/* Actionable Mastery Gap Recommendations */}
-          <div className="glass-panel p-6 rounded-3xl space-y-4 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-3">
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" /> Mastery Gap Recommendations
-              </h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                Action Required
-              </span>
-            </div>
-
-            <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
-              ExamAce AI & QuizMaster AI identified 2 critical weak topics requiring immediate spaced revision:
-            </p>
-
-            <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 space-y-2">
-                <div className="flex items-center justify-between font-bold text-xs text-amber-600 dark:text-amber-400">
-                  <span>Dijkstra Algorithm</span>
-                  <span className="text-rose-500 font-extrabold">45% Score (Critical)</span>
-                </div>
-                <p className="text-slate-600 dark:text-neutral-300 text-[11px] leading-relaxed">
-                  Priority Queue implementation & edge relaxation steps failed in recent quiz attempt.
-                </p>
-                <button className="w-full py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-[11px] shadow-xs cursor-pointer">
-                  Practice Dijkstra Code Sandbox
-                </button>
               </div>
 
-              <div className="p-4 rounded-2xl bg-purple-500/5 dark:bg-purple-950/20 border border-purple-500/20 space-y-2">
-                <div className="flex items-center justify-between font-bold text-xs text-purple-600 dark:text-purple-400">
-                  <span>Process Synchronization</span>
-                  <span className="text-amber-500 font-extrabold">55% Score (High Risk)</span>
-                </div>
-                <p className="text-slate-600 dark:text-neutral-300 text-[11px] leading-relaxed">
-                  Deadlock condition handling (Coffman invariants) needs active recall flashcards.
-                </p>
-                <button className="w-full py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-[11px] shadow-xs cursor-pointer">
-                  Generate Flashcard Quiz
-                </button>
+              <div className="flex items-center justify-between text-[11px] font-medium text-slate-500 dark:text-neutral-400 pt-1">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-slate-400" />
+                  <span>Practiced: <strong>{node.lastPracticed}</strong></span>
+                </span>
+                <span className="flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
+                  <Calendar className="w-3 h-3" />
+                  <span>Revision: <strong>{node.nextRevision}</strong></span>
+                </span>
               </div>
             </div>
-
-            <button className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-              <Zap className="w-4 h-4 fill-white" />
-              <span>Launch AI Practice Session for Weak Topics</span>
-            </button>
           </div>
-
-          {/* Weekly Insights & Suggested Next Actions */}
-          <div className="glass-panel p-6 rounded-3xl space-y-4 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-sm">
-            <h3 className="font-extrabold text-sm text-slate-900 dark:text-neutral-100 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-500" /> Weekly AI Insights & Next Steps
-            </h3>
-
-            <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200 space-y-1">
-              <p className="font-bold flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-purple-600" /> Memory Velocity Insight
-              </p>
-              <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-relaxed">
-                Your retention on Graph Algorithms increased by <strong>+22%</strong> this week after using ConceptClear AI's Socratic explanations!
-              </p>
-            </div>
-
-            <div className="space-y-2 pt-1">
-              <p className="text-xs font-extrabold text-slate-800 dark:text-neutral-200 uppercase tracking-wider">
-                Suggested Next Actions
-              </p>
-              <button className="w-full py-2 px-3 rounded-xl bg-slate-50 dark:bg-neutral-950 hover:bg-slate-100 dark:hover:bg-neutral-800 border border-slate-200 dark:border-neutral-800 text-xs font-semibold text-slate-800 dark:text-neutral-200 flex items-center justify-between cursor-pointer">
-                <span>Revise 4 Overdue Flashcards</span>
-                <ArrowRight className="w-3.5 h-3.5 text-purple-500" />
-              </button>
-              <button className="w-full py-2 px-3 rounded-xl bg-slate-50 dark:bg-neutral-950 hover:bg-slate-100 dark:hover:bg-neutral-800 border border-slate-200 dark:border-neutral-800 text-xs font-semibold text-slate-800 dark:text-neutral-200 flex items-center justify-between cursor-pointer">
-                <span>Start Timed Exam Simulation</span>
-                <ArrowRight className="w-3.5 h-3.5 text-purple-500" />
-              </button>
-            </div>
-          </div>
-
-        </div>
-
+        ))}
       </div>
 
-      {/* Interactive Concept Detail Modal */}
+      {/* Concept Deep-Dive Detail Modal */}
       {activeModalConcept && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            {/* Modal Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-neutral-800 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                    {activeModalConcept.subject}
-                  </span>
-                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase ${
-                    activeModalConcept.status === 'Mastered' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-purple-500/10 text-purple-600'
-                  }`}>
-                    {activeModalConcept.status}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-neutral-100">
-                  {activeModalConcept.name}
-                </h3>
-              </div>
-
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-3">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                {activeModalConcept.subject}
+              </span>
               <button
                 onClick={() => setActiveModalConcept(null)}
-                className="p-2 rounded-full bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 text-slate-600 dark:text-neutral-400 cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-xs font-bold cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                ✕ Close
               </button>
             </div>
 
-            {/* Description & Subtopics */}
-            <div className="space-y-4">
-              <p className="text-sm text-slate-700 dark:text-neutral-300 leading-relaxed font-medium">
-                {activeModalConcept.description}
-              </p>
+            <h3 className="text-lg font-black text-slate-900 dark:text-white">{activeModalConcept.name}</h3>
+            <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">{activeModalConcept.description}</p>
 
-              {/* Sub-topics List */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 space-y-3">
-                <h4 className="text-xs font-extrabold text-slate-900 dark:text-neutral-100 uppercase tracking-wider">
-                  Core Sub-Topics & Milestones
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-700 dark:text-neutral-300">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>Foundational Data Layout</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>Time Complexity Analysis</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>Memory Allocation & Pointers</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-purple-500" />
-                    <span>Edge Cases & Boundary Conditions</span>
-                  </div>
-                </div>
+            <div className="space-y-2 pt-2 text-xs">
+              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-neutral-800">
+                <span className="text-slate-400">Mastery Strength</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400 font-mono">{activeModalConcept.masteryScore}%</span>
               </div>
-
-              {/* Related Tags */}
-              <div className="space-y-1 pt-1">
-                <p className="text-[10px] font-extrabold uppercase text-slate-400 dark:text-neutral-500">Related Concepts:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {activeModalConcept.relatedConcepts.map((tag, idx) => (
-                    <span key={idx} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-neutral-800 text-purple-600 dark:text-purple-400 border border-slate-200 dark:border-neutral-700">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-neutral-800">
+                <span className="text-slate-400">Last Practiced</span>
+                <span className="font-semibold text-slate-800 dark:text-neutral-200">{activeModalConcept.lastPracticed}</span>
               </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                <button 
-                  onClick={() => setActiveModalConcept(null)}
-                  className="py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Ask Master AI</span>
-                </button>
-                
-                <button 
-                  onClick={() => setActiveModalConcept(null)}
-                  className="py-3 px-4 rounded-xl bg-slate-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Code className="w-4 h-4" />
-                  <span>Practice Code</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveModalConcept(null)}
-                  className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <CheckSquare className="w-4 h-4" />
-                  <span>Take Quiz</span>
-                </button>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-400">Next Revision Due</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400">{activeModalConcept.nextRevision}</span>
               </div>
             </div>
 
+            <button
+              onClick={() => {
+                setActiveModalConcept(null);
+                window.dispatchEvent(new CustomEvent('send-master-ai-prompt', { 
+                  detail: `Explain ${activeModalConcept.name} in detail with code examples and active recall questions.` 
+                }));
+              }}
+              className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer mt-2"
+            >
+              Ask Master AI for Deep Dive Explanation
+            </button>
           </div>
         </div>
       )}

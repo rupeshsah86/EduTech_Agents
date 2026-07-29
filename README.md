@@ -33,21 +33,26 @@ Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every ch
    - Automatically clears input upon submission, validates against empty strings, and displays live loading states.
    - Includes global `⌘ + K` / `Ctrl + K` keyboard shortcut for fast focus.
 
-4. **🗺️ Interactive Personal Knowledge Graph**
-   - Live visual topography of mastered concepts, partial knowledge, and weak spots across 5 core domains (**DSA**, **Algorithms**, **Operating Systems**, **DBMS**, **System Design**).
-   - Topic-level breakdown with mastery percentage scores, status tags, last practiced dates, next revision due dates, and interactive deep-dive modals.
+3. **🗺️ Interactive Personal Knowledge Graph (100% Unrestricted)**
+   - Live visual topography of mastered concepts, partial knowledge, and weak spots across 5 core CS domains (**DSA**, **Algorithms**, **Operating Systems**, **DBMS**, **System Design**).
+   - Topic-level cards displaying: **Last Practiced Date**, **Next Revision Date (SM-2)**, **Related Concepts**, **Concept Strength %**, and **Weekly Insight + Suggested Focus Topics**.
 
-5. **⚔️ AI Multi-Agent Debate Arena**
-   - Two specialized AI agents debate opposing viewpoints (e.g. *Microservices vs Monolith*, *SQL vs NoSQL*) in real-time to build deep multi-perspective understanding.
+4. **👤 AI Digital Study Twin & 7-Day Plan Generator**
+   - Displays **Predicted Exam Mastery %**, **Learning Personality Profile**, and **Best Study Time Recommendation**.
+   - Interactive **"Generate 7-Day Personalized Plan"** button creating customized daily active recall targets based on auto-detected knowledge gaps.
 
-6. **⏱️ Real Timed Exam Simulation Mode**
-   - Timed mock exam environment featuring a live countdown timer, negative marking rules (`+4 / -1`), question navigator, and instant performance analysis.
+5. **⚔️ AI Multi-Agent Debate Arena & Synthesis**
+   - Two specialized AI agents debate opposing viewpoints in real-time.
+   - Includes post-debate **AI Judgment Verdict**, **Key Takeaways Box**, **"Generate Quiz from Debate"**, and **"Save to Knowledge Graph"**.
 
-7. **👤 AI Digital Study Twin & Auto Gap Detection**
-   - Predictive AI model of your learning patterns, memory retention curves, and auto-detected knowledge gaps discovered even if you didn't explicitly ask about them.
+6. **⏱️ Real Exam Simulator & Deep Analytics Dashboard**
+   - Configure **Subject** and **Difficulty Level** (Beginner, Intermediate, Hard / GATE Level).
+   - Timed mock exam environment featuring a live countdown timer and negative marking (`+4 / -1`).
+   - Post-exam **Deep Analytics Dashboard**: Accuracy %, Correct/Incorrect counts, Avg Time per Question, and Question-by-Question Explanations.
 
-8. **🚀 AI Project & Hackathon Recommender**
-   - Recommends real portfolio projects & hackathons dynamically matched to your current Personal Knowledge Graph mastery level.
+7. **🚀 AI Project & Hackathon Recommender**
+   - Matches real portfolio projects & hackathons dynamically matched to your Personal Knowledge Graph mastery level.
+   - Shows **Match %**, **Existing vs Missing Skills**, **Estimated Completion Time**, and **"Why Recommended For You"** highlight box.
 
 9. **🔥 Skill Heatmap & SM-2 Spaced Repetition Engine**
    - 28-day practice consistency matrix and SuperMemo SM-2 flashcard scheduler for long-term memory consolidation.
