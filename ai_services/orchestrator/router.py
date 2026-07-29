@@ -28,6 +28,10 @@ class MasterAIOrchestrator:
         self.api_key = api_key or os.environ.get("GROQ_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "") or os.environ.get("OPENAI_API_KEY", "")
         self.provider = provider
 
+    def is_greeting(self, prompt: str) -> bool:
+        clean_prompt = prompt.strip().lower().rstrip(".!?,")
+        return clean_prompt in self.GREETINGS or any(clean_prompt == g for g in self.GREETINGS)
+
     def classify_intent(self, prompt: str) -> List[str]:
         prompt_lower = prompt.lower()
         selected_agents = []

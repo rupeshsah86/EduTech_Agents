@@ -29,9 +29,10 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   collapsed: boolean;
   setCollapsed: (val: boolean) => void;
+  onOpenSettings?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, collapsed, setCollapsed }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, collapsed, setCollapsed, onOpenSettings }) => {
   const [agentsDropdownOpen, setAgentsDropdownOpen] = useState(true);
 
   const agentsList = [
@@ -126,17 +127,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
             >
               <BarChart3 className="w-4 h-4" />
             </button>
+
+            <button
+              onClick={() => onOpenSettings && onOpenSettings()}
+              className="p-2.5 rounded-xl text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 cursor-pointer"
+              title="Settings (Groq API Key)"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
           </nav>
         </div>
-
-        {/* Upgrade Icon */}
-        <button 
-          onClick={() => setCollapsed(false)}
-          className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 cursor-pointer"
-          title="Upgrade to Pro"
-        >
-          <Crown className="w-4 h-4" />
-        </button>
       </aside>
     );
   }
@@ -256,33 +256,70 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
           )}
         </div>
 
-        {/* Core Nav Group 2 */}
+        {/* Core Nav Group 2 - Unique Features */}
         <nav className="space-y-1 pt-2 border-t border-slate-100 dark:border-neutral-900">
           <button
             onClick={() => setActiveTab('knowledge')}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
               activeTab === 'knowledge'
-                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60'
                 : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
             }`}
           >
-            <Network className="w-4 h-4" />
+            <Network className="w-4 h-4 text-purple-500" />
             <span>Knowledge Graph</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('analytics')}
+            onClick={() => setActiveTab('study_twin')}
             className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-              activeTab === 'analytics'
-                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400'
+              activeTab === 'study_twin'
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60'
                 : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
-            <span>Learning Analytics</span>
+            <Crown className="w-4 h-4 text-amber-500" />
+            <span>AI Study Twin</span>
           </button>
 
           <button
+            onClick={() => setActiveTab('debate')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              activeTab === 'debate'
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60'
+                : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-rose-500" />
+            <span>AI Debate Mode</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('simulator')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              activeTab === 'simulator'
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60'
+                : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4 text-emerald-500" />
+            <span>Exam Simulator</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('projects')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              activeTab === 'projects'
+                ? 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60'
+                : 'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+            }`}
+          >
+            <Settings className="w-4 h-4 text-cyan-500" />
+            <span>Project Recommender</span>
+          </button>
+
+          <button
+            onClick={() => onOpenSettings && onOpenSettings()}
             className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl font-bold text-xs text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 transition-all cursor-pointer"
           >
             <Settings className="w-4 h-4" />
@@ -291,22 +328,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, colla
         </nav>
       </div>
 
-      {/* Upgrade to Pro Card */}
-      <div className="pt-3 border-t border-slate-100 dark:border-neutral-900">
-        <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2 text-left">
-          <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
-            <Crown className="w-4 h-4" />
-            <span>Upgrade to Pro</span>
-          </div>
-          <p className="text-[11px] text-slate-600 dark:text-neutral-400 leading-snug">
-            Unlock advanced agents, voice mode & more!
-          </p>
-          <button className="w-full py-1.5 rounded-xl bg-white dark:bg-neutral-900 text-purple-600 dark:text-purple-400 font-bold text-xs shadow-xs border border-purple-200 dark:border-purple-900 hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 cursor-pointer">
-            <span>Upgrade Now</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
     </aside>
   );
 };

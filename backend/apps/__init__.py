@@ -1,0 +1,1 @@
+# EduVerse AI apps package

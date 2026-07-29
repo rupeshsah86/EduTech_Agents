@@ -10,10 +10,10 @@ Inspired by **Linear**, **Notion**, **Stripe**, **Apple**, and **OpenAI**:
 - Fluid animations powered by Framer Motion.
 
 ### Color Palette (Tailwind Tokens)
-- **Background**: Dark `#0B0F17` / Light `#F8FAFC`
-- **Card Surface**: Dark `#131B2E` (`bg-slate-900/60 backdrop-blur-lg`) / Light `#FFFFFF`
-- **Border Accent**: Dark `#1E293B` (`border-slate-800`)
-- **Primary Brand / Master AI**: `#6366F1` (Indigo 500) to `#A855F7` (Purple 500)
+- **Background**: Dark `#0A0A0A` / `#111111` (Deep Charcoal) | Light `#FFFFFF` / `#FAFAFA` (Pure White / Soft Neutral)
+- **Card Surface**: Dark `#141414` (`bg-neutral-900/80 backdrop-blur-lg border-neutral-800`) / Light `#FFFFFF` (`bg-white border-neutral-200`)
+- **Border Accent**: Dark `#262626` (`border-neutral-800`) / Light `#E5E5E5` (`border-neutral-200`)
+- **Primary Brand / Master AI**: `#6366F1` (Indigo 500) to `#8B5CF6` (Violet 500)
 - **Agent Colors**:
   - ExamAce: `#F59E0B` (Amber)
   - AssignMate: `#EC4899` (Pink)
