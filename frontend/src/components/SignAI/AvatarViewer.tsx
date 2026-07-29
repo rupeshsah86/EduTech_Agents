@@ -155,9 +155,10 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     const w = el.clientWidth || 400;
     const h = el.clientHeight || 520;
 
-    // Professional Camera framing - upper body with natural distance
-    const camera = new THREE.PerspectiveCamera(30, w / h, 0.1, 1000);
-    camera.position.set(0, 1.35, 2.5);
+    // Professional Camera framing - centered upper body and head with safety margins
+    const camera = new THREE.PerspectiveCamera(28, w / h, 0.1, 1000);
+    camera.position.set(0, 1.05, 3.2);
+    camera.lookAt(0, 1.05, 0);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });

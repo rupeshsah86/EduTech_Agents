@@ -111,10 +111,10 @@ export const SignAIPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Middle Grid: Webcam & Live Telemetry Panel & 3D Avatar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Middle Grid: Webcam & Live Telemetry Panel & 3D Avatar (Equal Height Baseline) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:min-h-[520px]">
         {/* Left: Large Webcam Feed (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col">
+        <div className="lg:col-span-5 flex flex-col h-full">
           <WebcamComponent
             isRecognizing={isRecognizing}
             onStart={startRecognition}
@@ -126,7 +126,7 @@ export const SignAIPage: React.FC = () => {
         </div>
 
         {/* Center: Live Sign Telemetry & Classification (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col">
+        <div className="lg:col-span-4 flex flex-col h-full">
           <RecognitionPanel
             result={result}
             onSendToMasterAI={handleSendToMasterAI}
@@ -135,7 +135,7 @@ export const SignAIPage: React.FC = () => {
         </div>
 
         {/* Right: 3D GLB Sign Language Avatar (3 cols) */}
-        <div className="lg:col-span-3 flex flex-col">
+        <div className="lg:col-span-3 flex flex-col h-full">
           <AvatarViewer
             signText={activeSignText}
             autoPlay={true}
@@ -143,8 +143,17 @@ export const SignAIPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Section Divider */}
+      <div className="flex items-center gap-2 pt-2">
+        <div className="h-px flex-1 bg-slate-200 dark:bg-neutral-800" />
+        <span className="px-3.5 py-1 rounded-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-[11px] font-extrabold text-slate-600 dark:text-neutral-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+          <Hand className="w-3.5 h-3.5 text-purple-500" /> AI Workspace & Conversation History
+        </span>
+        <div className="h-px flex-1 bg-slate-200 dark:bg-neutral-800" />
+      </div>
+
       {/* Bottom Area: ChatGPT Style Interactive Chat Window */}
-      <div className="w-full h-[450px]">
+      <div className="w-full h-[460px]">
         <ChatWindow
           messages={messages}
           onSendMessage={handleSendToMasterAI}

@@ -99,9 +99,9 @@ export const WebcamComponent: React.FC<WebcamProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-3 w-full">
+    <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between space-y-3 h-full">
       {/* Live Camera Viewport Box */}
-      <div className="relative w-full aspect-video rounded-2xl bg-neutral-900 border-2 border-purple-500/30 dark:border-purple-500/40 shadow-xl overflow-hidden group">
+      <div className="relative w-full flex-1 min-h-[260px] aspect-video rounded-2xl bg-neutral-900 border-2 border-purple-500/30 dark:border-purple-500/40 shadow-xl overflow-hidden group">
         <video
           ref={videoRef}
           playsInline
