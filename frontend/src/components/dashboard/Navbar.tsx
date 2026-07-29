@@ -13,8 +13,8 @@ import {
   Send 
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
-
 import { UserProfileModal } from './UserProfileModal';
+import { LLMSelectorPill } from '../common/LLMSelectorPill';
 
 interface NavbarProps {
   darkMode: boolean;
@@ -190,6 +190,9 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
         {/* Right Controls */}
         <div className="flex items-center gap-3 shrink-0">
           
+          {/* Multi-LLM Provider Switcher Pill */}
+          <LLMSelectorPill />
+
           {/* Working Voice AI Toggle Button */}
           <button
             type="button"

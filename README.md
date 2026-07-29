@@ -11,8 +11,14 @@ Instead of interacting with disconnected AI tools, users communicate with **One 
 
 Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every chat, EduVerse AI includes persistent, student-focused engines:
 
-1. **🧠 Universal Master AI Answering Engine**
+1. **⚡ Multi-LLM Provider Switcher (Provider Freedom)**
+   - Switch seamlessly between **Google Gemini 1.5**, **Groq LPUs (Llama 3 70B)**, **OpenAI (GPT-4o / GPT-4o-mini)**, **DeepSeek (V3 / R1 Reasoner)**, and **Local Ollama** (100% offline & free).
+   - Designed using **SOLID Clean Architecture & Strategy Pattern** (`ILLMProviderStrategy`, `LLMService`).
+   - Interactive model switcher pill in top navbar with real-time connection testing, API key management, and hyperparameter tuning (Temperature, Max Tokens).
+
+2. **🧠 Universal Master AI Answering Engine**
    - Responds intelligently to **ANY** student prompt — concepts, code, exams, assignments, career, PDFs, quizzes, or general study doubts.
+   - Automatically routes queries through the selected active Multi-LLM provider and 9 specialized neural agents.
    - Automatically detects greetings ("Hi", "Hello") with warm, professional welcomes outlining platform capabilities and 9 agent delegations.
    - Provides clear, structured, student-friendly Markdown answers with active agent tags, code blocks, tables, and next-step recommendations.
 

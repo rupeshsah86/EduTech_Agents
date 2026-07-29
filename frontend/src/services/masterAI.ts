@@ -1,4 +1,5 @@
 // Master AI Orchestrator & Router Service for 9 EduVerse AI Agents
+import { llmService } from './llm/llmService';
 
 export interface AgentInfo {
   id: string;
@@ -116,25 +117,22 @@ class MasterAIService {
       targetAgent = AGENTS_REGISTRY.agent_career;
     }
 
-    // Try backend call if available, fallback to high quality offline router
+    // Call active LLM Provider (Gemini / Groq / OpenAI / DeepSeek / Ollama) via LLMService
     try {
-      const response = await fetch('/api/master-ai/chat/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text, agent_id: targetAgent.id }),
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const systemPrompt = `You are ${targetAgent.name} (${targetAgent.role}), part of EduVerse AI platform. Provide clear, structured, student-friendly, step-by-step educational explanations in GitHub Markdown with code examples, formulas, and active recall bullet points where relevant.`;
+      
+      const llmResult = await llmService.generate(text, systemPrompt);
+      if (llmResult && llmResult.text) {
         return {
-          agentId: data.agent_id || targetAgent.id,
-          agentName: data.agent_name || targetAgent.name,
-          text: data.response || data.message || text,
-          signSummary: data.sign_summary || text,
+          agentId: targetAgent.id,
+          agentName: `${targetAgent.name} [${llmResult.provider.toUpperCase()}: ${llmResult.model}]`,
+          text: llmResult.text,
+          signSummary: text.length > 30 ? text.substring(0, 30) : text,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         };
       }
-    } catch {
-      // Graceful fallback to smart client-side agent logic
+    } catch (e) {
+      console.warn('LLMService dispatch error, using fallback:', e);
     }
 
     // Smart responses for demo & offline mode
