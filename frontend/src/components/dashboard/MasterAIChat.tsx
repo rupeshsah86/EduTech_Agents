@@ -436,6 +436,44 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
           </div>
         )}
 
+        <div className="flex gap-3 max-w-4xl text-left">
+          <div className="w-8 h-8 rounded-xl bg-purple-600 shadow-md shadow-purple-600/20 flex items-center justify-center shrink-0 text-white">
+            <BrainCircuit className="w-4 h-4 text-white" />
+          </div>
+          <div className="space-y-1 max-w-2xl flex-1">
+            <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-neutral-500">
+              <span className="font-bold text-slate-800 dark:text-neutral-200">{currentAgentTitle}</span>
+              <span>•</span>
+              <span>10:00 AM</span>
+            </div>
+            <div className="p-4 rounded-2xl text-xs sm:text-sm leading-relaxed bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 rounded-tl-none shadow-sm space-y-2">
+              <p>Hello! I orchestrate 9 specialized AI agents to help you master any subject.</p>
+              <p>Ask me anything — from building an exam roadmap to debugging code or parsing PDFs. I've got you covered! 🚀</p>
+              <div className="flex items-center gap-3 pt-2 border-t border-slate-100 dark:border-neutral-800 text-xs">
+                <button
+                  onClick={() => speakMessageText('welcome', "Hello! I orchestrate 9 specialized AI agents to help you master any subject. Ask me anything — from building an exam roadmap to debugging code or parsing PDFs. I've got you covered!")}
+                  className={`flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                    isSpeaking && activeSpeakingMsgId === 'welcome'
+                      ? 'bg-emerald-500 text-white animate-pulse'
+                      : 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 hover:bg-purple-100'
+                  }`}
+                >
+                  {isSpeaking && activeSpeakingMsgId === 'welcome' ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  <span>{isSpeaking && activeSpeakingMsgId === 'welcome' ? 'Stop Voice' : 'Listen'}</span>
+                </button>
+                <button
+                  onClick={() => navigator.clipboard.writeText("Hello! I orchestrate 9 specialized AI agents to help you master any subject. Ask me anything — from building an exam roadmap to debugging code or parsing PDFs. I've got you covered! 🚀")}
+                  className="flex items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-[11px] font-semibold cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* EXACTLY 4 Primary Action Cards (Placed BEFORE Search Bar) */}
         <div className="space-y-2 text-left pt-1">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
@@ -577,7 +615,6 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
         </div>
 
         {/* Speech Recognition Indicator Banner */}
-
         {isListening && (
           <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-between animate-pulse text-left">
             <div className="flex items-center gap-3">
@@ -596,93 +633,96 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
           </div>
         )}
 
-        {/* Conversation Message Log */}
-        <div className="space-y-6 pt-2">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-3 max-w-4xl ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
-            >
-              {/* Avatar Icon */}
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white ${
-                msg.sender === 'user'
-                  ? 'bg-purple-600 font-extrabold text-xs'
-                  : 'bg-purple-600 shadow-md shadow-purple-600/20'
-              }`}>
-                {msg.sender === 'user' ? <User className="w-4 h-4 text-white" /> : <BrainCircuit className="w-4 h-4 text-white" />}
-              </div>
-
-              {/* Message Content */}
-              <div className={`space-y-1 max-w-2xl ${msg.sender === 'user' ? 'text-right' : ''}`}>
-                <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-neutral-500">
-                  <span className="font-bold text-slate-800 dark:text-neutral-200">
-                    {msg.sender === 'user' ? 'You' : currentAgentTitle}
-                  </span>
-                  <span>•</span>
-                  <span>{msg.timestamp}</span>
+        {/* Conversation Message Log (Excluding initial welcome message '1') */}
+        {messages.filter(m => m.id !== '1').length > 0 && (
+          <div className="space-y-6 pt-2">
+            {messages.filter(m => m.id !== '1').map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex gap-3 max-w-4xl ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+              >
+                {/* Avatar Icon */}
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white ${
+                  msg.sender === 'user'
+                    ? 'bg-purple-600 font-extrabold text-xs'
+                    : 'bg-purple-600 shadow-md shadow-purple-600/20'
+                }`}>
+                  {msg.sender === 'user' ? <User className="w-4 h-4 text-white" /> : <BrainCircuit className="w-4 h-4 text-white" />}
                 </div>
 
-                {msg.activeAgents && (
-                  <div className="flex flex-wrap gap-1 mb-1">
-                    {msg.activeAgents.map((ag, i) => (
-                      <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80">
-                        ⚡ {ag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {msg.isThinking ? (
-                  <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2 shadow-sm">
-                    <span>Master AI is thinking...</span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
-                      <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                      <span className="w-2 h-2 rounded-full bg-purple-400" />
+                {/* Message Content */}
+                <div className={`space-y-1 max-w-2xl ${msg.sender === 'user' ? 'text-right' : ''}`}>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-neutral-500">
+                    <span className="font-bold text-slate-800 dark:text-neutral-200">
+                      {msg.sender === 'user' ? 'You' : currentAgentTitle}
                     </span>
+                    <span>•</span>
+                    <span>{msg.timestamp}</span>
                   </div>
-                ) : (
-                  <div className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-purple-600 text-white rounded-tr-none font-medium text-left shadow-sm'
-                      : 'bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 rounded-tl-none shadow-sm'
-                  }`}>
-                    <div className="whitespace-pre-wrap font-sans">
-                      {msg.text}
+
+                  {msg.activeAgents && (
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {msg.activeAgents.map((ag, i) => (
+                        <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80">
+                          ⚡ {ag}
+                        </span>
+                      ))}
                     </div>
+                  )}
 
-                    {msg.sender === 'master_ai' && (
-                      <div className="flex items-center gap-3 mt-3 pt-2 border-t border-slate-100 dark:border-neutral-800 text-xs">
-                        <button
-                          onClick={() => speakMessageText(msg.id, msg.text)}
-                          className={`flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                            isSpeaking && activeSpeakingMsgId === msg.id
-                              ? 'bg-emerald-500 text-white animate-pulse'
-                              : 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 hover:bg-purple-100'
-                          }`}
-                        >
-                          {isSpeaking && activeSpeakingMsgId === msg.id ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                          <span>{isSpeaking && activeSpeakingMsgId === msg.id ? 'Stop Voice' : 'Listen'}</span>
-                        </button>
-
-                        <button
-                          onClick={() => navigator.clipboard.writeText(msg.text)}
-                          className="flex items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-[11px] font-semibold cursor-pointer"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Copy</span>
-                        </button>
+                  {msg.isThinking ? (
+                    <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2 shadow-sm">
+                      <span>Master AI is thinking...</span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
+                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-purple-400" />
+                      </span>
+                    </div>
+                  ) : (
+                    <div className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-purple-600 text-white rounded-tr-none font-medium text-left shadow-sm'
+                        : 'bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 rounded-tl-none shadow-sm'
+                    }`}>
+                      <div className="whitespace-pre-wrap font-sans">
+                        {msg.text}
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {msg.sender === 'master_ai' && (
+                        <div className="flex items-center gap-3 mt-3 pt-2 border-t border-slate-100 dark:border-neutral-800 text-xs">
+                          <button
+                            onClick={() => speakMessageText(msg.id, msg.text)}
+                            className={`flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                              isSpeaking && activeSpeakingMsgId === msg.id
+                                ? 'bg-emerald-500 text-white animate-pulse'
+                                : 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 hover:bg-purple-100'
+                            }`}
+                          >
+                            {isSpeaking && activeSpeakingMsgId === msg.id ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                            <span>{isSpeaking && activeSpeakingMsgId === msg.id ? 'Stop Voice' : 'Listen'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => navigator.clipboard.writeText(msg.text)}
+                            className="flex items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-[11px] font-semibold cursor-pointer"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
 
 
