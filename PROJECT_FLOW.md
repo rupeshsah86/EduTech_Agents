@@ -1,69 +1,81 @@
-# 🔄 EduVerse AI — Complete System Process Flowchart Diagram
-
-Below is the complete, end-to-end operational process flowchart for the **EduVerse AI** platform, featuring decision logic, multi-modal input processing, agent routing, Groq LPU execution, zero-downtime fallbacks, and 3D sign avatar synthesis.
-
----
+# 🔄 EduVerse AI — Complete System Process Flowchart
 
 ```mermaid
 graph TD
-    %% ── Flowchart Node Style Definitions ───────────────────
-    classDef process fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1,rx:8px,ry:8px;
-    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e;
-    classDef output fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d,rx:8px,ry:8px;
-    classDef startend fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#6b21a8,rx:12px,ry:12px;
+    %% ── EXACT EDUVERSE AI SYSTEM FLOWCHART ─────────────────
+    Top["ASK QUESTION AI"] --> Role["SELECT ROLE"]
+    Role --> TaskCheck{"GET TASK"}
 
-    %% ── 1. USER AUTHENTICATION & ENTRY ────────────────────
-    Start(["🚀 Start: User Enters EduVerse AI Platform"]):::startend --> AuthCheck{"Is User Authenticated?"}:::decision
-    
-    AuthCheck -->|No| Register["👤 User Login / Signup (JWT Token Issued)"]:::process
-    Register --> Dashboard["⚡ Access Main AI Dashboard"]:::process
-    AuthCheck -->|Yes| Dashboard
+    %% User Auth Branch
+    TaskCheck -->|New User| NewUser["NEW USER"]
+    NewUser --> Reg["REGISTRATION"]
+    Reg --> Login["LOGIN"]
+    Login --> Dash["DASHBOARD"]
 
-    %% ── 2. INPUT MODE & FEATURE SELECTION ─────────────────
-    Dashboard --> ActionType{"Select Input Mode / Action"}:::decision
+    TaskCheck -->|Existing User| ExistUser["EXISTING USER"]
+    ExistUser --> Login
 
-    %% Path A: Sign AI Gesture Mode
-    ActionType -->|Sign Gesture Mode| CameraCheck{"Is Webcam Available?"}:::decision
-    CameraCheck -->|No| FallbackText["⌨️ Fallback to Keyboard Text Input"]:::process
-    CameraCheck -->|Yes| MediaPipe["🖐️ Track 21 Hand Landmarks via MediaPipe"]:::process
-    MediaPipe --> ClassifySign["🔤 Classify ASL Sign (A-Z) & Build Sentence"]:::process
-    ClassifySign --> SendPrompt["🧠 Send Prompt to Master AI Engine"]:::process
-    FallbackText --> SendPrompt
+    %% Sidebar Branch
+    Dash --> SideMenu["SIDEBAR MENU"]
+    SideMenu --> SelectFeat["SELECT FEATURE OPTION"]
+    SelectFeat --> KG["KNOWLEDGE GRAPH"]
+    SelectFeat --> LP["LEARNING PATH"]
+    SelectFeat --> Ana["ANALYTICS"]
 
-    %% Path B: Voice Input Mode
-    ActionType -->|Voice Conversation| STT["🎙️ Capture Speech via Web Speech API (STT)"]:::process
-    STT --> SendPrompt
+    %% Input Mode Branch
+    Dash --> InputModeCheck{"SELECT INPUT MODE"}
+    InputModeCheck -->|TEXT| TextMode["TEXT-TO-SIGN TUTOR"]
+    InputModeCheck -->|VOICE| VoiceMode["VOICE-TO-TEXT TUTOR"]
+    InputModeCheck -->|CAMERA| CamMode["SIGN-TO-TEXT TUTOR"]
 
-    %% Path C: Text / Search Bar Mode
-    ActionType -->|Search Input Bar| TypeQuery["💬 Type Concept / Code / Exam Query"]:::process
-    TypeQuery --> SendPrompt
+    TextMode & VoiceMode & CamMode --> MasterEngine["MASTER AI ENGINES"]
+    MasterEngine --> AgentCheck{"SELECT AGENT ENGINE"}
 
-    %% Path D: Sidebar Feature Modules
-    ActionType -->|Sidebar Module| ModuleSelect{"Select Feature Module"}:::decision
-    ModuleSelect -->|Knowledge Graph| KG["🗺️ View Topic Strengths & SM-2 Flashcards"]:::process
-    ModuleSelect -->|Exam Simulator| Exam["⏱️ Select Subject & Generate AI MCQs via Groq"]:::process
-    ModuleSelect -->|AI Debate Arena| Debate["⚔️ Trigger 2-Agent Debate & AI Verdict"]:::process
-    ModuleSelect -->|AI Study Twin| Twin["👤 Generate 7-Day Active Recall Plan"]:::process
-    
-    KG & Exam & Debate & Twin --> NextAction{"Continue Learning?"}:::decision
+    AgentCheck --> RouteAgents["ROUTING MULTI AGENTS"]
 
-    %% ── 3. INTENT ROUTING & AGENT DELEGATION ───────────────
-    SendPrompt --> IntentRouter["🧠 Master AI Intent Classifier"]:::process
-    IntentRouter --> DelegateAgent["🤖 Delegate to 1 of 9 Neural Agents (ExamAce, CodeMentor, etc.)"]:::process
+    %% 9 Neural Agents
+    RouteAgents --> A1["EXAM ACE"]
+    RouteAgents --> A2["ASSIGN MATE"]
+    RouteAgents --> A3["CONCEPT CLEAR"]
+    RouteAgents --> A4["NOTE CRAFT"]
+    RouteAgents --> A5["QUIZ MASTER"]
+    RouteAgents --> A6["STUDY FLOW"]
+    RouteAgents --> A7["PDF TUTOR"]
+    RouteAgents --> A8["CODE MENTOR"]
+    RouteAgents --> A9["CAREER PATH"]
 
-    %% ── 4. MULTI-LLM STRATEGY & FALLBACK ENGINE ────────────
-    DelegateAgent --> LLMCheck{"Check Groq LPU Provider Status"}:::decision
-    LLMCheck -->|Groq Available| GroqEngine["⚡ Query Groq LPUs (llama-3.3-70b @ 500+ tok/s)"]:::process
-    LLMCheck -->|Quota Limit / Network Error| FallbackEngine["🛡️ Activate Zero-Downtime Dynamic Fallback Solver"]:::process
+    A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9 --> OutputSynth["OUTPUT SYNTHESIS"]
 
-    GroqEngine --> Synthesize["📝 Synthesize Structured Markdown Response"]:::process
-    FallbackEngine --> Synthesize
+    OutputSynth --> OutputCheck{"SELECT OUTPUT RESPONSE MODE"}
 
-    %% ── 5. PERSISTENCE & MULTI-MODAL OUTPUT SYNTHESIS ──────
-    Synthesize --> DBUpdate["💾 Log Activity, Update SM-2 Memory & Daily Streak Counter"]:::process
-    DBUpdate --> UIOutput["✨ Render Answer + 3D Michelle Avatar Sign + Voice Playback"]:::output
+    %% Output Response Modes
+    OutputCheck -->|3D Avatar Output| AvMode["3D AVATAR"]
+    AvMode --> SignDisp["SIGN DISPLAY"]
+    AvMode --> AudVoice["AUDIO VOICE"]
+    AvMode --> AvEngine["MODEL AVATAR ENGINE"]
 
-    UIOutput --> NextAction
-    NextAction -->|Yes| Dashboard
-    NextAction -->|No| EndSession(["🏁 End Session: Data Saved to Student Profile"]):::startend
+    OutputCheck -->|Master AI Output| ChatMode["MASTER AI CHAT"]
+    ChatMode --> TextResp["TEXT RESPONSE"]
+    ChatMode --> NoteCreate["NOTE CREATION"]
+    ChatMode --> QuizTest["QUIZ TEST MODE"]
 ```
+
+---
+
+## 📌 Node-by-Node System Flow Description
+
+1. **Ask Question AI & Select Role**: User initiates query or role selection.
+2. **Get Task & Auth Routing**:
+   - **New User**: `REGISTRATION` → `LOGIN` → `DASHBOARD`.
+   - **Existing User**: `LOGIN` → `DASHBOARD`.
+3. **Dashboard & Sidebar Features**:
+   - Navigation via `SIDEBAR MENU` to `KNOWLEDGE GRAPH`, `LEARNING PATH`, and `ANALYTICS`.
+4. **Input Mode Selection**:
+   - `TEXT`: Text-to-Sign Tutor.
+   - `VOICE`: Voice-to-Text Tutor.
+   - `CAMERA`: Sign-to-Text Tutor (MediaPipe 21-landmark tracking).
+5. **Master AI Engines & Agent Routing**:
+   - Master AI Intent Router delegates to 1 of 9 specialized neural agents: **EXAM ACE**, **ASSIGN MATE**, **CONCEPT CLEAR**, **NOTE CRAFT**, **QUIZ MASTER**, **STUDY FLOW**, **PDF TUTOR**, **CODE MENTOR**, **CAREER PATH**.
+6. **Output Synthesis & Response Modes**:
+   - **3D Avatar**: Sign Display + Audio Voice + 3D Model Avatar Engine.
+   - **Master AI Chat**: Text Response + Note Creation + Quiz Test Mode.
