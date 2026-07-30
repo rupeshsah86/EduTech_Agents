@@ -1,126 +1,69 @@
-# 🏗️ EduVerse AI — System Architecture & Flow Diagrams
+# 🔄 EduVerse AI — Complete System Process Flowchart Diagram
 
-```mermaid
-graph TB
-    %% ── USER & CLIENT INTERFACE LAYER ──────────────────────────────────
-    subgraph CLIENT_LAYER ["🎨 PRESENTATION & FRONTEND LAYER (React 18 + Vite + TS)"]
-        UI["🖥️ EduVerse AI SaaS Dashboard UI"]
-        Webcam["🎥 MediaPipe Hands API (21 Hand Landmarks)"]
-        Avatar3D["💃 Three.js WebGL 3D Avatar (Michelle.glb)"]
-        VoiceEngine["🎙️ Web Speech API (STT & TTS Engine)"]
-    end
-
-    %% ── MASTER AI & MULTI-AGENT ORCHESTRATION LAYER ────────────────────
-    subgraph ORCHESTRATION_LAYER ["🧠 MASTER AI & 9 NEURAL AGENTS ORCHESTRATOR"]
-        MasterAI["⚡ Universal Master AI Answering Engine"]
-        
-        subgraph AGENTS ["🤖 9 SPECIALIZED NEURAL TUTORS"]
-            A1["📚 ExamAce AI"]
-            A2["📝 AssignMate AI"]
-            A3["💡 ConceptClear AI"]
-            A4["📄 NoteCraft AI"]
-            A5["🎯 QuizMaster AI"]
-            A6["⏱️ StudyFlow AI"]
-            A7["📑 PDFTutor AI"]
-            A8["💻 CodeMentor AI"]
-            A9["🚀 CareerPath AI"]
-        end
-    end
-
-    %% ── MULTI-LLM PROVIDER STRATEGY ENGINE ─────────────────────────────
-    subgraph LLM_LAYER ["💬 MULTI-LLM PROVIDER STRATEGY ENGINE"]
-        Groq["⚡ Groq LPU Engine (llama-3.3-70b @ 500+ tok/s)"]
-        Gemini["✨ Google Gemini 1.5 Flash"]
-        OpenAI["🤖 OpenAI (GPT-4o / GPT-4o-mini)"]
-        DeepSeek["🧠 DeepSeek (V3 / R1 Reasoner)"]
-        Ollama["💻 Local Offline Ollama Engine"]
-        Fallback["🛡️ Zero-Downtime Dynamic Fallback Solver"]
-    end
-
-    %% ── BACKEND SERVICES & APIS ────────────────────────────────────────
-    subgraph BACKEND_LAYER ["🐍 BACKEND & REST API LAYER (Django 5 + DRF)"]
-        AuthService["🔒 SimpleJWT Authentication Handler"]
-        MasterService["🧠 Master AI Endpoint Controller"]
-        AnalyticsService["📊 User Activity & Daily Streak Tracker"]
-        MemoryService["🧠 SM-2 Spaced Repetition Engine"]
-        GraphService["🗺️ Personal Knowledge Graph Engine"]
-    end
-
-    %% ── DATA BASE & STORAGE LAYER ──────────────────────────────────────
-    subgraph DATA_LAYER ["💾 PERSISTENCE & STORAGE LAYER"]
-        Postgres["🐘 PostgreSQL 16 + pgvector (Vector Embeddings)"]
-        RedisCache["⚡ Redis 7 (Session Cache & Task Queue)"]
-        CeleryWorker["⚙️ Celery Async RAG Workers"]
-    end
-
-    %% ── CONNECTIONS & DATA FLOW PIPELINES ──────────────────────────────
-    UI -->|HTTP / JWT| AuthService
-    UI -->|Submit Prompt| MasterAI
-    Webcam -->|Hand Landmark Coords| UI
-    Avatar3D <--|GLTF Animations| UI
-    VoiceEngine <--|Audio Telemetry| UI
-
-    MasterAI -->|Intent Classification| AGENTS
-    AGENTS -->|Strategy Context| LLM_LAYER
-
-    Groq & Gemini & OpenAI & DeepSeek & Ollama -->|Execute LLM Strategy| Fallback
-    Fallback -->|Structured Response| MasterAI
-
-    MasterAI -->|API Sync| MasterService
-    AnalyticsService & MemoryService & GraphService -->|ORM Queries| Postgres
-    Backend_LAYER -->|Async Tasks| RedisCache
-    RedisCache --> CeleryWorker
-    CeleryWorker --> Postgres
-```
+Below is the complete, end-to-end operational process flowchart for the **EduVerse AI** platform, featuring decision logic, multi-modal input processing, agent routing, Groq LPU execution, zero-downtime fallbacks, and 3D sign avatar synthesis.
 
 ---
 
-## 🔄 End-to-End System Execution Sequence
-
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Student as 🎓 Student / User
-    participant Client as 🖥️ React Frontend
-    participant Vision as 🎥 MediaPipe 21-Landmark
-    participant Master as 🧠 Master AI Router
-    participant LLM as ⚡ Groq LPU Strategy
-    participant DB as 🐘 PostgreSQL + pgvector
+graph TD
+    %% ── Flowchart Node Style Definitions ───────────────────
+    classDef process fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1,rx:8px,ry:8px;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e;
+    classDef output fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#15803d,rx:8px,ry:8px;
+    classDef startend fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#6b21a8,rx:12px,ry:12px;
 
-    Student->>Client: Submit Prompt / Gesture / Voice
-    opt Gesture Mode (Sign AI)
-        Client->>Vision: Track Hand Landmarks (21 points)
-        Vision-->>Client: Classify ASL Sign (A-Z)
-    end
-    Client->>Master: POST /api/v1/master-ai/chat/
-    Master->>DB: Fetch Knowledge Graph & SM-2 Memory
-    Master->>LLM: Query Groq LPU (llama-3.3-70b-versatile)
-    alt Groq Available
-        LLM-->>Master: Sub-second Stream (500+ tokens/sec)
-    else API Quota / Limit Exceeded
-        LLM->>LLM: Fallback to Dynamic Offline Solver Engine
-        LLM-->>Master: Return Solved Response
-    end
-    Master->>DB: Log Activity, Daily Streak & History
-    Master-->>Client: Render Answer + 3D Avatar Animation + Voice Audio
-    Client-->>Student: Display Response & Update Knowledge Graph
-```
+    %% ── 1. USER AUTHENTICATION & ENTRY ────────────────────
+    Start(["🚀 Start: User Enters EduVerse AI Platform"]):::startend --> AuthCheck{"Is User Authenticated?"}:::decision
+    
+    AuthCheck -->|No| Register["👤 User Login / Signup (JWT Token Issued)"]:::process
+    Register --> Dashboard["⚡ Access Main AI Dashboard"]:::process
+    AuthCheck -->|Yes| Dashboard
 
----
+    %% ── 2. INPUT MODE & FEATURE SELECTION ─────────────────
+    Dashboard --> ActionType{"Select Input Mode / Action"}:::decision
 
-## 🗺️ Feature Module Architecture Grid
+    %% Path A: Sign AI Gesture Mode
+    ActionType -->|Sign Gesture Mode| CameraCheck{"Is Webcam Available?"}:::decision
+    CameraCheck -->|No| FallbackText["⌨️ Fallback to Keyboard Text Input"]:::process
+    CameraCheck -->|Yes| MediaPipe["🖐️ Track 21 Hand Landmarks via MediaPipe"]:::process
+    MediaPipe --> ClassifySign["🔤 Classify ASL Sign (A-Z) & Build Sentence"]:::process
+    ClassifySign --> SendPrompt["🧠 Send Prompt to Master AI Engine"]:::process
+    FallbackText --> SendPrompt
 
-```mermaid
-graph LR
-    subgraph MODULES ["📌 9 SPECIALIZED FEATURE MODULES"]
-        M1["🗺️ Knowledge Graph"] --> M1_1["SM-2 Revision Scheduler & Topic Strength %"]
-        M2["👤 AI Study Twin"] --> M2_1["7-Day Personalized Active Recall Plan"]
-        M3["⚔️ AI Debate Arena"] --> M3_1["2-Agent Real-time Debate & AI Verdict"]
-        M4["⏱️ Exam Simulator"] --> M4_1["Subject Filter & Groq AI Question Generator"]
-        M5["🚀 Project Recommender"] --> M5_1["Portfolio Projects Matched to Mastery Level"]
-        M6["🖐️ Sign Language AI"] --> M6_1["Full ASL 26 Alphabet & Text-to-Sign 3D Avatar"]
-        M7["🔥 Skill Heatmap"] --> M7_1["28-Day Consistency Matrix & Flashcard Deck"]
-        M8["📊 Learning Analytics"] --> M8_1["Productivity Index & Memory Retention Curve"]
-        M9["👤 User Profile"] --> M9_1["Daily Streak Counter & Search History Log"]
-    end
+    %% Path B: Voice Input Mode
+    ActionType -->|Voice Conversation| STT["🎙️ Capture Speech via Web Speech API (STT)"]:::process
+    STT --> SendPrompt
+
+    %% Path C: Text / Search Bar Mode
+    ActionType -->|Search Input Bar| TypeQuery["💬 Type Concept / Code / Exam Query"]:::process
+    TypeQuery --> SendPrompt
+
+    %% Path D: Sidebar Feature Modules
+    ActionType -->|Sidebar Module| ModuleSelect{"Select Feature Module"}:::decision
+    ModuleSelect -->|Knowledge Graph| KG["🗺️ View Topic Strengths & SM-2 Flashcards"]:::process
+    ModuleSelect -->|Exam Simulator| Exam["⏱️ Select Subject & Generate AI MCQs via Groq"]:::process
+    ModuleSelect -->|AI Debate Arena| Debate["⚔️ Trigger 2-Agent Debate & AI Verdict"]:::process
+    ModuleSelect -->|AI Study Twin| Twin["👤 Generate 7-Day Active Recall Plan"]:::process
+    
+    KG & Exam & Debate & Twin --> NextAction{"Continue Learning?"}:::decision
+
+    %% ── 3. INTENT ROUTING & AGENT DELEGATION ───────────────
+    SendPrompt --> IntentRouter["🧠 Master AI Intent Classifier"]:::process
+    IntentRouter --> DelegateAgent["🤖 Delegate to 1 of 9 Neural Agents (ExamAce, CodeMentor, etc.)"]:::process
+
+    %% ── 4. MULTI-LLM STRATEGY & FALLBACK ENGINE ────────────
+    DelegateAgent --> LLMCheck{"Check Groq LPU Provider Status"}:::decision
+    LLMCheck -->|Groq Available| GroqEngine["⚡ Query Groq LPUs (llama-3.3-70b @ 500+ tok/s)"]:::process
+    LLMCheck -->|Quota Limit / Network Error| FallbackEngine["🛡️ Activate Zero-Downtime Dynamic Fallback Solver"]:::process
+
+    GroqEngine --> Synthesize["📝 Synthesize Structured Markdown Response"]:::process
+    FallbackEngine --> Synthesize
+
+    %% ── 5. PERSISTENCE & MULTI-MODAL OUTPUT SYNTHESIS ──────
+    Synthesize --> DBUpdate["💾 Log Activity, Update SM-2 Memory & Daily Streak Counter"]:::process
+    DBUpdate --> UIOutput["✨ Render Answer + 3D Michelle Avatar Sign + Voice Playback"]:::output
+
+    UIOutput --> NextAction
+    NextAction -->|Yes| Dashboard
+    NextAction -->|No| EndSession(["🏁 End Session: Data Saved to Student Profile"]):::startend
 ```
