@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../../config/api';
 import { 
   Mic, 
   MicOff, 
@@ -340,7 +341,7 @@ export const VoiceAssistantWidget: React.FC<VoiceAssistantWidgetProps> = ({
 
       // 2. Fetch directly from Master AI LLM Backend endpoint
       try {
-        const res = await fetch('http://localhost:8000/api/v1/master-ai/chat/', {
+        const res = await fetch(`${API_BASE_URL}/api/v1/master-ai/chat/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

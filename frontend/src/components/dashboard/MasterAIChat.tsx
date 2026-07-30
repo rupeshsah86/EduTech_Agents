@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { userActivityService } from '../../services/userActivity';
+import { API_BASE_URL } from '../../config/api';
 import { 
   Send, 
   BrainCircuit, 
@@ -330,7 +331,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
 
     // Backend Django API check first (with API Key payload)
     try {
-      const response = await fetch('http://localhost:8000/api/v1/master-ai/chat/', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/master-ai/chat/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

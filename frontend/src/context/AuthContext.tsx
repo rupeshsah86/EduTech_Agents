@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 interface User {
   id: string;
@@ -32,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, pass: string): Promise<boolean> => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/login/', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, username: email, password: pass })
@@ -75,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (fullName: string, email: string, pass: string): Promise<boolean> => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/register/', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: fullName, email, password: pass })
