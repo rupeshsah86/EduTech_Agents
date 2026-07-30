@@ -160,6 +160,8 @@ export const SignAIPage: React.FC = () => {
               onStop={stopRecognition}
               onClear={clearSentence}
               handDetected={result.handDetected}
+              detectedLetter={result.detectedLetter}
+              confidence={result.confidence}
               boundingBox={result.boundingBox}
             />
           </div>
