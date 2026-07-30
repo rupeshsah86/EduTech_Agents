@@ -7,59 +7,40 @@ Redesigned with a focus on **instant 3-second visual clarity**, users communicat
 
 ---
 
-## 🔄 Complete End-to-End User Flow & Navigation
-
-```mermaid
-graph TD
-    A["🌐 1. Landing Page (Ultra-Clean Landing UI)"] -->|Click Start Learning Free| B["👤 2. Authentication (Login / Signup JWT)"]
-    B --> C["⚡ 3. Main Dashboard (Good morning Student 👋)"]
-    
-    C -->|Ask Master AI Search Bar| D["🧠 Master AI Orchestrator"]
-    D -->|Intent Classification| E["🤖 9 Neural Agents (ExamAce, CodeMentor, NoteCraft, etc.)"]
-    E -->|Synthesize Response| F["💬 Multi-LLM Engine (Groq LPUs / Gemini / OpenAI / Ollama)"]
-    F -->|Return Structured Answer| C
-    
-    C -->|Left Sidebar Navigation| G["📌 Specialized Feature Modules"]
-    G --> G1["🗺️ Knowledge Graph (Spaced Repetition & Topic Strength)"]
-    G --> G2["👤 AI Study Twin (7-Day Plan Generator)"]
-    G --> G3["⚔️ AI Debate Arena (2-Agent Debate & AI Verdict)"]
-    G --> G4["⏱️ Real Exam Simulator (Groq AI Question Generator & Timer)"]
-    G --> G5["🚀 Project Recommender (Portfolio Projects Matched to Mastery)"]
-    G --> G6["🖐️ Sign Language AI Tutor (MediaPipe 21-Landmark & 3D Michelle Avatar)"]
-    G --> G7["🔥 Skill Heatmap & SM-2 Memory Tracker"]
-    G --> G8["📊 Learning Analytics Dashboard"]
-    G --> G9["👤 Edit Profile & Study History Tracker (Streak Counter)"]
-```
-
-### 1-to-1 Step Walkthrough:
-1. **Landing Page**: New visitors land on an ultra-clean page with high-impact value proposition (*"Master Any Subject with Autonomous AI Tutors"*), 3-step explainer, and 9-agent grid.
-2. **Authentication**: Users sign in or register with JWT token authentication.
-3. **Main Dashboard**: Greeted with personalized header (`Good morning, Student 👋`), central ChatGPT-style search bar, 9 active agent tags bar, and 4 primary action cards (*Generate Notes*, *Solve Doubt*, *Create Quiz*, *Study Plan*).
-4. **Master AI Queries**: Asking any question routes to **Groq LPUs** (`llama-3.3-70b-versatile` at 500+ tokens/sec) or Gemini/OpenAI, synthesizing answers from the 9 neural agents.
-5. **Specialized Modules**: One-click navigation via the left sidebar to access Sign AI gesture tracking, Knowledge Graph, Exam Simulator, SM-2 Spaced Repetition, and AI Debate Mode.
-
----
-
 ## 🎨 UI/UX Design System & 3-Second Clarity
 
-The platform interface is engineered for maximum visual hierarchy, calm breathing room, and premium dark/light mode aesthetics:
+The platform interface has been built from the ground up for maximum visual hierarchy, calm breathing room, and high usability:
+
+- **Ultra-Clean Landing Page**:
+  - High-impact headline (*"Master Any Subject with Autonomous AI Tutors"*).
+  - Only TWO primary CTA buttons: **"Start Learning Free"** (purple primary) and **"Watch Demo"** (video preview modal).
+  - Streamlined 3-Step **"How it Works"** process and showcase grid for all 9 AI agents.
+
+- **Calm & Guided Dashboard**:
+  - **Personalized Greeting**: `Good morning / afternoon / evening, Student 👋`.
+  - **ChatGPT-Style Sticky Bottom Input Bar**: Central search container with soft purple focus glow, prompt chips, voice mic, file attachment, and global `⌘ + K` keyboard shortcut.
+  - **Only 4 Primary Action Cards**:
+    1. **Generate Notes** (`NoteCraft AI`)
+    2. **Solve Doubt** (`ConceptClear AI`)
+    3. **Create Quiz** (`QuizMaster AI`)
+    4. **Study Plan** (`StudyFlow AI`)
 
 - **Strict High-Contrast Theme Palette**:
   - **Light Mode**: Pure white / soft neutral background (`#FFFFFF` / `#FAFAFA`).
   - **Dark Mode**: Deep charcoal background (`#0A0A0A` / `#111111`) with zero blue tints.
-- **Dynamic 9 Active Agents Bar**: Top status bar highlighting all 9 neural tutors with adaptive high-contrast text (`text-slate-800` Light / `text-neutral-100` Dark).
-- **Sticky ChatGPT-Style Input Container**: Bottom search container with soft purple glow, prompt chips, voice mic, and global `⌘ + K` shortcut.
+  - **Dynamic 9 Active Agents Bar**: Top status bar highlighting all 9 neural tutors with adaptive text contrast (`text-slate-800` Light Mode / `text-neutral-100` Dark Mode).
 
 ---
 
-## 🌟 Key Unique Working Modules & Engines
+## 🌟 Key Working Features & Unique Engines
 
-Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every prompt, EduVerse AI features persistent, student-focused engines:
+Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every chat, EduVerse AI includes persistent, student-focused engines:
 
 1. **⚡ Multi-LLM Provider Switcher & Groq LPU Engine**
    - Powered by ultra-fast **Groq LPUs (`llama-3.3-70b-versatile`)** running at 500+ tokens/sec for sub-second AI answers.
-   - Switch seamlessly between **Groq LPUs**, **Google Gemini 1.5**, **OpenAI (GPT-4o)**, **DeepSeek (V3 / R1)**, and **Local Ollama** (100% offline & free).
-   - Includes **Zero-Downtime Dynamic Fallback**: If network or API quota limits occur, the system smoothly falls back to internal dynamic solvers so demo presentations never crash.
+   - Switch seamlessly between **Groq LPUs**, **Google Gemini 1.5**, **OpenAI (GPT-4o / GPT-4o-mini)**, **DeepSeek (V3 / R1 Reasoner)**, and **Local Ollama** (100% offline & free).
+   - Designed using **SOLID Clean Architecture & Strategy Pattern** (`ILLMProviderStrategy`, `LLMService`).
+   - Includes **Zero-Downtime Dynamic Fallback Engine**: If network or API quota limits occur, the system smoothly falls back to internal dynamic solvers so demo presentations never crash.
 
 2. **🔥 User Activity, Daily Streak & Study History Tracker**
    - **Daily Active Streak Counter**: Tracks consecutive study days (`🔥 7d Streak`) and total active days.
@@ -76,6 +57,7 @@ Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every pr
    - Select Exam Subject (*GATE CS & IT 2026*, *Data Structures & Algorithms*, *Operating Systems & Concurrency*, *DBMS & System Design*, *Computer Networks & Security*, *Python & Software Engineering*) and Difficulty Level.
    - **⚡ Groq AI Question Generator**: Click *"Generate New AI Questions"* to generate fresh, high-yield mock exam questions on demand via Groq LPUs.
    - Timed mock exam environment featuring live countdown timer and negative marking (`+4 / -1`).
+   - Post-exam **Deep Analytics Dashboard**: Accuracy %, Correct/Incorrect counts, Avg Time per Question, and Question-by-Question Explanations.
 
 5. **🧠 AI Learning Analytics & SuperMemo-2 (SM-2) Spaced Repetition Tracker**
    - **Productivity Index & Memory Telemetry**: Monitors study velocity, flashcard recall percentage, and mastered concepts.
@@ -97,6 +79,9 @@ Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every pr
 
 10. **⚔️ AI Multi-Agent Debate Arena & Synthesis**
     - Two specialized AI agents debate opposing viewpoints in real-time with post-debate **AI Judgment Verdict**.
+
+11. **🚀 AI Project & Hackathon Recommender**
+    - Portfolio projects & hackathons dynamically matched to your Personal Knowledge Graph mastery level.
 
 ---
 
@@ -172,6 +157,7 @@ EduTech_Agents/
 │   │   ├── services/               # LLMService, UserActivityService, MasterAIService, SignRecognitionService
 │   │   └── pages/                  # LandingPage, DashboardPage, SignAIPage, LoginPage, SignupPage
 │   └── package.json
+├── PROJECT_FLOW.md                 # Complete System Process Flowchart Diagram
 └── README.md                       # Project Overview & Tech Stack Guide
 ```
 
