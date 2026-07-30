@@ -23,7 +23,7 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
 
 
   const handleSend = () => {
-    const textToSend = (recognizedSentence || currentWord).trim();
+    const textToSend = (recognizedSentence || currentWord || (detectedLetter !== '-' ? detectedLetter : '')).trim();
     if (textToSend) {
       onSendToMasterAI(textToSend);
     }
@@ -131,8 +131,9 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
             <button
               key={char}
               onClick={() => {
+                const wasSelected = detectedLetter === char;
                 signRecognitionService.triggerASLLetter(char);
-                if (onSendToMasterAI) {
+                if (wasSelected && onSendToMasterAI) {
                   onSendToMasterAI(char);
                 }
               }}
@@ -141,7 +142,7 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
                   ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-600/30 scale-105'
                   : 'bg-slate-100 dark:bg-neutral-800 hover:bg-purple-600 hover:text-white text-slate-700 dark:text-neutral-200 border-slate-200 dark:border-neutral-700'
               }`}
-              title={`Trigger ASL Sign for Letter ${char}`}
+              title={`Trigger ASL Sign for Letter ${char} (Click twice to query Master AI)`}
             >
               {char}
             </button>

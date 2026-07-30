@@ -28,14 +28,20 @@ class LLMService {
   }
 
   private loadConfig(): LLMConfig {
+    const savedGroqKey = localStorage.getItem('eduverse_groq_api_key') || localStorage.getItem('eduverse_api_key') || '';
+    const savedGeminiKey = localStorage.getItem('eduverse_gemini_api_key') || '';
+
+    const defaultProvider: LLMProviderId = savedGroqKey ? 'groq' : (savedGeminiKey ? 'gemini' : 'groq');
+    const defaultModel = defaultProvider === 'groq' ? 'llama-3.3-70b-versatile' : 'gemini-1.5-flash';
+
     const defaultConfig: LLMConfig = {
-      activeProvider: 'gemini',
-      activeModel: 'gemini-1.5-flash',
+      activeProvider: defaultProvider,
+      activeModel: defaultModel,
       apiKeys: {
-        gemini: '',
-        groq: '',
-        openai: '',
-        deepseek: '',
+        gemini: savedGeminiKey,
+        groq: savedGroqKey,
+        openai: localStorage.getItem('eduverse_openai_api_key') || '',
+        deepseek: localStorage.getItem('eduverse_deepseek_api_key') || '',
         ollama: '',
       },
       customBaseUrls: {
@@ -48,7 +54,20 @@ class LLMService {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return { ...defaultConfig, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        const activeProvider = parsed.activeProvider || defaultProvider;
+        const activeModel = parsed.activeModel || (activeProvider === 'groq' ? 'llama-3.3-70b-versatile' : 'gemini-1.5-flash');
+        return {
+          ...defaultConfig,
+          ...parsed,
+          activeProvider,
+          activeModel,
+          apiKeys: {
+            ...defaultConfig.apiKeys,
+            ...(parsed.apiKeys || {}),
+            groq: parsed.apiKeys?.groq || savedGroqKey,
+          }
+        };
       }
     } catch (e) {
       console.warn('Failed to load LLM config from storage:', e);
@@ -60,6 +79,14 @@ class LLMService {
     this.config = { ...this.config, ...newConfig };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.config));
+      if (this.config.apiKeys?.groq) {
+        localStorage.setItem('eduverse_groq_api_key', this.config.apiKeys.groq);
+        localStorage.setItem('eduverse_api_key', this.config.apiKeys.groq);
+        localStorage.setItem('eduverse_api_provider', 'groq');
+      }
+      if (this.config.activeProvider) {
+        localStorage.setItem('eduverse_api_provider', this.config.activeProvider);
+      }
       window.dispatchEvent(new CustomEvent('llm-config-changed', { detail: this.config }));
     } catch (e) {
       console.warn('Failed to save LLM config:', e);

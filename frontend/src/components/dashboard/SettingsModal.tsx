@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Key, X, Check, Sparkles, ShieldCheck } from 'lucide-react';
+import { llmService } from '../../services/llm/llmService';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,12 +12,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const existingKey = localStorage.getItem('eduverse_groq_api_key') || '';
+    const existingKey = localStorage.getItem('eduverse_groq_api_key') || localStorage.getItem('eduverse_api_key') || '';
     setGroqKey(existingKey);
   }, [isOpen]);
 
   const handleSave = () => {
-    localStorage.setItem('eduverse_groq_api_key', groqKey.trim());
+    const cleanKey = groqKey.trim();
+    localStorage.setItem('eduverse_groq_api_key', cleanKey);
+    localStorage.setItem('eduverse_api_key', cleanKey);
+    localStorage.setItem('eduverse_api_provider', 'groq');
+
+    llmService.saveConfig({
+      activeProvider: 'groq',
+      activeModel: 'llama-3.3-70b-versatile',
+      apiKeys: {
+        ...llmService.getConfig().apiKeys,
+        groq: cleanKey,
+      },
+    });
+
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
