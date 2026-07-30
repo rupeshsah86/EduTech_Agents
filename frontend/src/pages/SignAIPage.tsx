@@ -177,7 +177,7 @@ export const SignAIPage: React.FC = () => {
         </div>
 
         {/* Right Side: 3D GLB Sign Language Interpreter Avatar (6 cols) */}
-        <div className="lg:col-span-6 flex flex-col h-full min-h-[500px]">
+        <div className="lg:col-span-6 flex flex-col h-full min-h-[400px] max-h-[460px]">
           <AvatarViewer
             signText={activeSignText}
             autoPlay={true}
@@ -196,7 +196,7 @@ export const SignAIPage: React.FC = () => {
           </h2>
         </div>
 
-        <div className="w-full h-[520px]">
+        <div className="w-full h-[450px]">
           <ChatWindow
             messages={messages}
             onSendMessage={handleSendToMasterAI}
