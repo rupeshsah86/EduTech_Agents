@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Timer, RotateCcw, ArrowRight, Sliders, CheckCircle2, XCircle, BarChart3 } from 'lucide-react';
+import { Timer, RotateCcw, ArrowRight, Sliders, CheckCircle2, XCircle, BarChart3, Sparkles, Cpu } from 'lucide-react';
+import { llmService } from '../../services/llm/llmService';
 
 interface Question {
   id: number;
@@ -10,16 +11,9 @@ interface Question {
   explanation: string;
 }
 
-export const ExamSimulator: React.FC = () => {
-  const [subject, setSubject] = useState<string>('GATE CS & IT 2026');
-  const [difficulty, setDifficulty] = useState<string>('Hard / GATE Level');
-  const [examStarted, setExamStarted] = useState(false);
-  const [examFinished, setExamFinished] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes timer
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-
-  const questions: Question[] = [
+// Multi-subject Question Bank covering all filters
+const QUESTION_BANK: Record<string, Question[]> = {
+  'GATE CS & IT 2026': [
     {
       id: 1,
       topic: 'Algorithms (Graph Theory)',
@@ -38,7 +32,7 @@ export const ExamSimulator: React.FC = () => {
     },
     {
       id: 3,
-      topic: 'DBMS (Vector Indexing)',
+      topic: 'DBMS (Indexing)',
       text: "In PostgreSQL, which extension enables high-dimensional vector similarity search for AI embeddings?",
       options: ["pgvector", "postgis", "uuid-ossp", "pg_trgm"],
       correctAnswer: 0,
@@ -52,7 +46,180 @@ export const ExamSimulator: React.FC = () => {
       correctAnswer: 1,
       explanation: "When pivot is consistently the maximum or minimum element, recurrence degenerates to O(N^2)."
     }
-  ];
+  ],
+
+  'Data Structures & Algorithms': [
+    {
+      id: 1,
+      topic: 'DSA (Graph Theory)',
+      text: "Which algorithm is optimal for finding all-pairs shortest paths in a weighted graph with negative edge weights (and no negative cycles)?",
+      options: ["Floyd-Warshall Algorithm", "Dijkstra Algorithm", "Kruskal Algorithm", "BFS Traversal"],
+      correctAnswer: 0,
+      explanation: "Floyd-Warshall runs in O(V^3) time and handles negative edge weights correctly using dynamic programming."
+    },
+    {
+      id: 2,
+      topic: 'DSA (Trees)',
+      text: "What is the maximum height of a Self-Balancing Red-Black Tree with N keys?",
+      options: ["2 * log2(N + 1)", "N", "log2(N)", "N / 2"],
+      correctAnswer: 0,
+      explanation: "Red-Black Tree balance properties guarantee height is strictly bounded by 2 * log2(N + 1)."
+    },
+    {
+      id: 3,
+      topic: 'DSA (Dynamic Programming)',
+      text: "What is the time complexity of solving the 0/1 Knapsack problem using Dynamic Programming with N items and Capacity W?",
+      options: ["O(N * W)", "O(2^N)", "O(N log N)", "O(W^2)"],
+      correctAnswer: 0,
+      explanation: "0/1 Knapsack DP table has dimensions N x W, yielding pseudo-polynomial O(N * W) time complexity."
+    },
+    {
+      id: 4,
+      topic: 'DSA (Sorting)',
+      text: "Which sorting algorithm maintains stability and guarantees worst-case O(N log N) time performance?",
+      options: ["Merge Sort", "QuickSort", "Heap Sort", "Selection Sort"],
+      correctAnswer: 0,
+      explanation: "Merge Sort guarantees O(N log N) worst-case performance while preserving relative order of equal elements (Stable)."
+    }
+  ],
+
+  'Operating Systems & Concurrency': [
+    {
+      id: 1,
+      topic: 'Operating Systems (Memory Management)',
+      text: "What is the phenomenon called when frequent page replacement causes high I/O overhead and near-zero CPU progress?",
+      options: ["Thrashing", "Paging Fault", "Fragmentation", "Segmentation Fault"],
+      correctAnswer: 0,
+      explanation: "Thrashing occurs when the system spends more time swapping pages in/out of memory than executing actual processes."
+    },
+    {
+      id: 2,
+      topic: 'Operating Systems (Deadlocks)',
+      text: "Which algorithm is used by Operating Systems for Deadlock Avoidance during resource allocation?",
+      options: ["Banker's Algorithm", "Round Robin Scheduling", "LRU Page Replacement", "Elevator Disk Scheduling"],
+      correctAnswer: 0,
+      explanation: "Banker's algorithm evaluates safe state transitions before allocating requested resources to prevent deadlocks."
+    },
+    {
+      id: 3,
+      topic: 'Operating Systems (Process Sync)',
+      text: "What is the value change of a Counting Semaphore S when a signal() / V() operation is executed?",
+      options: ["S is incremented by 1", "S is decremented by 1", "S is set to 0", "S is doubled"],
+      correctAnswer: 0,
+      explanation: "Signal / V operation releases a resource and increments the counting semaphore value (S = S + 1)."
+    },
+    {
+      id: 4,
+      topic: 'Operating Systems (Scheduling)',
+      text: "Which CPU scheduling algorithm minimizes the average waiting time for a given set of processes?",
+      options: ["Shortest Job First (SJF / SRTF)", "First Come First Served (FCFS)", "Round Robin (RR)", "Priority Scheduling"],
+      correctAnswer: 0,
+      explanation: "Shortest Job First (SJF) is mathematically optimal for minimizing average waiting time."
+    }
+  ],
+
+  'DBMS & System Design': [
+    {
+      id: 1,
+      topic: 'DBMS (Transactions)',
+      text: "Which ACID property ensures that all operations in a database transaction complete successfully or none are applied?",
+      options: ["Atomicity", "Consistency", "Isolation", "Durability"],
+      correctAnswer: 0,
+      explanation: "Atomicity guarantees the 'all-or-nothing' execution guarantee for transaction blocks."
+    },
+    {
+      id: 2,
+      topic: 'DBMS (Normalization)',
+      text: "A relational schema is in Boyce-Codd Normal Form (BCNF) if for every non-trivial functional dependency X -> Y:",
+      options: ["X is a Super Key", "Y is a Prime Attribute", "X is a Candidate Key", "Both A and C are valid"],
+      correctAnswer: 3,
+      explanation: "BCNF strictly requires the determinant X of every non-trivial functional dependency X -> Y to be a Super Key."
+    },
+    {
+      id: 3,
+      topic: 'DBMS (Indexing)',
+      text: "Why are B+ Trees preferred over standard Binary Search Trees for disk-based database indexes?",
+      options: ["High fan-out reduces disk I/O operations & sequential leaf traversal is optimal", "B+ Trees require O(1) memory", "Leaves do not store pointers", "Binary trees have faster lookup"],
+      correctAnswer: 0,
+      explanation: "High fan-out lowers tree height (fewer disk reads) and linked leaf nodes allow fast range scans."
+    },
+    {
+      id: 4,
+      topic: 'System Design (CAP Theorem)',
+      text: "According to the CAP Theorem, a distributed data store can simultaneously guarantee at most two of which three properties?",
+      options: ["Consistency, Availability, Partition Tolerance", "Concurrency, Atomicity, Performance", "Caching, Availability, Persistence", "Cluster, Auth, Privacy"],
+      correctAnswer: 0,
+      explanation: "The CAP Theorem states that in the presence of a network partition (P), a distributed system must trade off Consistency (C) vs Availability (A)."
+    }
+  ],
+
+  'Computer Networks & Security': [
+    {
+      id: 1,
+      topic: 'Computer Networks (Transport Layer)',
+      text: "Which flags are set in the TCP packet sequence to initiate a standard 3-Way Handshake connection?",
+      options: ["SYN -> SYN-ACK -> ACK", "FIN -> ACK -> FIN", "RST -> SYN -> ACK", "PUSH -> URG -> ACK"],
+      correctAnswer: 0,
+      explanation: "TCP connection setup follows SYN (client) -> SYN-ACK (server) -> ACK (client)."
+    },
+    {
+      id: 2,
+      topic: 'Computer Networks (Subnetting)',
+      text: "How many usable host IP addresses are available in an IPv4 subnet configured with a /28 CIDR prefix mask?",
+      options: ["14 hosts", "16 hosts", "30 hosts", "64 hosts"],
+      correctAnswer: 0,
+      explanation: "A /28 subnet has 32 - 28 = 4 host bits. 2^4 = 16 IPs, minus 2 (Network ID & Broadcast ID) = 14 usable hosts."
+    },
+    {
+      id: 3,
+      topic: 'Cryptography (Public Key)',
+      text: "In RSA Asymmetric Encryption, which key is used by the receiver to decrypt a secret message encrypted with their Public Key?",
+      options: ["Receiver's Private Key", "Sender's Public Key", "Shared Symmetric Key", "Digital Signature Key"],
+      correctAnswer: 0,
+      explanation: "Messages encrypted with a user's Public Key can only be decrypted using that user's matching Private Key."
+    }
+  ],
+
+  'Python & Software Engineering': [
+    {
+      id: 1,
+      topic: 'Python (Concurrency)',
+      text: "What mechanism in CPython prevents multiple native threads from executing Python bytecodes in parallel on multiple CPU cores?",
+      options: ["GIL (Global Interpreter Lock)", "Asyncio Event Loop", "JIT Compiler", "Garbage Collector"],
+      correctAnswer: 0,
+      explanation: "The Global Interpreter Lock (GIL) synchronizes thread execution so only one thread runs Python bytecode at a time."
+    },
+    {
+      id: 2,
+      topic: 'Software Architecture (SOLID)',
+      text: "Which SOLID design principle dictates that software entities should be open for extension but closed for modification?",
+      options: ["Open/Closed Principle (OCP)", "Single Responsibility Principle (SRP)", "Liskov Substitution Principle (LSP)", "Interface Segregation (ISP)"],
+      correctAnswer: 0,
+      explanation: "The Open/Closed Principle encourages adding new behavior via inheritance or strategy patterns without altering tested code."
+    }
+  ]
+};
+
+export const ExamSimulator: React.FC = () => {
+  const [subject, setSubject] = useState<string>('GATE CS & IT 2026');
+  const [difficulty, setDifficulty] = useState<string>('Hard / GATE Level');
+  const [examStarted, setExamStarted] = useState(false);
+  const [examFinished, setExamFinished] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes timer
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+
+  // Active question set dynamically calculated based on Subject & Difficulty
+  const [activeQuestions, setActiveQuestions] = useState<Question[]>(() => {
+    return QUESTION_BANK['GATE CS & IT 2026'] || QUESTION_BANK['Data Structures & Algorithms'];
+  });
+
+  // Automatically update questions whenever subject changes
+  useEffect(() => {
+    const questionsForSubject = QUESTION_BANK[subject] || QUESTION_BANK['GATE CS & IT 2026'];
+    setActiveQuestions(questionsForSubject);
+  }, [subject, difficulty]);
 
   useEffect(() => {
     let interval: any = null;
@@ -82,12 +249,42 @@ export const ExamSimulator: React.FC = () => {
     setSelectedAnswers((prev) => ({ ...prev, [qIdx]: oIdx }));
   };
 
+  // Generate dynamic AI questions using Groq / LLM Engine
+  const handleGenerateAIQuestions = async () => {
+    setIsGeneratingAI(true);
+    try {
+      const prompt = `Generate 4 high-yield, distinct multiple choice questions for exam subject "${subject}" at difficulty level "${difficulty}".
+Format the response strictly as valid JSON array of objects with keys: id (number), topic (string), text (string), options (array of 4 strings), correctAnswer (index 0-3), explanation (string).`;
+      
+      const systemPrompt = `You are ExamAce AI, an expert exam question generator for Computer Science and GATE CS exams. Return ONLY raw JSON array.`;
+
+      const result = await llmService.generate(prompt, systemPrompt);
+      if (result && result.text) {
+        const jsonMatch = result.text.match(/\[\s*\{.*\}\s*\]/s);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setActiveQuestions(parsed);
+            setIsGeneratingAI(false);
+            handleStartExam();
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('AI question generation error, using curated question bank:', e);
+    }
+
+    setIsGeneratingAI(false);
+    handleStartExam();
+  };
+
   const calculateResults = () => {
     let score = 0;
     let correct = 0;
     let incorrect = 0;
 
-    questions.forEach((q, idx) => {
+    activeQuestions.forEach((q, idx) => {
       const selected = selectedAnswers[idx];
       if (selected === q.correctAnswer) {
         score += 4; // +4 for correct
@@ -98,14 +295,14 @@ export const ExamSimulator: React.FC = () => {
       }
     });
 
-    const accuracy = Math.round((correct / questions.length) * 100);
-    const avgTimePerQuestion = Math.round((600 - timeLeft) / questions.length);
+    const accuracy = activeQuestions.length > 0 ? Math.round((correct / activeQuestions.length) * 100) : 0;
+    const avgTimePerQuestion = activeQuestions.length > 0 ? Math.round((600 - timeLeft) / activeQuestions.length) : 0;
 
     return {
       score,
       correct,
       incorrect,
-      unattempted: questions.length - (correct + incorrect),
+      unattempted: activeQuestions.length - (correct + incorrect),
       accuracy,
       avgTimePerQuestion,
     };
@@ -139,12 +336,12 @@ export const ExamSimulator: React.FC = () => {
       {!examStarted && !examFinished && (
         <div className="p-6 rounded-3xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-4 shadow-sm">
           <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-neutral-500 flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-purple-500" /> Configure Exam Parameters
+            <Sliders className="w-4 h-4 text-purple-500" /> Configure Exam Parameters ({activeQuestions.length} Questions Filtered)
           </span>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Subject Dropdown */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <label className="text-xs font-bold text-slate-700 dark:text-neutral-300">Select Exam Subject</label>
               <select
                 value={subject}
@@ -155,11 +352,13 @@ export const ExamSimulator: React.FC = () => {
                 <option value="Data Structures & Algorithms">Data Structures & Algorithms (DSA Focus)</option>
                 <option value="Operating Systems & Concurrency">Operating Systems & Concurrency</option>
                 <option value="DBMS & System Design">DBMS & System Design</option>
+                <option value="Computer Networks & Security">Computer Networks & Security</option>
+                <option value="Python & Software Engineering">Python & Software Engineering</option>
               </select>
             </div>
 
             {/* Difficulty Selector */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <label className="text-xs font-bold text-slate-700 dark:text-neutral-300">Select Difficulty Level</label>
               <div className="grid grid-cols-3 gap-2">
                 {['Beginner', 'Intermediate', 'Hard / GATE Level'].map((d) => (
@@ -180,25 +379,43 @@ export const ExamSimulator: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-2 flex justify-center">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={handleStartExam}
-              className="px-8 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-black text-sm shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-black text-sm shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Begin Timed Mock Exam</span>
+              <span>Begin Timed Mock Exam ({activeQuestions.length} Qs)</span>
               <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleGenerateAIQuestions}
+              disabled={isGeneratingAI}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isGeneratingAI ? (
+                <>
+                  <Cpu className="w-4 h-4 animate-spin" />
+                  <span>Groq AI Generating Questions...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Generate New AI Questions</span>
+                </>
+              )}
             </button>
           </div>
         </div>
       )}
 
       {/* ⏱️ Active Exam Environment */}
-      {examStarted && !examFinished && (
+      {examStarted && !examFinished && activeQuestions.length > 0 && (
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Header Bar: Timer & Progress */}
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 flex items-center justify-between shadow-xs">
             <span className="text-xs font-extrabold text-slate-900 dark:text-neutral-100 font-mono">
-              Question {currentQuestion + 1} of {questions.length}
+              Question {currentQuestion + 1} of {activeQuestions.length} ({subject})
             </span>
 
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold font-mono animate-pulse">
@@ -208,20 +425,20 @@ export const ExamSimulator: React.FC = () => {
           </div>
 
           {/* Active Question Box */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-5 shadow-sm">
+          <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 space-y-5 shadow-sm text-left">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                {questions[currentQuestion].topic}
+                {activeQuestions[currentQuestion].topic}
               </span>
               <span className="text-[10px] font-bold text-emerald-500">+4 / -1 Mark</span>
             </div>
 
             <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-relaxed">
-              {questions[currentQuestion].text}
+              {activeQuestions[currentQuestion].text}
             </h3>
 
             <div className="space-y-2.5 pt-2">
-              {questions[currentQuestion].options.map((opt, oIdx) => {
+              {activeQuestions[currentQuestion].options.map((opt, oIdx) => {
                 const isSelected = selectedAnswers[currentQuestion] === oIdx;
                 return (
                   <button
@@ -251,7 +468,7 @@ export const ExamSimulator: React.FC = () => {
               Previous
             </button>
 
-            {currentQuestion === questions.length - 1 ? (
+            {currentQuestion === activeQuestions.length - 1 ? (
               <button
                 onClick={() => setExamFinished(true)}
                 className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-md cursor-pointer"
@@ -260,7 +477,7 @@ export const ExamSimulator: React.FC = () => {
               </button>
             ) : (
               <button
-                onClick={() => setCurrentQuestion((prev) => Math.min(questions.length - 1, prev + 1))}
+                onClick={() => setCurrentQuestion((prev) => Math.min(activeQuestions.length - 1, prev + 1))}
                 className="px-6 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold cursor-pointer shadow-md"
               >
                 Next Question
@@ -272,13 +489,13 @@ export const ExamSimulator: React.FC = () => {
 
       {/* 📊 Deep Analytics Dashboard after Exam Completion */}
       {examFinished && (
-        <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+        <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300 text-left">
           <div className="p-6 sm:p-8 rounded-3xl bg-slate-50 dark:bg-neutral-900 border border-purple-500/30 space-y-6 shadow-xl">
             {/* Header Score & Grade */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-neutral-800 pb-4">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-400 block">
-                  Assessment Completed • {subject}
+                  Assessment Completed • {subject} ({difficulty})
                 </span>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white">
                   Performance Analytics Report
@@ -309,8 +526,8 @@ export const ExamSimulator: React.FC = () => {
 
               <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 space-y-1">
                 <span className="text-[10px] font-extrabold uppercase text-slate-400">Correct Answers</span>
-                <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{results.correct} / {questions.length}</p>
-                <p className="text-[10px] text-emerald-500 font-bold">+16 Marks</p>
+                <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{results.correct} / {activeQuestions.length}</p>
+                <p className="text-[10px] text-emerald-500 font-bold">+{results.correct * 4} Marks</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 space-y-1">
@@ -333,7 +550,7 @@ export const ExamSimulator: React.FC = () => {
               </h4>
 
               <div className="space-y-3">
-                {questions.map((q, idx) => {
+                {activeQuestions.map((q, idx) => {
                   const userAns = selectedAnswers[idx];
                   const isCorrect = userAns === q.correctAnswer;
                   const isAttempted = userAns !== undefined;
