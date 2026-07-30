@@ -116,6 +116,34 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
       </div>
 
 
+      {/* Quick Sign Language Questions Chips */}
+      <div className="space-y-1.5 pt-0.5 text-left">
+        <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+          <span>Quick Sign Language Questions</span>
+          <span className="text-purple-600 dark:text-purple-400 font-medium">Click to Sign & Query</span>
+        </div>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {[
+            { label: 'What is Data Structures?', query: 'What is Data Structures' },
+            { label: 'What is EduVerse AI?', query: 'What is EduVerse AI' },
+            { label: 'Hello Welcome', query: 'Hello Welcome' },
+          ].map((q) => (
+            <button
+              key={q.query}
+              onClick={() => {
+                signRecognitionService.setSentence(q.query);
+                if (onSendToMasterAI) {
+                  onSendToMasterAI(q.query);
+                }
+              }}
+              className="px-2.5 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-bold text-[11px] hover:bg-purple-600 hover:text-white transition-all cursor-pointer shadow-2xs active:scale-95"
+            >
+              {q.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 10 Stable ASL Signs Selector Palette */}
       <div className="space-y-1.5 pt-0.5 text-left">
         <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
