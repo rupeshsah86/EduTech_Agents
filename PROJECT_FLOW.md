@@ -1,141 +1,126 @@
-# 🔄 EduVerse AI — Complete System Flow & Visual Diagrams
-
-This document contains the dedicated visual flow diagrams and architectural execution pipelines for **EduVerse AI**.
-
----
-
-## 1. 🌐 Master Platform User Journey & Navigation Flow
+# 🏗️ EduVerse AI — System Architecture & Flow Diagrams
 
 ```mermaid
-graph TD
-    A["🌐 Landing Page (Ultra-Clean SaaS UI)"] -->|Click Start Learning Free| B["👤 Authentication (Login / Signup JWT)"]
-    B --> C["⚡ Main Dashboard (Good morning Student 👋)"]
-    
-    C -->|ChatGPT-Style Search Bar| D["🧠 Master AI Orchestrator"]
-    D -->|Query Classification| E["🤖 9 Neural Agents Router"]
-    E -->|Select Agent| E1["ExamAce AI"]
-    E -->|Select Agent| E2["AssignMate AI"]
-    E -->|Select Agent| E3["ConceptClear AI"]
-    E -->|Select Agent| E4["NoteCraft AI"]
-    E -->|Select Agent| E5["QuizMaster AI"]
-    E -->|Select Agent| E6["StudyFlow AI"]
-    E -->|Select Agent| E7["PDFTutor AI"]
-    E -->|Select Agent| E8["CodeMentor AI"]
-    E -->|Select Agent| E9["CareerPath AI"]
+graph TB
+    %% ── USER & CLIENT INTERFACE LAYER ──────────────────────────────────
+    subgraph CLIENT_LAYER ["🎨 PRESENTATION & FRONTEND LAYER (React 18 + Vite + TS)"]
+        UI["🖥️ EduVerse AI SaaS Dashboard UI"]
+        Webcam["🎥 MediaPipe Hands API (21 Hand Landmarks)"]
+        Avatar3D["💃 Three.js WebGL 3D Avatar (Michelle.glb)"]
+        VoiceEngine["🎙️ Web Speech API (STT & TTS Engine)"]
+    end
 
-    E1 & E2 & E3 & E4 & E5 & E6 & E7 & E8 & E9 --> F["💬 Multi-LLM Provider Engine"]
-    F -->|Return Response| C
+    %% ── MASTER AI & MULTI-AGENT ORCHESTRATION LAYER ────────────────────
+    subgraph ORCHESTRATION_LAYER ["🧠 MASTER AI & 9 NEURAL AGENTS ORCHESTRATOR"]
+        MasterAI["⚡ Universal Master AI Answering Engine"]
+        
+        subgraph AGENTS ["🤖 9 SPECIALIZED NEURAL TUTORS"]
+            A1["📚 ExamAce AI"]
+            A2["📝 AssignMate AI"]
+            A3["💡 ConceptClear AI"]
+            A4["📄 NoteCraft AI"]
+            A5["🎯 QuizMaster AI"]
+            A6["⏱️ StudyFlow AI"]
+            A7["📑 PDFTutor AI"]
+            A8["💻 CodeMentor AI"]
+            A9["🚀 CareerPath AI"]
+        end
+    end
 
-    C -->|Sidebar Navigation| G["📌 Specialized Feature Modules"]
-    G --> G1["🗺️ Knowledge Graph (Spaced Repetition Topography)"]
-    G --> G2["👤 AI Study Twin (7-Day Plan Generator)"]
-    G --> G3["⚔️ AI Debate Arena (2-Agent Debate & AI Verdict)"]
-    G --> G4["⏱️ Real Exam Simulator (Groq AI Question Generator & Timer)"]
-    G --> G5["🚀 Project Recommender (Portfolio Projects Matched to Mastery)"]
-    G --> G6["🖐️ Sign Language AI Tutor (MediaPipe 21-Landmark & 3D Michelle Avatar)"]
-    G --> G7["🔥 Skill Heatmap & SM-2 Memory Tracker"]
-    G --> G8["📊 Learning Analytics Dashboard"]
-    G --> G9["👤 Edit Profile & Study History Tracker (Streak Counter)"]
+    %% ── MULTI-LLM PROVIDER STRATEGY ENGINE ─────────────────────────────
+    subgraph LLM_LAYER ["💬 MULTI-LLM PROVIDER STRATEGY ENGINE"]
+        Groq["⚡ Groq LPU Engine (llama-3.3-70b @ 500+ tok/s)"]
+        Gemini["✨ Google Gemini 1.5 Flash"]
+        OpenAI["🤖 OpenAI (GPT-4o / GPT-4o-mini)"]
+        DeepSeek["🧠 DeepSeek (V3 / R1 Reasoner)"]
+        Ollama["💻 Local Offline Ollama Engine"]
+        Fallback["🛡️ Zero-Downtime Dynamic Fallback Solver"]
+    end
+
+    %% ── BACKEND SERVICES & APIS ────────────────────────────────────────
+    subgraph BACKEND_LAYER ["🐍 BACKEND & REST API LAYER (Django 5 + DRF)"]
+        AuthService["🔒 SimpleJWT Authentication Handler"]
+        MasterService["🧠 Master AI Endpoint Controller"]
+        AnalyticsService["📊 User Activity & Daily Streak Tracker"]
+        MemoryService["🧠 SM-2 Spaced Repetition Engine"]
+        GraphService["🗺️ Personal Knowledge Graph Engine"]
+    end
+
+    %% ── DATA BASE & STORAGE LAYER ──────────────────────────────────────
+    subgraph DATA_LAYER ["💾 PERSISTENCE & STORAGE LAYER"]
+        Postgres["🐘 PostgreSQL 16 + pgvector (Vector Embeddings)"]
+        RedisCache["⚡ Redis 7 (Session Cache & Task Queue)"]
+        CeleryWorker["⚙️ Celery Async RAG Workers"]
+    end
+
+    %% ── CONNECTIONS & DATA FLOW PIPELINES ──────────────────────────────
+    UI -->|HTTP / JWT| AuthService
+    UI -->|Submit Prompt| MasterAI
+    Webcam -->|Hand Landmark Coords| UI
+    Avatar3D <--|GLTF Animations| UI
+    VoiceEngine <--|Audio Telemetry| UI
+
+    MasterAI -->|Intent Classification| AGENTS
+    AGENTS -->|Strategy Context| LLM_LAYER
+
+    Groq & Gemini & OpenAI & DeepSeek & Ollama -->|Execute LLM Strategy| Fallback
+    Fallback -->|Structured Response| MasterAI
+
+    MasterAI -->|API Sync| MasterService
+    AnalyticsService & MemoryService & GraphService -->|ORM Queries| Postgres
+    Backend_LAYER -->|Async Tasks| RedisCache
+    RedisCache --> CeleryWorker
+    CeleryWorker --> Postgres
 ```
 
 ---
 
-## 2. 🧠 Master AI Intent Routing & 9 Neural Agents Pipeline
+## 🔄 End-to-End System Execution Sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 🎓 Student
-    participant UI as 📱 React Frontend
-    participant Router as 🧠 Master AI Router
-    participant Agent as 🤖 Neural Agent (1 of 9)
-    participant LLM as ⚡ Groq LPU Engine
-    participant DB as 💾 PostgreSQL (Knowledge Graph & Memory)
+    actor Student as 🎓 Student / User
+    participant Client as 🖥️ React Frontend
+    participant Vision as 🎥 MediaPipe 21-Landmark
+    participant Master as 🧠 Master AI Router
+    participant LLM as ⚡ Groq LPU Strategy
+    participant DB as 🐘 PostgreSQL + pgvector
 
-    User->>UI: Submit Question / Doubt / Code
-    UI->>Router: POST /api/v1/master-ai/chat/
-    Router->>Router: Analyze Intent (Exam, Code, Quiz, Note, Sign, Doubt)
-    Router->>Agent: Delegate to Specialized Neural Agent
-    Agent->>DB: Fetch Student Knowledge Graph & Memory Context
-    Agent->>LLM: Formulate System Prompt & Query Groq LPUs (llama-3.3-70b-versatile)
-    LLM-->>Agent: Sub-second AI Response Stream (500+ tokens/sec)
-    Agent->>DB: Log Activity, Update Daily Streak & Search History
-    Agent-->>UI: Return Structured Markdown Answer + Active Agent Badges
-    UI-->>User: Render Interactive Answer + Voice Playback + Action Chips
+    Student->>Client: Submit Prompt / Gesture / Voice
+    opt Gesture Mode (Sign AI)
+        Client->>Vision: Track Hand Landmarks (21 points)
+        Vision-->>Client: Classify ASL Sign (A-Z)
+    end
+    Client->>Master: POST /api/v1/master-ai/chat/
+    Master->>DB: Fetch Knowledge Graph & SM-2 Memory
+    Master->>LLM: Query Groq LPU (llama-3.3-70b-versatile)
+    alt Groq Available
+        LLM-->>Master: Sub-second Stream (500+ tokens/sec)
+    else API Quota / Limit Exceeded
+        LLM->>LLM: Fallback to Dynamic Offline Solver Engine
+        LLM-->>Master: Return Solved Response
+    end
+    Master->>DB: Log Activity, Daily Streak & History
+    Master-->>Client: Render Answer + 3D Avatar Animation + Voice Audio
+    Client-->>Student: Display Response & Update Knowledge Graph
 ```
 
 ---
 
-## 3. ⚡ Multi-LLM Provider Strategy & Zero-Downtime Fallback Flow
-
-```mermaid
-graph TD
-    A["💬 Student Prompt Received"] --> B{"Selected LLM Provider Strategy"}
-    
-    B -->|Provider: Groq| C["⚡ Groq LPU Engine (llama-3.3-70b-versatile)"]
-    B -->|Provider: Gemini| D["✨ Google Gemini 1.5 Flash"]
-    B -->|Provider: OpenAI| E["🤖 OpenAI (GPT-4o / GPT-4o-mini)"]
-    B -->|Provider: DeepSeek| F["🧠 DeepSeek (V3 / R1 Reasoner)"]
-    B -->|Provider: Local Ollama| G["💻 Local Offline Ollama"]
-
-    C & D & E & F & G -->|Check Connection & Quota Status| H{"API Success?"}
-    H -->|Yes| I["✅ Return Sub-second Response"]
-    H -->|No / Network Error / Limit Over| J["🛡️ Zero-Downtime Dynamic Fallback Engine"]
-    J --> K["⚡ Auto-Route to Dynamic Solvers (Zero Demo Interruption)"]
-    K --> I
-```
-
----
-
-## 4. 🖐️ Sign Language AI Tutor (Vision & 3D WebGL Pipeline)
+## 🗺️ Feature Module Architecture Grid
 
 ```mermaid
 graph LR
-    A["🎥 Live Webcam Feed"] --> B["🖐️ MediaPipe Hands API"]
-    B -->|Extract 21 Hand Landmarks| C["📐 Landmark Coordinate Normalizer"]
-    C -->|Classify Gesture (A-Z)| D["🔤 ASL Gesture Classifier"]
-    D -->|Detected Letter| E["📝 Sentence Buffer Builder"]
-    E -->|Click Send to Master AI| F["🧠 Master AI Orchestrator"]
-    F -->|Synthesize Response| G["💃 Three.js WebGL 3D Avatar (Michelle.glb)"]
-    G -->|Play 3D Sign Animations| H["📺 3D Viewport Animation + Speech Voice"]
-```
-
----
-
-## 5. 🧠 SuperMemo-2 (SM-2) Spaced Repetition Memory Engine
-
-```mermaid
-graph TD
-    A["🎴 Student Reviews Flashcard"] --> B{"Select Recall Quality Rating"}
-    
-    B -->|Rating 0-2 (Hard)| C["❌ Incorrect / Low Recall"]
-    B -->|Rating 3 (Good)| D["👍 Good Recall"]
-    B -->|Rating 4-5 (Easy)| E["🌟 Easy / Perfect Recall"]
-
-    C --> C1["Set Interval I(1) = 1 Day"]
-    C --> C2["Decrease Ease Factor EF' = EF - 0.2"]
-
-    D --> D1["Set Interval I(n) = I(n-1) * EF"]
-
-    E --> E1["Set Interval I(n) = I(n-1) * EF * 1.3"]
-    E --> E2["Increase Ease Factor EF' = EF + 0.1"]
-
-    C1 & D1 & E1 --> F["💾 Save Next Review Date in Knowledge Graph"]
-    F --> G["📈 Update Student Forgetting Curve & Productivity Index"]
-```
-
----
-
-## 6. ⏱️ Real Exam Simulator & Groq AI Question Generator Flow
-
-```mermaid
-graph TD
-    A["⏱️ Select Exam Subject & Difficulty"] --> B["⚡ Click Generate New AI Questions"]
-    B --> C["🚀 Groq LPU Engine Prompting"]
-    C --> D["📋 Synthesize 5 Fresh High-Yield MCQs with Explanations"]
-    D --> E["🎮 Timed Exam Session (Countdown Timer & +4/-1 Marking)"]
-    E --> F["📊 Submit Exam & Render Deep Analytics Dashboard"]
-    F --> F1["Accuracy % & Grade Badges"]
-    F --> F2["Correct vs Incorrect Breakdown"]
-    F --> F3["Question-by-Question Detailed AI Review"]
+    subgraph MODULES ["📌 9 SPECIALIZED FEATURE MODULES"]
+        M1["🗺️ Knowledge Graph"] --> M1_1["SM-2 Revision Scheduler & Topic Strength %"]
+        M2["👤 AI Study Twin"] --> M2_1["7-Day Personalized Active Recall Plan"]
+        M3["⚔️ AI Debate Arena"] --> M3_1["2-Agent Real-time Debate & AI Verdict"]
+        M4["⏱️ Exam Simulator"] --> M4_1["Subject Filter & Groq AI Question Generator"]
+        M5["🚀 Project Recommender"] --> M5_1["Portfolio Projects Matched to Mastery Level"]
+        M6["🖐️ Sign Language AI"] --> M6_1["Full ASL 26 Alphabet & Text-to-Sign 3D Avatar"]
+        M7["🔥 Skill Heatmap"] --> M7_1["28-Day Consistency Matrix & Flashcard Deck"]
+        M8["📊 Learning Analytics"] --> M8_1["Productivity Index & Memory Retention Curve"]
+        M9["👤 User Profile"] --> M9_1["Daily Streak Counter & Search History Log"]
+    end
 ```
