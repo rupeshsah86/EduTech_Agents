@@ -13,13 +13,7 @@ interface AvatarViewerProps {
   autoPlay?: boolean;
 }
 
-// Model options available in public/assets/
-const AVATAR_MODELS = [
-  { id: 'Michelle', name: 'Michelle (Default)', path: '/assets/Michelle.glb' },
-  { id: 'avatar', name: 'Ready Player Me', path: '/assets/avatar.glb' },
-  { id: 'ybot', name: 'YBot (Robot)', path: '/assets/ybot.glb' },
-  { id: 'xbot', name: 'XBot (Cyber)', path: '/assets/xbot.glb' },
-];
+
 
 // Helper to look up bone by name across Mixamo & Humanoid naming conventions
 function getBone(avatar: THREE.Object3D, name: string): THREE.Object3D | undefined {
@@ -46,7 +40,6 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     pause: 700,
   });
 
-  const [selectedModel, setSelectedModel] = useState<string>('Michelle');
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1.0);
   const [activeSign, setActiveSign] = useState('');
@@ -193,8 +186,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     scene.add(topDownLight);
 
     // Initial Model Load
-    const activeModelObj = AVATAR_MODELS.find(m => m.id === selectedModel) || AVATAR_MODELS[0];
-    loadModel(activeModelObj.path);
+    loadModel('/assets/Michelle.glb');
 
     // Render loop with idle breathing & subtle head movement
     const clock = new THREE.Clock();
@@ -235,7 +227,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       window.removeEventListener('resize', onResize);
       renderer.dispose();
     };
-  }, [loadModel, selectedModel]);
+  }, [loadModel]);
 
   // ── ANIMATION ENGINE ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -366,7 +358,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     <div className="flex flex-col h-full rounded-3xl overflow-hidden border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl font-sans">
       
       {/* ── Header Toolbar ──────────────────────────────────────────────── */}
-      <div className="px-4 py-3 border-b border-slate-100 dark:border-neutral-800 bg-slate-50/70 dark:bg-neutral-950/70 flex flex-col gap-2 shrink-0">
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-neutral-800 bg-slate-50/70 dark:bg-neutral-950/70 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-xl bg-purple-600 flex items-center justify-center text-white text-xs font-black shadow-md shadow-purple-500/20">
@@ -374,7 +366,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
             </div>
             <div>
               <p className="font-extrabold text-xs text-slate-900 dark:text-neutral-100">3D Sign Interpreter</p>
-              <p className="text-[10px] text-slate-400 dark:text-neutral-500">Ready Player Me GLB Engine</p>
+              <p className="text-[10px] text-slate-400 dark:text-neutral-500">WebGL 3D Sign Engine</p>
             </div>
           </div>
 
@@ -387,29 +379,6 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
             )}
             <Volume2 className="w-3.5 h-3.5 text-slate-400" />
           </div>
-        </div>
-
-        {/* Model Selector Chips */}
-        <div className="flex items-center gap-1 overflow-x-auto pt-1">
-          <span className="text-[9px] font-extrabold text-slate-400 dark:text-neutral-500 uppercase tracking-widest shrink-0 mr-1">
-            Model:
-          </span>
-          {AVATAR_MODELS.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => {
-                setSelectedModel(m.id);
-                loadModel(m.path);
-              }}
-              className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer shrink-0 ${
-                selectedModel === m.id
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-600 dark:text-neutral-400 hover:text-purple-600'
-              }`}
-            >
-              {m.name}
-            </button>
-          ))}
         </div>
       </div>
 
