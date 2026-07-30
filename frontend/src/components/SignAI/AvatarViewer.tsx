@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Play, Pause, RotateCcw, Zap, Volume2, UserCheck, Sparkles } from 'lucide-react';
+import { Play, Pause, RotateCcw, Zap, Volume2, UserCheck, Sparkles, ZoomIn } from 'lucide-react';
 
 // @ts-ignore
 import * as alphabets from '../../services/animations/alphabets';
@@ -13,7 +13,7 @@ interface AvatarViewerProps {
   autoPlay?: boolean;
 }
 
-// Model options available in public/assets/
+// Dedicated 3D Avatar Mesh
 const AVATAR_MODELS = [
   { id: 'Michelle', name: 'Michelle (3D Sign Avatar)', path: '/assets/Michelle.glb' },
 ];
@@ -46,6 +46,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   const selectedModel = 'Michelle';
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
   const [activeSign, setActiveSign] = useState('');
   const [progress, setProgress] = useState(0);
   const [totalSigns, setTotalSigns] = useState(0);
@@ -92,7 +93,6 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     setModelReady(false);
     setModelError(false);
 
-    // Remove previous avatar if exists
     if (ref.avatar) {
       scene.remove(ref.avatar);
       ref.avatar = null;
@@ -104,14 +104,12 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       (gltf) => {
         const avatarScene = gltf.scene;
 
-        // Preserve original professional textures & materials!
         avatarScene.traverse((child: any) => {
           if (child.isMesh || child.isSkinnedMesh) {
             child.frustumCulled = false;
             child.castShadow = true;
             child.receiveShadow = true;
 
-            // Preserve original material properties, adjust roughness & metalness cleanly
             if (child.material) {
               child.material.side = THREE.DoubleSide;
               if (child.material.roughness !== undefined) {
@@ -121,7 +119,6 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
           }
         });
 
-        // Center and scale avatar model
         avatarScene.position.set(0, 0, 0);
         avatarScene.rotation.set(0, 0, 0);
 
@@ -151,10 +148,12 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     const w = el.clientWidth || 400;
     const h = el.clientHeight || 520;
 
-    // Professional Camera framing - centered upper body and head with safety margins
+    // Professional Camera framing - Centered upper body & hands (Y = 1.35)
     const camera = new THREE.PerspectiveCamera(28, w / h, 0.1, 1000);
-    camera.position.set(0, 1.05, 3.2);
-    camera.lookAt(0, 1.05, 0);
+    const targetY = zoomLevel === 0.5 ? 0.95 : (zoomLevel === 1.5 ? 1.40 : 1.35);
+    const dist = 2.8 / zoomLevel;
+    camera.position.set(0, targetY, dist);
+    camera.lookAt(0, targetY, 0);
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -168,7 +167,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     el.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // High-End Studio Environment Lighting
+    // Studio Environment Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
     scene.add(ambientLight);
 
@@ -190,22 +189,20 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     scene.add(topDownLight);
 
     // Initial Model Load
-    const activeModelObj = AVATAR_MODELS.find(m => m.id === selectedModel) || AVATAR_MODELS[0];
+    const activeModelObj = AVATAR_MODELS[0];
     loadModel(activeModelObj.path);
 
-    // Render loop with idle breathing & subtle head movement
+    // Render loop with idle breathing & head sway
     const clock = new THREE.Clock();
     const renderLoop = () => {
       rafRef.current = requestAnimationFrame(renderLoop);
       const delta = clock.getDelta();
 
       if (ref.avatar && !ref.pending) {
-        // Natural Breathing
         breathAngle.current += delta * 1.5;
         const spine = getBone(ref.avatar, 'mixamorig:Spine');
         if (spine) spine.rotation.x = 0.03 + Math.sin(breathAngle.current) * 0.01;
 
-        // Subtle Head Sway
         headSwayAngle.current += delta * 0.7;
         const head = getBone(ref.avatar, 'mixamorig:Head');
         if (head) {
@@ -232,7 +229,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
       window.removeEventListener('resize', onResize);
       renderer.dispose();
     };
-  }, [loadModel, selectedModel]);
+  }, [loadModel, selectedModel, zoomLevel]);
 
   // ── ANIMATION ENGINE ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -325,7 +322,6 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     };
   }, [applyDefaultPose]);
 
-  // React to signText prop changes
   useEffect(() => {
     if (signText && modelReady) {
       setTimeout(() => runSignRef.current(signText), 300);
@@ -359,6 +355,16 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     refObj.current.pause = 700 / s;
   };
 
+  const handleZoomChange = (z: number) => {
+    setZoomLevel(z);
+    if (cameraRef.current) {
+      const targetY = z === 0.5 ? 0.95 : (z === 1.5 ? 1.40 : 1.35);
+      const dist = 2.8 / z;
+      cameraRef.current.position.set(0, targetY, dist);
+      cameraRef.current.lookAt(0, targetY, 0);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full rounded-3xl overflow-hidden border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl font-sans">
       
@@ -389,7 +395,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
         {/* Single Dedicated 3D Avatar Badge */}
         <div className="flex items-center gap-1.5 pt-1 text-left">
           <span className="px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 text-[10px] font-extrabold flex items-center gap-1.5 shadow-2xs">
-            <UserCheck className="w-3 h-3 text-purple-500" />
+            <UserCheck className="w-3.5 h-3.5 text-purple-500" />
             <span>3D Mesh: Michelle (Default Sign Avatar)</span>
           </span>
         </div>
@@ -455,15 +461,16 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
             <span className="px-3 py-1 rounded-full bg-white/90 dark:bg-neutral-900/90 border border-slate-200 dark:border-neutral-800 text-[10px] font-bold text-slate-500 dark:text-neutral-400 shadow-xs flex items-center gap-1.5">
               <UserCheck className="w-3 h-3 text-purple-500" />
-              <span>3D Avatar Standby</span>
+              <span>3D Avatar Standby (Upper Body Centered)</span>
             </span>
           </div>
         )}
       </div>
 
-      {/* ── Playback Controls ──────────────────────────────────────────────── */}
-      <div className="shrink-0 px-4 py-3 border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-950/50">
-        <div className="flex items-center justify-between gap-2">
+      {/* ── Playback & Zoom Controls ──────────────────────────────────────── */}
+      <div className="shrink-0 px-4 py-3 border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-950/50 space-y-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          
           {/* Play / Pause / Replay Buttons */}
           <div className="flex items-center gap-1.5">
             {isPlaying ? (
@@ -490,14 +497,38 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
             </button>
           </div>
 
+          {/* Camera Zoom Selector */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800">
+            <ZoomIn className="w-3 h-3 text-purple-500 ml-1 shrink-0" />
+            {[
+              { level: 0.5, label: '0.5x Full' },
+              { level: 1.0, label: '1x Upper Body' },
+              { level: 1.5, label: '1.5x Hands' },
+            ].map((z) => (
+              <button
+                key={z.level}
+                type="button"
+                onClick={() => handleZoomChange(z.level)}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                  zoomLevel === z.level
+                    ? 'bg-purple-600 text-white shadow-2xs'
+                    : 'text-slate-500 dark:text-neutral-400 hover:text-purple-600'
+                }`}
+              >
+                {z.label}
+              </button>
+            ))}
+          </div>
+
           {/* Speed Selector */}
           <div className="flex items-center gap-1 p-1 rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800">
             <Zap className="w-3 h-3 text-amber-500 ml-1 shrink-0" />
             {[0.5, 1.0, 1.5, 2.0].map((s) => (
               <button
                 key={s}
+                type="button"
                 onClick={() => handleSpeedChange(s)}
-                className={`px-1.5 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
                   speed === s
                     ? 'bg-purple-600 text-white shadow-2xs'
                     : 'text-slate-500 dark:text-neutral-400 hover:text-purple-600'
@@ -507,6 +538,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
               </button>
             ))}
           </div>
+
         </div>
       </div>
     </div>
