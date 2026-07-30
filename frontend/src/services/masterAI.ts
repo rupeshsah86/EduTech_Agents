@@ -100,6 +100,10 @@ class MasterAIService {
 
     // Comprehensive Acronym & Educational Subject Resolver Map
     const subjectTopicMap: Record<string, { topic: string; agentId: string }> = {
+      'ds': { topic: 'Data Structures (DS) Linear vs Non-Linear Structures, Memory Layout & Big-O Bounds', agentId: 'agent_concept' },
+      'what is ds': { topic: 'Data Structures (DS) Linear vs Non-Linear Structures, Memory Layout & Big-O Bounds', agentId: 'agent_concept' },
+      'what is ds?': { topic: 'Data Structures (DS) Linear vs Non-Linear Structures, Memory Layout & Big-O Bounds', agentId: 'agent_concept' },
+      'dsa': { topic: 'Data Structures and Algorithms (DSA) Complete Mastery Roadmap', agentId: 'agent_code' },
       'cn': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
       'computer network': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
       'computer networks': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
@@ -109,7 +113,6 @@ class MasterAIService {
       'operating system': { topic: 'Operating Systems (OS) Architecture, CPU Scheduling, Deadlocks & Memory Management', agentId: 'agent_concept' },
       'dbms': { topic: 'Database Management Systems (DBMS), SQL Joins, ACID Properties & Normalization', agentId: 'agent_concept' },
       'sql': { topic: 'SQL Queries, Joins, Aggregation, Subqueries & Indexing', agentId: 'agent_code' },
-      'dsa': { topic: 'Data Structures and Algorithms Complete Mastery Roadmap', agentId: 'agent_code' },
       'algo': { topic: 'Algorithm Design, Big-O Complexity & Dynamic Programming', agentId: 'agent_code' },
       'system design': { topic: 'System Design Architecture, Scalability, Load Balancing & Caching', agentId: 'agent_concept' },
       'java': { topic: 'Java Object-Oriented Programming, JVM Memory & Multithreading', agentId: 'agent_code' },
@@ -125,7 +128,7 @@ class MasterAIService {
     if (matchedKey) {
       const match = subjectTopicMap[matchedKey];
       queryToProcess = match.topic;
-      targetAgent = AGENTS_REGISTRY[match.agentId] || AGENTS_REGISTRY.agent_note;
+      targetAgent = AGENTS_REGISTRY[match.agentId] || AGENTS_REGISTRY.agent_concept;
     } else if (lower.includes('note') || lower.includes('summary') || lower.includes('outline') || lower.includes('mind map') || lower.includes('cheat sheet')) {
       targetAgent = AGENTS_REGISTRY.agent_note;
     } else if (lower.includes('code') || lower.includes('dsa') || lower.includes('binary search') || lower.includes('algorithm') || lower.includes('python') || lower.includes('java') || lower.includes('cpp')) {
@@ -165,7 +168,75 @@ class MasterAIService {
     const isGreeting = ["hi", "hello", "hey", "hello hi", "hi there", "greetings", "good morning", "good evening"].includes(lower);
 
     if (isGreeting) {
-      responseText = `### 👋 Hello! Welcome to EduVerse AI\n\nI am your **Master AI Learning Assistant**. I orchestrate **9 specialized AI agents** to help you learn, solve doubts, write code, prepare for exams, and build your career.\n\n#### 🚀 How can I help you today?\n- **💡 Concept Doubts**: Ask me to explain any topic in detail.\n- **💻 Coding & DSA**: Ask for Python, C++, Java, or SQL snippets.\n- **📚 Exam Prep**: Ask for high-yield revision roadmaps & PYQs.\n- **📑 MCQ Quizzes**: Ask to launch an adaptive quiz challenge.`;
+      responseText = `### 👋 Hello! Welcome to EduVerse AI\n\nI am your **Master AI Learning Assistant**. I orchestrate **9 specialized AI agents** to help you learn, solve doubts, write code, prepare for exams, and build your career.\n\n#### 🚀 How can I help you today?\n- **💡 Concept Doubts**: Ask me to explain any topic in detail (e.g. *"What is DS?"*, *"Explain Page Faults"*).\n- **💻 Coding & DSA**: Ask for Python, C++, Java, or SQL snippets.\n- **📚 Exam Prep**: Ask for high-yield revision roadmaps & PYQs.\n- **📑 MCQ Quizzes**: Ask to launch an adaptive quiz challenge.`;
+    } else if (lower.includes('ds') || lower.includes('data structure') || lower.includes('structures')) {
+      responseText = `### 💡 ConceptClear AI — In-Depth Explanation: Data Structures (DS)
+
+#### 📌 1. What is a Data Structure (DS)?
+A **Data Structure (DS)** is a specialized format for organizing, processing, retrieving, and storing data in computer memory efficiently. The choice of data structure directly dictates the **Time Complexity** ($O(1)$, $O(\\log N)$, $O(N)$) and **Space Complexity** of an application's algorithm.
+
+---
+
+#### 🏗️ 2. Classification of Data Structures
+1. **Primitive Data Structures**: Built-in memory primitives (Integer, Float, Character, Pointer, Boolean).
+2. **Non-Primitive Data Structures**:
+   - **Linear Data Structures**: Sequential element arrangement.
+     - **Array**: Fixed-size contiguous memory blocks ($O(1)$ random access by index).
+     - **Linked List**: Dynamic nodes connected via pointers (Singly, Doubly, Circular).
+     - **Stack**: LIFO (Last-In, First-Out) structure (\`push()\`, \`pop()\`, \`peek()\`).
+     - **Queue**: FIFO (First-In, First-Out) structure (\`enqueue()\`, \`dequeue()\`).
+   - **Non-Linear Data Structures**: Hierarchical or networked arrangement.
+     - **Tree / BST**: Hierarchical nodes with root, parent, and child edges.
+     - **Graph**: Vertices ($V$) connected by weighted/unweighted Edges ($E$).
+     - **Heap / Priority Queue**: Binary Min-Heap / Max-Heap for $O(1)$ max retrieval.
+     - **Hash Table / Hash Map**: Key-Value mapping via hashing functions ($O(1)$ average search).
+
+---
+
+#### ⏱️ 3. Time & Space Complexity Matrix
+| Data Structure | Access Time | Search Time | Insertion Time | Deletion Time | Worst-Case Space |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Array** | $O(1)$ | $O(N)$ | $O(N)$ | $O(N)$ | $O(N)$ |
+| **Linked List** | $O(N)$ | $O(N)$ | $O(1)$ | $O(1)$ | $O(N)$ |
+| **Stack / Queue** | $O(N)$ | $O(N)$ | $O(1)$ | $O(1)$ | $O(N)$ |
+| **Binary Search Tree (BST)** | $O(\\log N)$ | $O(\\log N)$ | $O(\\log N)$ | $O(\\log N)$ | $O(N)$ |
+| **Hash Table** | N/A | $O(1)$ avg | $O(1)$ avg | $O(1)$ avg | $O(N)$ |
+
+---
+
+#### 💻 4. Practical Implementation (Python Stack Example)
+\`\`\`python
+class Stack:
+    def __init__(self):
+        self.items = []
+        
+    def push(self, val):
+        self.items.append(val)
+        
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
+        return None
+        
+    def peek(self):
+        return self.items[-1] if not self.is_empty() else None
+        
+    def is_empty(self):
+        return len(self.items) == 0
+
+# Usage Example
+s = Stack()
+s.push(10)
+s.push(20)
+print(s.pop()) # Outputs: 20
+\`\`\`
+
+---
+
+#### 🧠 Active Recall Summary Checklist:
+- [x] Defined Data Structure (Linear vs Non-Linear memory arrangement).
+- [x] Differentiated Array $O(1)$ access vs Linked List $O(1)$ insertion.
+- [x] Memorized Stack (LIFO) vs Queue (FIFO) operational mechanics.`;
     } else if (lower.includes('cn') || lower.includes('network')) {
       responseText = `### 📑 NoteCraft AI — High-Yield Notes: Computer Networks (CN)
 
@@ -295,26 +366,28 @@ def solve_problem(data):
 \`\`\`
 
 *Try testing this code in the CodeMentor Sandbox tab!*`;
-    } else if (targetAgent.id === 'agent_note') {
-      responseText = `### 📑 NoteCraft AI — Structured Revision Notes
-
-Comprehensive notes generated for **"${text}"**:
-
-#### 📌 1. Core Principles & Architecture
-- **Primary Concept**: Essential theoretical foundation of **${text}**.
-- **Key Takeaways**: High-yield rules, formulas, and structured breakdown.
-
-#### 💡 2. Structured Summary
-- **Summary**: Concise bullet points engineered for rapid active recall revision.`;
     } else {
-      responseText = `### 🧠 Master AI Synthesized Answer
+      responseText = `### 💡 ${targetAgent.name} — Detailed Academic Solution
 
-Comprehensive breakdown for **"${text}"** (${queryToProcess}):
+Comprehensive breakdown for **"${text}"**:
 
-#### 📌 Step-by-Step Breakdown:
-1. **Core Concept**: Detailed explanation tailored for **"${text}"**.
-2. **Practical Application**: Real-world examples, step-by-step logic, and active recall takeaways.
-3. **Next Steps**: You can ask for code examples, request an adaptive quiz, or ask me to simplify any sub-topic!`;
+#### 📌 1. Executive Summary & Core Definition
+- **Core Concept**: **"${text}"** is a fundamental Computer Science concept involving structured principles, algorithmic logic, and practical engineering trade-offs.
+- **Primary Objective**: Optimizing computational performance, memory utilization, and software reliability.
+
+---
+
+#### 🔬 2. Key Mechanics & Principles
+1. **Theoretical Foundation**: Analyzing problem parameters and selecting the optimal algorithmic approach.
+2. **Systemic Breakdown**: Deconstructing **"${text}"** into modular steps for clear comprehension and active recall.
+3. **Best Practices**: Enforcing clean code standards, error checking, and edge case validation.
+
+---
+
+#### 🧠 3. Active Recall Takeaway Checklist
+- [x] Defined core principle behind **"${text}"**.
+- [x] Formulated step-by-step resolution strategy.
+- [x] Identified key optimization & active recall targets.`;
     }
 
     const currentProvider = llmService.getConfig().activeProvider.toUpperCase();
