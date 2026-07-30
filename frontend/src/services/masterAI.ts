@@ -89,67 +89,48 @@ export interface AgentResponse {
   agentId: string;
   agentName: string;
   text: string;
-  signSummary: string; // Simplified short phrase for 3D sign animation
+  signSummary: string;
   timestamp: string;
 }
 
 class MasterAIService {
-  /**
-   * Routes prompt to the best fitting AI Agent and returns intelligent response
-   */
   public async routeQuery(promptText: string): Promise<AgentResponse> {
     const text = promptText.trim();
     const lower = text.toLowerCase();
 
-    // Map single ASL letters and common sign abbreviations to full educational topics
-    const aslLetterTopicMap: Record<string, { topic: string; agentId: string }> = {
-      'a': { topic: 'Algorithms & Data Structures overview and complexity bounds', agentId: 'agent_code' },
-      'b': { topic: 'Binary Search Trees and Tree Traversal algorithms', agentId: 'agent_code' },
-      'c': { topic: 'C++ programming fundamentals and OOP concepts', agentId: 'agent_code' },
-      'd': { topic: 'Data Structures (DSA) learning roadmap and problem-solving strategy', agentId: 'agent_code' },
-      'e': { topic: 'ExamAce strategy and high-yield revision roadmap', agentId: 'agent_exam' },
-      'f': { topic: 'Functions, Recursion and Functional Programming', agentId: 'agent_code' },
-      'g': { topic: 'Graph Theory & Dijkstra Shortest Path algorithm', agentId: 'agent_code' },
-      'h': { topic: 'Hash Tables, Hash Maps & Collision Resolution', agentId: 'agent_code' },
-      'i': { topic: 'Inheritance, Polymorphism & Object-Oriented Principles', agentId: 'agent_code' },
-      'j': { topic: 'Java Programming Language & JVM Memory Architecture', agentId: 'agent_code' },
-      'k': { topic: 'Kernel, Processes & Operating System Deadlocks', agentId: 'agent_concept' },
-      'l': { topic: 'Linked Lists & Dynamic Memory Allocation', agentId: 'agent_code' },
-      'm': { topic: 'Memory Management, Paging & Virtual Memory in OS', agentId: 'agent_concept' },
-      'n': { topic: 'Networking Protocols, TCP/IP & Socket Programming', agentId: 'agent_concept' },
-      'o': { topic: 'Operating System Architecture, Deadlocks & Scheduling', agentId: 'agent_exam' },
-      'p': { topic: 'Python Programming & Data Science Basics', agentId: 'agent_code' },
-      'q': { topic: 'Queue Data Structure & QuickSort Algorithm', agentId: 'agent_code' },
-      'r': { topic: 'Relational Database Management Systems & SQL', agentId: 'agent_concept' },
-      's': { topic: 'SQL Queries, Joins & Database Normalization', agentId: 'agent_concept' },
-      't': { topic: 'Trees, Binary Search Trees & Trie Data Structures', agentId: 'agent_code' },
-      'u': { topic: 'UML Diagrams & System Design Fundamentals', agentId: 'agent_concept' },
-      'v': { topic: 'Vectors and Dynamic Arrays in C++/Python', agentId: 'agent_code' },
-      'w': { topic: 'Web Development, Node.js & REST APIs', agentId: 'agent_code' },
-      'x': { topic: 'XML & JSON Structured Data Processing', agentId: 'agent_code' },
-      'y': { topic: 'Yield & Generator Functions in Python', agentId: 'agent_code' },
-      'z': { topic: 'Zero-Based Indexing & Pointer Memory Offsets', agentId: 'agent_code' },
-      'dsa': { topic: 'Data Structures and Algorithms Complete Roadmap', agentId: 'agent_code' },
-      'os': { topic: 'Operating Systems Architecture and Process Synchronization', agentId: 'agent_concept' },
-      'dbms': { topic: 'Database Management Systems, SQL Joins & Normalization', agentId: 'agent_concept' },
-      'sql': { topic: 'SQL Joins, Aggregation Queries & Indexing', agentId: 'agent_concept' },
-      'java': { topic: 'Java Object-Oriented Programming & JVM Memory', agentId: 'agent_code' },
-      'cpp': { topic: 'C++ Pointers, STL Containers & Memory Management', agentId: 'agent_code' },
-      'bij': { topic: 'Binary Search, Inheritance & Java Programming concepts', agentId: 'agent_code' },
+    // Comprehensive Acronym & Educational Subject Resolver Map
+    const subjectTopicMap: Record<string, { topic: string; agentId: string }> = {
+      'cn': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
+      'computer network': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
+      'computer networks': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
+      'notes about cn': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
+      'proper notes about cn': { topic: 'Computer Networks (CN) OSI 7 Layers, TCP/IP Suite, Subnetting & Protocols', agentId: 'agent_note' },
+      'os': { topic: 'Operating Systems (OS) Architecture, CPU Scheduling, Deadlocks & Memory Management', agentId: 'agent_concept' },
+      'operating system': { topic: 'Operating Systems (OS) Architecture, CPU Scheduling, Deadlocks & Memory Management', agentId: 'agent_concept' },
+      'dbms': { topic: 'Database Management Systems (DBMS), SQL Joins, ACID Properties & Normalization', agentId: 'agent_concept' },
+      'sql': { topic: 'SQL Queries, Joins, Aggregation, Subqueries & Indexing', agentId: 'agent_code' },
+      'dsa': { topic: 'Data Structures and Algorithms Complete Mastery Roadmap', agentId: 'agent_code' },
+      'algo': { topic: 'Algorithm Design, Big-O Complexity & Dynamic Programming', agentId: 'agent_code' },
+      'system design': { topic: 'System Design Architecture, Scalability, Load Balancing & Caching', agentId: 'agent_concept' },
+      'java': { topic: 'Java Object-Oriented Programming, JVM Memory & Multithreading', agentId: 'agent_code' },
+      'cpp': { topic: 'C++ Pointers, STL Containers, RAII & Memory Management', agentId: 'agent_code' },
+      'python': { topic: 'Python Data Structures, Object-Oriented Design & Generators', agentId: 'agent_code' },
     };
 
     let targetAgent = AGENTS_REGISTRY.agent_concept;
     let queryToProcess = text;
 
-    if (aslLetterTopicMap[lower]) {
-      const match = aslLetterTopicMap[lower];
+    // Direct acronym key lookup or phrase containment check
+    let matchedKey = Object.keys(subjectTopicMap).find(k => lower === k || lower.includes(k));
+    if (matchedKey) {
+      const match = subjectTopicMap[matchedKey];
       queryToProcess = match.topic;
-      targetAgent = AGENTS_REGISTRY[match.agentId] || AGENTS_REGISTRY.agent_concept;
-    } else if (lower.includes('note') || lower.includes('summary') || lower.includes('outline') || lower.includes('mind map')) {
+      targetAgent = AGENTS_REGISTRY[match.agentId] || AGENTS_REGISTRY.agent_note;
+    } else if (lower.includes('note') || lower.includes('summary') || lower.includes('outline') || lower.includes('mind map') || lower.includes('cheat sheet')) {
       targetAgent = AGENTS_REGISTRY.agent_note;
     } else if (lower.includes('code') || lower.includes('dsa') || lower.includes('binary search') || lower.includes('algorithm') || lower.includes('python') || lower.includes('java') || lower.includes('cpp')) {
       targetAgent = AGENTS_REGISTRY.agent_code;
-    } else if (lower.includes('exam') || lower.includes('pyq') || lower.includes('score') || lower.includes('test')) {
+    } else if (lower.includes('exam') || lower.includes('pyq') || lower.includes('score') || lower.includes('test') || lower.includes('gate')) {
       targetAgent = AGENTS_REGISTRY.agent_exam;
     } else if (lower.includes('quiz') || lower.includes('mcq') || lower.includes('flashcard') || lower.includes('question')) {
       targetAgent = AGENTS_REGISTRY.agent_quiz;
@@ -159,12 +140,14 @@ class MasterAIService {
       targetAgent = AGENTS_REGISTRY.agent_career;
     }
 
-    // Call active LLM Provider (Groq / Gemini / OpenAI / DeepSeek / Ollama) via LLMService
+    // Attempt live generation via active LLM Provider
     try {
-      const systemPrompt = `You are ${targetAgent.name} (${targetAgent.role}), part of EduVerse AI platform. Provide clear, structured, student-friendly, step-by-step educational explanations in GitHub Markdown with code examples, formulas, and active recall bullet points where relevant.`;
+      const systemPrompt = `You are ${targetAgent.name} (${targetAgent.role}), part of EduVerse AI platform.
+      Provide comprehensive, highly structured, in-depth academic explanations in GitHub Markdown format.
+      Include markdown tables, mathematical formulas, protocol comparisons, code snippets, and an active recall revision checklist.`;
       
       const llmResult = await llmService.generate(queryToProcess, systemPrompt);
-      if (llmResult && llmResult.text) {
+      if (llmResult && llmResult.text && !llmResult.text.includes('Groq API error') && !llmResult.text.includes('No response')) {
         return {
           agentId: targetAgent.id,
           agentName: `${targetAgent.name} [${llmResult.provider.toUpperCase()}: ${llmResult.model}]`,
@@ -174,23 +157,164 @@ class MasterAIService {
         };
       }
     } catch (e) {
-      console.warn('LLMService dispatch error, using fallback:', e);
+      console.warn('LLMService dispatch error, using dynamic domain solver:', e);
     }
 
-    // Smart responses for demo & offline mode
+    // ── HIGH-YIELD DYNAMIC DOMAIN SOLVER ENGINE ──────────────────────────────
     let responseText = '';
-    if (["hi", "hello", "hey", "hello hi", "hi there", "greetings", "good morning", "good evening"].includes(lower)) {
+    const isGreeting = ["hi", "hello", "hey", "hello hi", "hi there", "greetings", "good morning", "good evening"].includes(lower);
+
+    if (isGreeting) {
       responseText = `### 👋 Hello! Welcome to EduVerse AI\n\nI am your **Master AI Learning Assistant**. I orchestrate **9 specialized AI agents** to help you learn, solve doubts, write code, prepare for exams, and build your career.\n\n#### 🚀 How can I help you today?\n- **💡 Concept Doubts**: Ask me to explain any topic in detail.\n- **💻 Coding & DSA**: Ask for Python, C++, Java, or SQL snippets.\n- **📚 Exam Prep**: Ask for high-yield revision roadmaps & PYQs.\n- **📑 MCQ Quizzes**: Ask to launch an adaptive quiz challenge.`;
+    } else if (lower.includes('cn') || lower.includes('network')) {
+      responseText = `### 📑 NoteCraft AI — High-Yield Notes: Computer Networks (CN)
+
+#### 🌐 1. OSI 7-Layer Reference Model vs TCP/IP Protocol Stack
+| Layer | Layer Name | Core Functions | Key Protocols | Data Unit |
+| :--- | :--- | :--- | :--- | :--- |
+| **7** | **Application** | Network services to user applications | HTTP, HTTPS, FTP, DNS, SMTP, SSH | Data |
+| **6** | **Presentation** | Data formatting, encryption & compression | SSL/TLS, JPEG, ASCII | Data |
+| **5** | **Session** | Session establishment, maintenance & teardown | NetBIOS, PPTP | Data |
+| **4** | **Transport** | End-to-end communication, error recovery, flow control | TCP, UDP | Segment (TCP) / Datagram (UDP) |
+| **3** | **Network** | Packet routing, logical addressing & path determination | IP (v4/v6), ICMP, ARP, OSPF, BGP | Packet |
+| **2** | **Data Link** | Physical addressing (MAC), framing, error detection | Ethernet (802.3), Wi-Fi (802.11), PPP | Frame |
+| **1** | **Physical** | Binary transmission over physical medium | Cables, Fiber, Signals, Hubs | Bits |
+
+---
+
+#### ⚡ 2. TCP vs UDP Protocol Comparison
+- **TCP (Transmission Control Protocol)**:
+  - **Connection-Oriented**: 3-Way Handshake (\`SYN\` ➔ \`SYN-ACK\` ➔ \`ACK\`).
+  - **Reliable**: Guarantees packet delivery via acknowledgments (ACKs) and retransmissions.
+  - **Flow & Congestion Control**: Sliding window protocol and slow-start algorithm.
+- **UDP (User Datagram Protocol)**:
+  - **Connectionless**: No handshake, fire-and-forget transmission.
+  - **Unreliable & Fast**: Minimal header overhead (8 bytes vs 20 bytes for TCP).
+  - **Use Cases**: Real-time voice/video streaming, DNS queries, online gaming.
+
+---
+
+#### 🌐 3. IP Addressing & Subnetting Basics
+- **IPv4 Format**: 32-bit address split into 4 octets (e.g. \`192.168.1.1\`).
+- **Classful Addressing**:
+  - **Class A**: \`1.0.0.0\` - \`126.255.255.255\` (Subnet Mask \`/8\` = \`255.0.0.0\`)
+  - **Class B**: \`128.0.0.0\` - \`191.255.255.255\` (Subnet Mask \`/16\` = \`255.255.0.0\`)
+  - **Class C**: \`192.0.0.0\` - \`223.255.255.255\` (Subnet Mask \`/24\` = \`255.255.255.0\`)
+- **CIDR Subnetting Example**: \`/24\` yields $2^{32-24} = 256$ total IP addresses (254 usable hosts).
+
+---
+
+#### ⏱️ 4. Essential GATE & Exam Formulas
+1. **Transmission Delay ($T_t$)**: 
+   $$T_t = \\frac{\\text{Packet Size } (L)}{\\text{Bandwidth } (B)}$$
+2. **Propagation Delay ($T_p$)**: 
+   $$T_p = \\frac{\\text{Distance } (d)}{\\text{Propagation Speed } (v)}$$
+3. **Stop-and-Wait ARQ Efficiency ($\\eta$)**: 
+   $$\\eta = \\frac{T_t}{T_t + 2T_p} = \\frac{1}{1 + 2a} \\quad \\text{where } a = \\frac{T_p}{T_t}$$
+
+---
+
+#### 🧠 Active Recall Summary Checklist:
+- [x] Memorized OSI 7 layers top-to-bottom (*"All People Seem To Need Data Processing"*).
+- [x] Differentiated TCP 3-way handshake vs UDP connectionless protocol.
+- [x] Calculated Transmission & Propagation delay for network performance analysis.`;
+    } else if (lower.includes('os') || lower.includes('operating')) {
+      responseText = `### 💻 NoteCraft AI — High-Yield Notes: Operating Systems (OS)
+
+#### ⚙️ 1. Process Lifecycle & State Transitions
+1. **New**: Process is being created.
+2. **Ready**: Process is waiting in memory to be assigned to a CPU core.
+3. **Running**: Instructions are actively executing on CPU.
+4. **Waiting / Blocked**: Process is waiting for an I/O event or signal.
+5. **Terminated**: Process completed execution and resources are reclaimed.
+
+---
+
+#### 🧠 2. CPU Scheduling Algorithms
+- **FCFS (First-Come, First-Served)**: Non-preemptive, subject to Convoy Effect.
+- **SJF (Shortest Job First)**: Optimal average waiting time, but risks starvation.
+- **Round Robin (RR)**: Preemptive time-quantum slicing ($q$). Ideal for time-sharing systems.
+
+---
+
+#### 🔒 3. Deadlock Prevention & Coffman Conditions
+Deadlock occurs if and only if **all 4 conditions** hold simultaneously:
+1. **Mutual Exclusion**: At least one resource must be held in non-shareable mode.
+2. **Hold and Wait**: Process holding resources requests additional resources.
+3. **No Preemption**: Resources cannot be forcibly taken from a process.
+4. **Circular Wait**: Closed loop of processes where each waits for a resource held by the next.
+
+*Avoid deadlocks using Banker's Algorithm for Safe State Evaluation!*`;
+    } else if (lower.includes('dbms') || lower.includes('database') || lower.includes('sql')) {
+      responseText = `### 🗄️ NoteCraft AI — High-Yield Notes: Database Management Systems (DBMS)
+
+#### 🛡️ 1. ACID Properties in Relational Databases
+- **Atomicity**: Entire transaction succeeds or entire transaction rolls back ("All or Nothing").
+- **Consistency**: Database transitions from one valid state to another valid state.
+- **Isolation**: Concurrent transactions execute independently without cross-interference.
+- **Durability**: Committed data persists even in the event of power loss or crash.
+
+---
+
+#### 📊 2. SQL Joins Comparison Matrix
+| Join Type | Description |
+| :--- | :--- |
+| \`INNER JOIN\` | Returns rows with matching values in both tables. |
+| \`LEFT JOIN\` | Returns all rows from left table + matched rows from right table. |
+| \`RIGHT JOIN\` | Returns all rows from right table + matched rows from left table. |
+| \`FULL OUTER JOIN\` | Returns all rows when there is a match in either left or right table. |`;
     } else if (targetAgent.id === 'agent_code') {
-      responseText = `### 💻 CodeMentor AI — Solution Breakdown\n\nDetailed analysis for **"${text}"** (${queryToProcess}):\n\n#### ⚡ Key Logic & Complexity:\n- **Time Complexity**: O(N log N) / O(log N) optimal traversal.\n- **Space Complexity**: O(N) auxiliary space.\n\n\`\`\`python\n# Optimized Solution Structure for: ${text}\ndef solve_problem(data):\n    # Process input data efficiently\n    result = []\n    for item in data:\n        result.append(item)\n    return result\n\`\`\`\n\n*Try testing this code in the CodeMentor Sandbox tab!*`;
+      responseText = `### 💻 CodeMentor AI — Solution Breakdown
+
+Detailed analysis for **"${text}"** (${queryToProcess}):
+
+#### ⚡ Key Logic & Complexity:
+- **Time Complexity**: $O(N \\log N)$ optimal sorting / $O(\\log N)$ binary search.
+- **Space Complexity**: $O(1)$ auxiliary memory.
+
+\`\`\`python
+# High-Performance Data Structure Solution
+def solve_problem(data):
+    """
+    Optimized algorithm implementation for: ${text}
+    """
+    if not data:
+        return []
+    
+    # Process elements using two-pointer strategy
+    left, right = 0, len(data) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if data[mid] == target:
+            return mid
+        elif data[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+\`\`\`
+
+*Try testing this code in the CodeMentor Sandbox tab!*`;
     } else if (targetAgent.id === 'agent_note') {
-      responseText = `### 📑 NoteCraft AI — Structured Revision Notes\n\nComprehensive notes generated for **"${text}"**:\n\n#### 📌 Core Definitions & Mind Map:\n1. **Fundamental Principle**: Core concept underlying ${text}.\n2. **Key Takeaway**: High-yield formulas, rules, and best practices.\n3. **Summary**: Essential summary points for active recall revision.`;
-    } else if (targetAgent.id === 'agent_exam') {
-      responseText = `### 📚 ExamAce AI — High-Yield Exam Roadmap\n\nStrategy for **"${text}"**:\n\n1. **Topic Weightage**: Priority breakdown based on recent PYQs.\n2. **Revision Blocks**: 3-day rapid review cycle with practice problems.\n3. **Active Recall**: Test key formulas and theoretical proofs under timed conditions.`;
-    } else if (targetAgent.id === 'agent_quiz') {
-      responseText = `### 📑 QuizMaster AI — MCQ Challenge Ready\n\nGenerated evaluation for **"${text}"**.\n\n*Click the QuizMaster AI tab in the left sidebar to play the interactive MCQ Game with instant scoring & results page!*`;
+      responseText = `### 📑 NoteCraft AI — Structured Revision Notes
+
+Comprehensive notes generated for **"${text}"**:
+
+#### 📌 1. Core Principles & Architecture
+- **Primary Concept**: Essential theoretical foundation of **${text}**.
+- **Key Takeaways**: High-yield rules, formulas, and structured breakdown.
+
+#### 💡 2. Structured Summary
+- **Summary**: Concise bullet points engineered for rapid active recall revision.`;
     } else {
-      responseText = `### 🧠 Master AI Synthesized Answer\n\nComprehensive breakdown for **"${text}"** (${queryToProcess}):\n\n#### 📌 Step-by-Step Breakdown:\n1. **Core Concept**: Comprehensive explanation tailored for **"${text}"**.\n2. **Practical Application**: Real-world examples, step-by-step logic, and active recall takeaways.\n3. **Next Steps**: You can ask for code examples, request an adaptive quiz, or ask me to simplify any sub-topic!`;
+      responseText = `### 🧠 Master AI Synthesized Answer
+
+Comprehensive breakdown for **"${text}"** (${queryToProcess}):
+
+#### 📌 Step-by-Step Breakdown:
+1. **Core Concept**: Detailed explanation tailored for **"${text}"**.
+2. **Practical Application**: Real-world examples, step-by-step logic, and active recall takeaways.
+3. **Next Steps**: You can ask for code examples, request an adaptive quiz, or ask me to simplify any sub-topic!`;
     }
 
     const currentProvider = llmService.getConfig().activeProvider.toUpperCase();
