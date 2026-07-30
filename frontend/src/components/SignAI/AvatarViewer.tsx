@@ -15,10 +15,7 @@ interface AvatarViewerProps {
 
 // Model options available in public/assets/
 const AVATAR_MODELS = [
-  { id: 'Michelle', name: 'Michelle (Default)', path: '/assets/Michelle.glb' },
-  { id: 'avatar', name: 'Ready Player Me', path: '/assets/avatar.glb' },
-  { id: 'ybot', name: 'YBot (Robot)', path: '/assets/ybot.glb' },
-  { id: 'xbot', name: 'XBot (Cyber)', path: '/assets/xbot.glb' },
+  { id: 'Michelle', name: 'Michelle (3D Sign Avatar)', path: '/assets/Michelle.glb' },
 ];
 
 // Helper to look up bone by name across Mixamo & Humanoid naming conventions
@@ -46,7 +43,7 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     pause: 700,
   });
 
-  const [selectedModel, setSelectedModel] = useState<string>('Michelle');
+  const selectedModel = 'Michelle';
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1.0);
   const [activeSign, setActiveSign] = useState('');
@@ -389,27 +386,12 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
           </div>
         </div>
 
-        {/* Model Selector Chips */}
-        <div className="flex items-center gap-1 overflow-x-auto pt-1">
-          <span className="text-[9px] font-extrabold text-slate-400 dark:text-neutral-500 uppercase tracking-widest shrink-0 mr-1">
-            Model:
+        {/* Single Dedicated 3D Avatar Badge */}
+        <div className="flex items-center gap-1.5 pt-1 text-left">
+          <span className="px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 text-[10px] font-extrabold flex items-center gap-1.5 shadow-2xs">
+            <UserCheck className="w-3 h-3 text-purple-500" />
+            <span>3D Mesh: Michelle (Default Sign Avatar)</span>
           </span>
-          {AVATAR_MODELS.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => {
-                setSelectedModel(m.id);
-                loadModel(m.path);
-              }}
-              className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer shrink-0 ${
-                selectedModel === m.id
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-600 dark:text-neutral-400 hover:text-purple-600'
-              }`}
-            >
-              {m.name}
-            </button>
-          ))}
         </div>
       </div>
 
