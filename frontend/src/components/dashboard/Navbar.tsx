@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import { UserProfileModal } from './UserProfileModal';
+import { userActivityService, type UserActivity } from '../../services/userActivity';
+import { Flame } from 'lucide-react';
 
 
 interface NavbarProps {
@@ -29,7 +31,16 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
   const [isListening, setIsListening] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [activity, setActivity] = useState<UserActivity>(() => userActivityService.getActivity());
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail) setActivity(e.detail);
+    };
+    window.addEventListener('user-activity-updated', handleUpdate);
+    return () => window.removeEventListener('user-activity-updated', handleUpdate);
+  }, []);
 
   // Keyboard shortcut Cmd+K / Ctrl+K to focus search input
   React.useEffect(() => {
@@ -203,11 +214,21 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
           {/* Working Notification Dropdown */}
           <NotificationDropdown />
 
+          {/* Active Streak Pill Badge */}
+          <button
+            onClick={() => setProfileModalOpen(true)}
+            className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-black hover:bg-amber-500/20 transition-all cursor-pointer shadow-2xs"
+            title="View Active Study Streak in Profile"
+          >
+            <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+            <span>{activity.activeStreak}d Streak</span>
+          </button>
+
           {/* User Profile Button (Clickable) */}
           <button
             onClick={() => setProfileModalOpen(true)}
             className="flex items-center gap-2.5 pl-2 border-l border-slate-200 dark:border-neutral-800 hover:opacity-80 transition-opacity cursor-pointer group"
-            title="Edit Profile Settings"
+            title="Edit Profile Settings & View History"
           >
             <div className="w-8 h-8 rounded-full bg-purple-600 text-white font-black text-xs flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
               {user?.fullName ? user.fullName.slice(0, 2).toUpperCase() : 'NA'}

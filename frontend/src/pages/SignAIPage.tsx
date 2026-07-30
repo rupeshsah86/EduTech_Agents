@@ -7,6 +7,7 @@ import type { ChatMessage } from '../components/SignAI/MessageBubble';
 import { useRecognition } from '../hooks/useRecognition';
 import { useSpeech } from '../hooks/useSpeech';
 import { masterAIService } from '../services/masterAI';
+import { userActivityService } from '../services/userActivity';
 import { Hand, ShieldCheck, Zap, Sparkles } from 'lucide-react';
 
 export const SignAIPage: React.FC = () => {
@@ -36,6 +37,9 @@ export const SignAIPage: React.FC = () => {
 
   const handleSendToMasterAI = async (promptText: string) => {
     if (!promptText.trim() || isProcessing) return;
+
+    // Log query into User Search & Study History Activity Tracker
+    userActivityService.logSearch(promptText, 'Sign Language AI', 'Sign Language Tutor');
 
     setIsProcessing(true);
 

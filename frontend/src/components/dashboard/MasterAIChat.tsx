@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { userActivityService } from '../../services/userActivity';
 import { 
   Send, 
   BrainCircuit, 
@@ -290,6 +291,9 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
   const handleSend = async (userQuery?: string) => {
     const queryToSend = (userQuery !== undefined ? userQuery : prompt) || '';
     if (!queryToSend.trim()) return;
+
+    // Log query into User Search & Study History Activity Tracker
+    userActivityService.logSearch(queryToSend, isDedicatedAgent ? currentAgentTitle : 'Master AI Query', currentAgentTitle);
 
     if (isListening) {
       recognitionRef.current?.stop();
