@@ -107,7 +107,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* Messages Stream Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/30 dark:bg-neutral-950/30 min-h-[280px]">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-neutral-950/30">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400 space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">

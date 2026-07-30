@@ -8,7 +8,7 @@ import { useRecognition } from '../hooks/useRecognition';
 import { useSpeech } from '../hooks/useSpeech';
 import { masterAIService } from '../services/masterAI';
 import { userActivityService } from '../services/userActivity';
-import { Hand, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { Hand, ShieldCheck, Zap } from 'lucide-react';
 
 export const SignAIPage: React.FC = () => {
   const {
@@ -184,31 +184,19 @@ export const SignAIPage: React.FC = () => {
       />
 
       {/* ── Multi-Modal AI Conversation Workspace ──────────────────────────────── */}
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold border border-purple-200 dark:border-purple-800">
-            <Sparkles className="w-3.5 h-3.5" />
-          </div>
-          <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">
-            AI Multi-Modal Conversation Feed
-          </h2>
-        </div>
-
-        <div className="w-full h-[450px]">
-          <ChatWindow
-            messages={messages}
-            onSendMessage={handleSendToMasterAI}
-            onPlaySignAnimation={handlePlaySignAnimation}
-            onPlayVoice={handlePlayVoice}
-            isMuted={isMuted}
-            isSpeaking={isSpeaking}
-            onToggleMute={toggleMute}
-            onReplayVoice={replay}
-            recognizedSentenceBuffer={result.recognizedSentence}
-            isRecognizing={isRecognizing}
-          />
-        </div>
-
+      <div className="w-full min-h-[500px] h-[520px] pt-1">
+        <ChatWindow
+          messages={messages}
+          onSendMessage={handleSendToMasterAI}
+          onPlaySignAnimation={handlePlaySignAnimation}
+          onPlayVoice={handlePlayVoice}
+          isMuted={isMuted}
+          isSpeaking={isSpeaking}
+          onToggleMute={toggleMute}
+          onReplayVoice={replay}
+          recognizedSentenceBuffer={result.recognizedSentence}
+          isRecognizing={isRecognizing}
+        />
       </div>
 
     </div>
