@@ -43,6 +43,11 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const handleExternalPrompt = (e: any) => {
@@ -122,6 +127,10 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
       timestamp: '10:00 AM'
     }
   ]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isProcessing]);
 
   // Setup Speech Synthesis and Speech Recognition
   useEffect(() => {
@@ -370,7 +379,7 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
   };
 
   return (
-    <div className="flex-1 flex bg-slate-50/50 dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 overflow-hidden font-sans relative">
+    <div className="flex-1 flex flex-col h-full bg-slate-50/50 dark:bg-neutral-950 text-slate-900 dark:text-neutral-100 overflow-hidden font-sans relative">
       
       {/* Hidden File Input Picker */}
       <input 
@@ -381,8 +390,8 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
         accept=".pdf,.txt,.py,.js,.java,.cpp,.md,.json,.csv" 
       />
 
-      {/* Center Main Workspace Canvas */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-4xl mx-auto w-full font-sans">
+      {/* Center Main Workspace Canvas (Scrollable Messages Stream) */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 max-w-4xl mx-auto w-full font-sans">
         
         {/* Personalized Calm Greeting Header */}
         <div className="space-y-3 pt-2 text-left">
@@ -436,289 +445,258 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
           </div>
         )}
 
-        <div className="flex gap-3 max-w-4xl text-left">
-          <div className="w-8 h-8 rounded-xl bg-purple-600 shadow-md shadow-purple-600/20 flex items-center justify-center shrink-0 text-white">
-            <BrainCircuit className="w-4 h-4 text-white" />
-          </div>
-          <div className="space-y-1 max-w-2xl flex-1">
-            <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-neutral-500">
-              <span className="font-bold text-slate-800 dark:text-neutral-200">{currentAgentTitle}</span>
-              <span>•</span>
-              <span>10:00 AM</span>
+        {/* Quick Actions Grid (Shown when conversation is fresh) */}
+        {messages.filter(m => m.sender === 'user').length === 0 && (
+          <div className="space-y-2 text-left pt-1">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                Quick Actions
+              </h2>
+              <span className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">Click to launch agent</span>
             </div>
-            <div className="p-4 rounded-2xl text-xs sm:text-sm leading-relaxed bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 rounded-tl-none shadow-sm space-y-2">
-              <p>Hello! I orchestrate 9 specialized AI agents to help you master any subject.</p>
-              <p>Ask me anything — from building an exam roadmap to debugging code or parsing PDFs. I've got you covered! 🚀</p>
-              <div className="flex items-center gap-3 pt-2 border-t border-slate-100 dark:border-neutral-800 text-xs">
-                <button
-                  onClick={() => speakMessageText('welcome', "Hello! I orchestrate 9 specialized AI agents to help you master any subject. Ask me anything — from building an exam roadmap to debugging code or parsing PDFs. I've got you covered!")}
-                  className={`flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                    isSpeaking && activeSpeakingMsgId === 'welcome'
-                      ? 'bg-emerald-500 text-white animate-pulse'
-                      : 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 hover:bg-purple-100'
-                  }`}
-                >
-                  {isSpeaking && activeSpeakingMsgId === 'welcome' ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                  <span>{isSpeaking && activeSpeakingMsgId === 'welcome' ? 'Stop Voice' : 'Listen'}</span>
-                </button>
-                <button
-                  onClick={() => navigator.clipboard.writeText("Hello! I orchestrate 9 specialized AI agents to help you master any subject. Ask me anything — from building an exam roadmap to debugging code or parsing PDFs. I've got you covered! 🚀")}
-                  className="flex items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-[11px] font-semibold cursor-pointer"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy</span>
-                </button>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                {
+                  id: 'notes',
+                  label: 'Generate Notes',
+                  desc: 'NoteCraft AI • Markdown & mind maps',
+                  icon: FileText,
+                  promptText: 'Generate comprehensive, structured Markdown study notes on: '
+                },
+                {
+                  id: 'doubt',
+                  label: 'Solve Doubt',
+                  desc: 'ConceptClear AI • Socratic step-by-step',
+                  icon: HelpCircle,
+                  promptText: 'Help me solve this doubt step-by-step using Socratic reasoning: '
+                },
+                {
+                  id: 'quiz',
+                  label: 'Create Quiz',
+                  desc: 'QuizMaster AI • Adaptive MCQs',
+                  icon: CheckSquare,
+                  promptText: 'Generate an adaptive 5-question multiple choice quiz on: '
+                },
+                {
+                  id: 'study',
+                  label: 'Study Plan',
+                  desc: 'StudyFlow AI • Pomodoro timetable',
+                  icon: Calendar,
+                  promptText: 'Create a 7-day optimized Pomodoro study timetable for: '
+                }
+              ].map((card) => {
+                const Icon = card.icon;
+                return (
+                  <button
+                    key={card.id}
+                    onClick={() => {
+                      setPrompt(card.promptText);
+                    }}
+                    className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                        {card.label}
+                      </h3>
+                      <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-1 font-medium">
+                        {card.desc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Chronological Chat Messages Stream */}
+        <div className="space-y-6 pt-2">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex gap-3 max-w-4xl ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
+            >
+              {/* Avatar Icon */}
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white ${
+                msg.sender === 'user'
+                  ? 'bg-purple-600 font-extrabold text-xs'
+                  : 'bg-purple-600 shadow-md shadow-purple-600/20'
+              }`}>
+                {msg.sender === 'user' ? <User className="w-4 h-4 text-white" /> : <BrainCircuit className="w-4 h-4 text-white" />}
+              </div>
+
+              {/* Message Content */}
+              <div className={`space-y-1 max-w-2xl ${msg.sender === 'user' ? 'text-right' : ''}`}>
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-neutral-500">
+                  <span className="font-bold text-slate-800 dark:text-neutral-200">
+                    {msg.sender === 'user' ? 'You' : currentAgentTitle}
+                  </span>
+                  <span>•</span>
+                  <span>{msg.timestamp}</span>
+                </div>
+
+                {msg.activeAgents && (
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {msg.activeAgents.map((ag, i) => (
+                      <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80">
+                        ⚡ {ag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {msg.isThinking ? (
+                  <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2 shadow-sm">
+                    <span>Master AI is thinking...</span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
+                      <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-purple-400" />
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-purple-600 text-white rounded-tr-none font-medium text-left shadow-sm'
+                      : 'bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 rounded-tl-none shadow-sm'
+                  }`}>
+                    <div className="whitespace-pre-wrap font-sans">
+                      {msg.text}
+                    </div>
+
+                    {msg.sender === 'master_ai' && (
+                      <div className="flex items-center gap-3 mt-3 pt-2 border-t border-slate-100 dark:border-neutral-800 text-xs">
+                        <button
+                          onClick={() => speakMessageText(msg.id, msg.text)}
+                          className={`flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                            isSpeaking && activeSpeakingMsgId === msg.id
+                              ? 'bg-emerald-500 text-white animate-pulse'
+                              : 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 hover:bg-purple-100'
+                          }`}
+                        >
+                          {isSpeaking && activeSpeakingMsgId === msg.id ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                          <span>{isSpeaking && activeSpeakingMsgId === msg.id ? 'Stop Voice' : 'Listen'}</span>
+                        </button>
+
+                        <button
+                          onClick={() => navigator.clipboard.writeText(msg.text)}
+                          className="flex items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-[11px] font-semibold cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* EXACTLY 4 Primary Action Cards (Placed BEFORE Search Bar) */}
-        <div className="space-y-2 text-left pt-1">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
-              Quick Actions
-            </h2>
-            <span className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">Click to launch agent</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {[
-              {
-                id: 'notes',
-                label: 'Generate Notes',
-                desc: 'NoteCraft AI • Markdown & mind maps',
-                icon: FileText,
-                promptText: 'Generate comprehensive, structured Markdown study notes on: '
-              },
-              {
-                id: 'doubt',
-                label: 'Solve Doubt',
-                desc: 'ConceptClear AI • Socratic step-by-step',
-                icon: HelpCircle,
-                promptText: 'Help me solve this doubt step-by-step using Socratic reasoning: '
-              },
-              {
-                id: 'quiz',
-                label: 'Create Quiz',
-                desc: 'QuizMaster AI • Adaptive MCQs',
-                icon: CheckSquare,
-                promptText: 'Generate an adaptive 5-question multiple choice quiz on: '
-              },
-              {
-                id: 'study',
-                label: 'Study Plan',
-                desc: 'StudyFlow AI • Pomodoro timetable',
-                icon: Calendar,
-                promptText: 'Create a 7-day optimized Pomodoro study timetable for: '
-              }
-            ].map((card) => {
-              const Icon = card.icon;
-              return (
-                <button
-                  key={card.id}
-                  onClick={() => {
-                    setPrompt(card.promptText);
-                  }}
-                  className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm hover:border-purple-300 dark:hover:border-purple-800 hover:shadow-md transition-all text-left space-y-2 group cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                      {card.label}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 line-clamp-1 font-medium">
-                      {card.desc}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Large Focused Question Input Box (Search Action) */}
-        <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 p-4 shadow-lg hover:border-purple-300 dark:hover:border-purple-800 transition-all space-y-3 relative group">
+          ))}
           
-          {attachedFile && (
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-xs font-medium text-purple-700 dark:text-purple-300">
-              <Paperclip className="w-3.5 h-3.5" />
-              <span className="truncate">{attachedFile.name}</span>
-              <span className="opacity-75 text-[10px]">({attachedFile.size})</span>
+          {/* Smooth Auto-Scroll Anchor */}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* ChatGPT-Style Sticky Bottom Input Bar */}
+      <div className="p-4 border-t border-slate-200/80 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-md shrink-0 w-full">
+        <div className="max-w-4xl mx-auto space-y-3">
+          
+          {/* Speech Recognition Indicator Banner */}
+          {isListening && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-between animate-pulse text-left">
+              <div className="flex items-center gap-3">
+                <Mic className="w-4 h-4 animate-bounce" />
+                <span className="text-xs font-bold">Listening to your voice... Speak your question clearly</span>
+              </div>
               <button 
-                onClick={() => setAttachedFile(null)} 
-                className="ml-auto p-0.5 hover:bg-purple-200 dark:hover:bg-purple-900 rounded cursor-pointer"
+                onClick={toggleListening}
+                className="px-2 py-0.5 bg-rose-600 text-white text-[11px] font-bold rounded cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
+                Stop
               </button>
             </div>
           )}
 
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Ask anything to Master AI, paste your notes, or upload a textbook..."
-            className="w-full bg-transparent border-0 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 text-sm sm:text-base resize-none min-h-[70px]"
-          />
+          {/* Prompt Search Input Box */}
+          <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 p-3.5 shadow-lg hover:border-purple-300 dark:hover:border-purple-800 transition-all space-y-2.5 relative group">
+            
+            {attachedFile && (
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-xs font-medium text-purple-700 dark:text-purple-300">
+                <Paperclip className="w-3.5 h-3.5" />
+                <span className="truncate">{attachedFile.name}</span>
+                <span className="opacity-75 text-[10px]">({attachedFile.size})</span>
+                <button 
+                  onClick={() => setAttachedFile(null)} 
+                  className="ml-auto p-0.5 hover:bg-purple-200 dark:hover:bg-purple-900 rounded cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
-          {/* Bottom Bar Controls inside Input Box */}
-          <div className="flex items-center justify-between border-t border-slate-100 dark:border-neutral-800/80 pt-3">
-            <div className="flex items-center gap-2">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Ask anything to Master AI, paste your notes, or upload a textbook..."
+              className="w-full bg-transparent border-0 focus:outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 text-sm resize-none min-h-[50px] max-h-[160px]"
+            />
+
+            {/* Bottom Bar Controls inside Input Box */}
+            <div className="flex items-center justify-between border-t border-slate-100 dark:border-neutral-800/80 pt-2.5">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 rounded-xl text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  title="Attach Document or PDF"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isListening) {
+                      toggleListening();
+                    } else {
+                      window.dispatchEvent(new CustomEvent('open-master-ai-voice'));
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-all cursor-pointer ${
+                    isListening 
+                      ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-500/20' 
+                      : 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-100 dark:hover:bg-purple-900/50'
+                  }`}
+                  title="Voice AI Assistant & Dictation"
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  <span>Voice AI</span>
+                </button>
+              </div>
+
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-xl text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                title="Attach Document or PDF"
+                onClick={() => handleSend()}
+                disabled={isProcessing || (!prompt.trim() && !attachedFile)}
+                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-md shadow-purple-600/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 cursor-pointer"
               >
-                <Paperclip className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (isListening) {
-                    toggleListening();
-                  } else {
-                    window.dispatchEvent(new CustomEvent('open-master-ai-voice'));
-                  }
-                }}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-semibold text-xs transition-all cursor-pointer ${
-                  isListening 
-                    ? 'bg-rose-500 text-white animate-pulse shadow-md shadow-rose-500/20' 
-                    : 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80 hover:bg-purple-100 dark:hover:bg-purple-900/50'
-                }`}
-                title="Voice AI Assistant & Dictation (Cmd+Shift+V)"
-              >
-                <Mic className="w-3.5 h-3.5" />
-                <span>Voice AI</span>
+                <span>{isProcessing ? 'Thinking...' : 'Ask AI'}</span>
+                <Send className="w-3.5 h-3.5" />
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => handleSend()}
-              disabled={isProcessing || (!prompt.trim() && !attachedFile)}
-              className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-md shadow-purple-600/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>{isProcessing ? 'Thinking...' : 'Ask AI'}</span>
-              <Send className="w-3.5 h-3.5" />
-            </button>
           </div>
         </div>
-
-        {/* Speech Recognition Indicator Banner */}
-        {isListening && (
-          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-between animate-pulse text-left">
-            <div className="flex items-center gap-3">
-              <Mic className="w-5 h-5 animate-bounce" />
-              <div>
-                <p className="text-xs font-bold">Listening to your voice...</p>
-                <p className="text-[11px] opacity-90">Speak your question clearly into your microphone.</p>
-              </div>
-            </div>
-            <button 
-              onClick={toggleListening}
-              className="px-3 py-1 bg-rose-600 text-white text-xs font-bold rounded-lg cursor-pointer"
-            >
-              Stop
-            </button>
-          </div>
-        )}
-
-        {/* Conversation Message Log (Excluding initial welcome message '1') */}
-        {messages.filter(m => m.id !== '1').length > 0 && (
-          <div className="space-y-6 pt-2">
-            {messages.filter(m => m.id !== '1').map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-3 max-w-4xl ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}
-              >
-                {/* Avatar Icon */}
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white ${
-                  msg.sender === 'user'
-                    ? 'bg-purple-600 font-extrabold text-xs'
-                    : 'bg-purple-600 shadow-md shadow-purple-600/20'
-                }`}>
-                  {msg.sender === 'user' ? <User className="w-4 h-4 text-white" /> : <BrainCircuit className="w-4 h-4 text-white" />}
-                </div>
-
-                {/* Message Content */}
-                <div className={`space-y-1 max-w-2xl ${msg.sender === 'user' ? 'text-right' : ''}`}>
-                  <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-neutral-500">
-                    <span className="font-bold text-slate-800 dark:text-neutral-200">
-                      {msg.sender === 'user' ? 'You' : currentAgentTitle}
-                    </span>
-                    <span>•</span>
-                    <span>{msg.timestamp}</span>
-                  </div>
-
-                  {msg.activeAgents && (
-                    <div className="flex flex-wrap gap-1 mb-1">
-                      {msg.activeAgents.map((ag, i) => (
-                        <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/80">
-                          ⚡ {ag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {msg.isThinking ? (
-                    <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2 shadow-sm">
-                      <span>Master AI is thinking...</span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-purple-600 animate-ping" />
-                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                        <span className="w-2 h-2 rounded-full bg-purple-400" />
-                      </span>
-                    </div>
-                  ) : (
-                    <div className={`p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                      msg.sender === 'user'
-                        ? 'bg-purple-600 text-white rounded-tr-none font-medium text-left shadow-sm'
-                        : 'bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 rounded-tl-none shadow-sm'
-                    }`}>
-                      <div className="whitespace-pre-wrap font-sans">
-                        {msg.text}
-                      </div>
-
-                      {msg.sender === 'master_ai' && (
-                        <div className="flex items-center gap-3 mt-3 pt-2 border-t border-slate-100 dark:border-neutral-800 text-xs">
-                          <button
-                            onClick={() => speakMessageText(msg.id, msg.text)}
-                            className={`flex items-center gap-1.5 font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-                              isSpeaking && activeSpeakingMsgId === msg.id
-                                ? 'bg-emerald-500 text-white animate-pulse'
-                                : 'bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 hover:bg-purple-100'
-                            }`}
-                          >
-                            {isSpeaking && activeSpeakingMsgId === msg.id ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                            <span>{isSpeaking && activeSpeakingMsgId === msg.id ? 'Stop Voice' : 'Listen'}</span>
-                          </button>
-
-                          <button
-                            onClick={() => navigator.clipboard.writeText(msg.text)}
-                            className="flex items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-neutral-200 text-[11px] font-semibold cursor-pointer"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copy</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
