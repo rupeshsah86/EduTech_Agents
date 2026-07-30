@@ -33,6 +33,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ darkMode, setDarkM
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Automatically switch tab to Master AI Chat when any component dispatches a prompt
+  React.useEffect(() => {
+    const handleGlobalPrompt = (e: any) => {
+      const promptText = e.detail;
+      if (promptText && typeof promptText === 'string') {
+        setActiveTab('chat');
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('execute-master-ai-prompt', { detail: promptText }));
+        }, 80);
+      }
+    };
+    window.addEventListener('send-master-ai-prompt', handleGlobalPrompt);
+    return () => window.removeEventListener('send-master-ai-prompt', handleGlobalPrompt);
+  }, []);
+
   const agentNamesMap: Record<string, string> = {
     agent_exam: 'ExamAce AI (Exam Roadmap & PYQs)',
     agent_assign: 'AssignMate AI (Academic Rewriter)',

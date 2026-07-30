@@ -58,7 +58,11 @@ export const MasterAIChat: React.FC<MasterAIChatProps> = ({ activeAgentId }) => 
       }
     };
     window.addEventListener('send-master-ai-prompt', handleExternalPrompt);
-    return () => window.removeEventListener('send-master-ai-prompt', handleExternalPrompt);
+    window.addEventListener('execute-master-ai-prompt', handleExternalPrompt);
+    return () => {
+      window.removeEventListener('send-master-ai-prompt', handleExternalPrompt);
+      window.removeEventListener('execute-master-ai-prompt', handleExternalPrompt);
+    };
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
