@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode, onVoiceSe
         const current = event.resultIndex;
         const transcript = event.results[current][0].transcript;
         setSearchQuery(transcript);
-        if (onVoiceSearch) {
+        if (event.results[current].isFinal && onVoiceSearch) {
           onVoiceSearch(transcript);
         }
       };

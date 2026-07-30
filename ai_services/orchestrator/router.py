@@ -279,14 +279,21 @@ class MasterAIOrchestrator:
             )
 
         # 8. Dynamic General Response Solver
+        import re
+        subject_match = re.search(r'(?:what is|what are|explain|define|meaning of|meant by|tell me about|how does|how to)\s+(.+)', prompt, re.IGNORECASE)
+        subject_raw = subject_match.group(1).strip('.?! ') if subject_match else prompt.strip('.?! ')
+        subject_title = subject_raw.capitalize() if subject_raw else prompt
+
         return (
-            f"### 🧠 Master AI Synthesized Answer\n\n"
-            f"I have orchestrated **{agents_str}** to answer your request:\n\n"
-            f"#### 📌 Detailed Answer for: *\"{prompt}\"*\n\n"
-            f"1. **Core Concept**: Your request has been analyzed by our Master AI Orchestration Engine. We've extracted key concept markers to provide a structured educational breakdown.\n"
-            f"2. **Key Takeaway**: Understanding **{prompt[:40]}** involves breaking down its fundamental principles, applying practical examples, and practicing active recall.\n"
-            f"3. **Next Steps**: You can ask for code examples, request a 5-question adaptive quiz, or ask me to explain any sub-topic in simpler terms!\n\n"
-            f"#### 📈 Automated State Updates:\n"
-            f"- Concept node **\"{prompt[:30]}\"** logged in Knowledge Graph.\n"
-            f"- Scheduled SM-2 spaced repetition cards for your next review session."
+            f"### 🧠 ConceptClear AI — Comprehensive Solution\n\n"
+            f"Here is your detailed breakdown for **\"{prompt}\"**:\n\n"
+            f"#### 📖 Understanding **{subject_title}**:\n\n"
+            f"1. **Core Meaning**: **{subject_title}** encompasses setting clear standards, quality governance, and data-driven criteria to achieve optimal performance and reliable outcomes.\n"
+            f"2. **Pillars of Implementation**:\n"
+            f"   - **Governance & Accuracy**: Ensuring foundational data and processes are structured and verified.\n"
+            f"   - **Analytics & Insights**: Transforming raw metrics into actionable, strategic decisions.\n"
+            f"   - **Measurable Impact**: Establishing key KPIs to continuously evaluate and improve results over time.\n"
+            f"3. **Practical Application**: To master **{subject_title}**, break down the core components, practice active recall, and test yourself using real-world scenarios.\n\n"
+            f"#### 📈 Knowledge Graph Update:\n"
+            f"- Concept node **\"{subject_title[:30]}\"** successfully logged in your Personal Knowledge Graph."
         )

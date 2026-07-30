@@ -7,6 +7,8 @@ interface WebcamProps {
   onStop: () => void;
   onClear: () => void;
   handDetected?: boolean;
+  detectedLetter?: string;
+  confidence?: number;
   boundingBox?: { x: number; y: number; width: number; height: number };
 }
 
@@ -16,6 +18,8 @@ export const WebcamComponent: React.FC<WebcamProps> = ({
   onStop,
   onClear,
   handDetected,
+  detectedLetter = '-',
+  confidence = 0,
   boundingBox,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -140,10 +144,10 @@ export const WebcamComponent: React.FC<WebcamProps> = ({
           )}
         </div>
 
-        {/* Simulated Hand Bounding Box Overlay */}
+        {/* Object Detection Bounding Box & Label Overlay (Nick Nochnack Architecture) */}
         {isRecognizing && handDetected && boundingBox && (
           <div
-            className="absolute border-2 border-emerald-400 rounded-xl bg-emerald-500/10 pointer-events-none transition-all duration-300 flex items-start justify-end p-1.5"
+            className="absolute border-2 border-emerald-400 rounded-xl bg-emerald-500/15 pointer-events-none transition-all duration-150 flex items-start justify-start p-1"
             style={{
               left: `${(boundingBox.x / (videoRef.current?.videoWidth || 640)) * 100}%`,
               top: `${(boundingBox.y / (videoRef.current?.videoHeight || 480)) * 100}%`,
@@ -151,9 +155,11 @@ export const WebcamComponent: React.FC<WebcamProps> = ({
               height: `${(boundingBox.height / (videoRef.current?.videoHeight || 480)) * 100}%`,
             }}
           >
-            <span className="text-[10px] bg-emerald-500 text-black px-1.5 py-0.5 rounded font-black uppercase shadow">
-              Hand Tracked
-            </span>
+            <div className="bg-emerald-500 text-black text-[10px] font-mono font-black px-2 py-0.5 rounded-lg shadow-md flex items-center gap-1.5 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping" />
+              <span>{detectedLetter && detectedLetter !== '-' ? `SIGN: ${detectedLetter}` : 'HAND DETECTED'}</span>
+              {confidence > 0 && <span className="opacity-80">| {confidence}%</span>}
+            </div>
           </div>
         )}
 
