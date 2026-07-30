@@ -29,8 +29,11 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
     }
   };
 
-  // 10 Stable ASL Alphabet Signs supported & validated
-  const stable10ASLSigns = ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'I', 'L', 'O'];
+  // Full ASL Alphabet (A-Z) supported & validated
+  const aslAlphabetSigns = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+  ];
 
   // Dynamic Status Indicator determination
   const getStatusBadge = () => {
@@ -76,7 +79,7 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
           <div>
             <h3 className="font-extrabold text-xs text-slate-900 dark:text-neutral-100 flex items-center gap-2">
               <span>Detection Status Panel</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">10 ASL Signs</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold">26 ASL Signs (A-Z)</span>
             </h3>
             <p className="text-[10px] text-slate-400 dark:text-neutral-500">Live MediaPipe 21-Landmark Classifier</p>
           </div>
@@ -116,15 +119,15 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
       </div>
 
 
-      {/* 10 Stable ASL Signs Selector Palette */}
+      {/* Full 26 ASL Alphabet Signs Selector Palette */}
       <div className="space-y-1.5 pt-0.5 text-left">
         <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
-          <span>10 Stable ASL Alphabet Signs</span>
+          <span>ASL Alphabet Signs (A-Z)</span>
           <span className="text-purple-600 dark:text-purple-400">Click sign to detect & animate</span>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {stable10ASLSigns.map((char) => (
+        <div className="flex items-center gap-1 flex-wrap">
+          {aslAlphabetSigns.map((char) => (
             <button
               key={char}
               onClick={() => {

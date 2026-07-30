@@ -104,7 +104,7 @@ export const SignAIPage: React.FC = () => {
           <div className="flex items-center gap-2 text-xs font-bold shrink-0">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-600 dark:text-purple-400">
               <Zap className="w-3.5 h-3.5" />
-              <span>10 ASL Signs Active</span>
+              <span>Full ASL Alphabet (A-Z)</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -131,7 +131,7 @@ export const SignAIPage: React.FC = () => {
             </div>
             <div>
               <p className="font-bold text-xs text-slate-900 dark:text-white">Show ASL Sign</p>
-              <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 font-medium">Show signs (A, B, C, D, E, F, H, I, L, O) or click letter.</p>
+              <p className="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5 font-medium">Show signs (A-Z) or click letter to animate.</p>
             </div>
           </div>
 
