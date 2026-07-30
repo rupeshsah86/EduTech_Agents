@@ -18,104 +18,66 @@ The platform interface has been rebuilt from the ground up for maximum visual cl
    - Showcase grid for all **9 AI Agents**.
 
 2. **Calm & Guided Dashboard**:
-   - **Personalized Greeting**: `Good morning / afternoon / evening, Rupesh 👋`.
-   - **Large Focused Question Input Box**: Central Perplexity/Linear-style search container with soft purple focus glow, prompt chips, voice mic, and file attachment.
+   - **Personalized Greeting**: `Good morning / afternoon / evening, Student 👋`.
+   - **ChatGPT-Style Sticky Bottom Input Bar**: Central search container with soft purple focus glow, prompt chips, voice mic, and file attachment.
    - **Only 4 Primary Action Cards**:
      1. **Generate Notes** (`NoteCraft AI`)
      2. **Solve Doubt** (`ConceptClear AI`)
      3. **Create Quiz** (`QuizMaster AI`)
      4. **Study Plan** (`StudyFlow AI`)
    - **Categorized Left Sidebar Navigation**: All advanced features (*Knowledge Graph, AI Study Twin, AI Debate Mode, Exam Simulator, Project Recommender, SignAI Tutor, Skill Heatmap, Learning Analytics*) cleanly housed in the sidebar.
-   - **Light Onboarding Banner**: First-time user guided walkthrough banner with local persistence.
+   - **Theme System**: High-contrast pure white (`#FFFFFF` / `#FAFAFA`) for Light Mode and deep charcoal (`#0A0A0A` / `#111111`) for Dark Mode.
 
+---
 
 ## 🌟 Key Working Unique Features
 
 Unlike standard LLMs (ChatGPT, Gemini, Claude) that reset context after every chat, EduVerse AI includes persistent, student-focused engines:
 
-1. **⚡ Multi-LLM Provider Switcher (Provider Freedom)**
-   - Switch seamlessly between **Google Gemini 1.5**, **Groq LPUs (Llama 3 70B)**, **OpenAI (GPT-4o / GPT-4o-mini)**, **DeepSeek (V3 / R1 Reasoner)**, and **Local Ollama** (100% offline & free).
+1. **⚡ Multi-LLM Provider Switcher & Groq LPU Engine**
+   - Powered by ultra-fast **Groq LPUs (`llama-3.3-70b-versatile`)** running at 500+ tokens/sec for sub-second AI answers.
+   - Switch seamlessly between **Groq LPUs**, **Google Gemini 1.5**, **OpenAI (GPT-4o / GPT-4o-mini)**, **DeepSeek (V3 / R1 Reasoner)**, and **Local Ollama** (100% offline & free).
    - Designed using **SOLID Clean Architecture & Strategy Pattern** (`ILLMProviderStrategy`, `LLMService`).
-   - Interactive model switcher pill in top navbar with real-time connection testing, API key management, and hyperparameter tuning (Temperature, Max Tokens).
+   - Includes **Zero-Downtime Dynamic Fallback**: If network or API quota limits occur, the system smoothly falls back to internal dynamic solvers so demo presentations never crash.
 
-2. **🧠 Universal Master AI Answering Engine**
-   - Responds intelligently to **ANY** student prompt — concepts, code, exams, assignments, career, PDFs, quizzes, or general study doubts.
-   - Automatically routes queries through the selected active Multi-LLM provider and 9 specialized neural agents.
-   - Automatically detects greetings ("Hi", "Hello") with warm, professional welcomes outlining platform capabilities and 9 agent delegations.
-   - Provides clear, structured, student-friendly Markdown answers with active agent tags, code blocks, tables, and next-step recommendations.
+2. **🔥 User Activity, Daily Streak & Study History Tracker**
+   - **Daily Active Streak Counter**: Tracks consecutive study days (`🔥 7d Streak`) and total active days.
+   - **Search & Study History Log**: Automatically logs every topic, code doubt, or sign query searched across Master AI and Sign AI.
+   - **Redesigned User Profile Modal**: Edit username, academic level, target subject focus, learning bio, choose from 5 avatar preset colors, and click **"Re-study"** on any past history item.
 
-2. **📑 Interactive MCQ Quiz Game & Results Page**
-   - **Game-like Experience**: Displays one question at a time with smooth Framer Motion transitions.
-   - **Instant Option Feedback**: Selecting an option highlights correct (green) or wrong (red) choices immediately with a detailed explanation card.
-   - **Comprehensive Results Page**: Score percentage, Total Questions, Correct Answers, Wrong Answers, Grade Badges (*Excellent 🌟*, *Good 👍*, *Needs Improvement 💡*), and detailed wrong question review.
-   - **Action Buttons**: 🔄 *Retry Quiz*, 💡 *Review Weak Topics* (auto-queries Master AI), and 🏠 *Back to Dashboard*.
+3. **🖐️ Sign Language AI Tutor & Text-to-Sign Translator (Deaf & Mute Accessibility)**
+   - Real-time ASL (American Sign Language) recognition powered by MediaPipe 21-landmark tracking.
+   - **Full ASL 26 Alphabet (A-Z)**: Full gesture detection and WebGL 3D animation support for all 26 ASL alphabet signs.
+   - **Text-to-Sign Translator**: Type any text or doubt (e.g. `"JAVA"`, `"DSA"`, `"OS"`) to animate the 3D Avatar step-by-step for each letter, updating live sign pose badges.
+   - **Real-Time WebGL 3D Avatar**: Translates Master AI responses into 3D Sign Language animations + Speech Voice + Structured Markdown.
 
-3. **🔍 Modern Enter-Key Search Bar (ChatGPT-style)**
-   - Type queries and press **Enter** key to submit instantly (or click the Send button).
-   - Automatically clears input upon submission, validates against empty strings, and displays live loading states.
-   - Includes global `⌘ + K` / `Ctrl + K` keyboard shortcut for fast focus.
-
-3. **🗺️ Interactive Personal Knowledge Graph (100% Unrestricted)**
-   - Live visual topography of mastered concepts, partial knowledge, and weak spots across 5 core CS domains (**DSA**, **Algorithms**, **Operating Systems**, **DBMS**, **System Design**).
-   - Topic-level cards displaying: **Last Practiced Date**, **Next Revision Date (SM-2)**, **Related Concepts**, **Concept Strength %**, and **Weekly Insight + Suggested Focus Topics**.
-
-4. **👤 AI Digital Study Twin & 7-Day Plan Generator**
-   - Displays **Predicted Exam Mastery %**, **Learning Personality Profile**, and **Best Study Time Recommendation**.
-   - Interactive **"Generate 7-Day Personalized Plan"** button creating customized daily active recall targets based on auto-detected knowledge gaps.
-
-5. **⚔️ AI Multi-Agent Debate Arena & Synthesis**
-   - Two specialized AI agents debate opposing viewpoints in real-time.
-   - Includes post-debate **AI Judgment Verdict**, **Key Takeaways Box**, **"Generate Quiz from Debate"**, and **"Save to Knowledge Graph"**.
-
-6. **⏱️ Real Exam Simulator & Deep Analytics Dashboard**
-   - Configure **Subject** and **Difficulty Level** (Beginner, Intermediate, Hard / GATE Level).
-   - Timed mock exam environment featuring a live countdown timer and negative marking (`+4 / -1`).
+4. **⏱️ Real Exam Simulator with Subject Filtering & Groq AI Generation**
+   - Select Exam Subject (*GATE CS & IT 2026*, *Data Structures & Algorithms*, *Operating Systems & Concurrency*, *DBMS & System Design*, *Computer Networks & Security*, *Python & Software Engineering*) and Difficulty Level.
+   - **⚡ Groq AI Question Generator**: Click *"Generate New AI Questions"* to generate fresh, high-yield mock exam questions on demand via Groq LPUs.
+   - Timed mock exam environment featuring live countdown timer and negative marking (`+4 / -1`).
    - Post-exam **Deep Analytics Dashboard**: Accuracy %, Correct/Incorrect counts, Avg Time per Question, and Question-by-Question Explanations.
 
-7. **🚀 AI Project & Hackathon Recommender**
-   - Matches real portfolio projects & hackathons dynamically matched to your Personal Knowledge Graph mastery level.
-   - Shows **Match %**, **Existing vs Missing Skills**, **Estimated Completion Time**, and **"Why Recommended For You"** highlight box.
+5. **🧠 AI Learning Analytics & SuperMemo-2 (SM-2) Spaced Repetition Tracker**
+   - **Productivity Index & Memory Telemetry**: Monitors study velocity, flashcard recall percentage, and mastered concepts.
+   - **SM-2 Spaced Repetition Flashcard Engine**: Calculates memory forgetting curves using the SuperMemo-2 algorithm. Features an expandable SM-2 guide banner, 3D interactive flip card viewer, and active recall rating buttons (*Hard 1d*, *Good 3d*, *Easy 6d*).
 
-9. **🔥 Skill Heatmap & SM-2 Spaced Repetition Engine**
-   - 28-day practice consistency matrix and SuperMemo SM-2 flashcard scheduler for long-term memory consolidation.
+6. **🗺️ Interactive Personal Knowledge Graph (100% Unrestricted)**
+   - Live visual topography of mastered concepts, partial knowledge, and weak spots across 5 core CS domains (**DSA**, **Algorithms**, **Operating Systems**, **DBMS**, **System Design**).
+   - Topic-level cards displaying: **Last Practiced Date**, **Next Revision Date (SM-2)**, **Related Concepts**, **Concept Strength %**, and **"Ask Master AI for Deep Dive Explanation"** (auto-navigates to Master AI Chat).
 
-10. **🎭 Mentor Personality Switching**
-    - Switch Master AI mentor personality on the fly between **Socratic Professor**, **Strict Coach**, **Friendly Senior**, **Chill Senior**, and **Industry Mentor**.
+7. **📑 Interactive MCQ Quiz Game & Results Page**
+   - **Game-like Experience**: Displays one question at a time with smooth transitions.
+   - **Instant Option Feedback**: Selecting an option highlights correct (green) or wrong (red) choices immediately with a detailed explanation card.
+   - **Comprehensive Results Page**: Score percentage, Grade Badges, and detailed question breakdown.
 
-11. **🎙️ Master AI Voice (Full Voice Conversation)**
-    - Hands-free, two-way voice communication powered by Speech-to-Text (`SpeechRecognition`) and Text-to-Speech (`SpeechSynthesis`). Features live interim transcript preview, voice selection, auto-voice toggle, and per-message answer playback.
+8. **🎙️ Master AI Voice (Full Voice Conversation)**
+   - Hands-free, two-way voice communication powered by Speech-to-Text (`SpeechRecognition`) and Text-to-Speech (`SpeechSynthesis`). Features live interim transcript preview, voice selection, auto-voice toggle, and per-message answer playback.
 
-13. **🖐️ Sign Language AI Tutor (Deaf & Mute Accessibility)**
-    - Real-time ASL (American Sign Language) recognition powered by MediaPipe 21-landmark tracking.
-    - **Live Detection Status Panel**: Clear, un-missable live status indicators (*Ready*, *Detecting...*, *Letter Detected*, *Low Confidence – Please adjust hand*), prominent detected letter badge `[ A ]`, confidence percentage, and live word builder.
-    - **26 ASL Alphabet Signs (A-Z)**: Full detection and 3D translation support for the complete ASL alphabet (**A-Z**).
-    - **Real-Time WebGL 3D Avatar**: Translates Master AI responses into 3D Sign Language animations + Speech Voice + Structured Markdown.
-    - **Multi-Modal Controls**: Seamlessly switch between Sign Language gesture mode, Keyboard mode, and Microphone mode.
+9. **👤 AI Digital Study Twin & 7-Day Plan Generator**
+   - Displays **Predicted Exam Mastery %**, **Learning Personality Profile**, and **Best Study Time Recommendation**.
 
----
-
-
-
-## 🎙️ Master AI Voice (Full Voice Conversation)
-
-EduVerse AI includes a production-grade, voice-enabled conversation interface that allows students to communicate with the Master AI Assistant entirely hands-free.
-
-### Key Features:
-- **Speech-to-Text (STT)**: Real-time speech recognition with live interim transcript previews while speaking.
-- **Text-to-Speech (TTS)**: Automatic natural voice output with customizable voice selection (Samantha, Google US English, etc.).
-- **Visual Feedback**: Pulsing glowing mic rings, real-time waveform bar visualizer, and active agent badges.
-- **Hands-free Controls**: Toggle **Auto Voice On/Off**, stop speech audio on demand, and trigger quick prompt chips.
-- **Keyboard Shortcuts**: Press `⌘ + Shift + V` (Mac) or `Ctrl + Shift + V` (Windows) to toggle the Master AI Voice panel anywhere.
-
-### How to Use:
-1. Click **Voice AI** in the top header or the floating bot icon in the bottom right corner (or press `⌘+Shift+V`).
-2. Click the large central microphone button and speak your question.
-3. Observe live interim speech text on screen. When silence is detected, your prompt is sent to Master AI.
-4. Listen to Master AI speak the synthesized response from the 9 specialized neural agents.
-5. Click **Speak Answer** on any message to re-listen to any response.
-
-### Browser Support Note:
-Uses browser-native Web Speech API (`SpeechRecognition` & `SpeechSynthesis`). Best supported on **Google Chrome**, **Brave**, and **Microsoft Edge**.
+10. **⚔️ AI Multi-Agent Debate Arena & Synthesis**
+    - Two specialized AI agents debate opposing viewpoints in real-time with post-debate **AI Judgment Verdict**.
 
 ---
 
@@ -135,29 +97,28 @@ EduVerse AI orchestrates 9 specialized agents working behind the Master AI Assis
 
 ---
 
-## 🎨 Theme & UI/UX Aesthetics
+## 🛠️ Complete Technical Architecture & Tech Stack
 
-- **Strict Theme System**: 
-  - **Light Mode**: Clean white / soft neutral background (`#FFFFFF` / `#FAFAFA`).
-  - **Dark Mode**: Deep charcoal / near black (`#0A0A0A` / `#111111`).
-- **Typography & Layout**: 8pt spacing grid system, generous whitespace, fixed blur navbar, Linear/Notion grade cards, and Framer Motion micro-interactions.
+### 🎨 Frontend Stack
+- **Core Framework**: React 18 + Vite + TypeScript (Strict Type Safety & Fast HMR)
+- **Styling & Design System**: Vanilla CSS Design Tokens + TailwindCSS v4 (Custom dark mode palette `#0A0A0A` / `#111111`)
+- **Icons & UI Components**: Lucide React Icons
+- **Computer Vision & Gesture AI**: `@mediapipe/camera_utils` + `@mediapipe/hands` (MediaPipe 21-Landmark Hand Pose Classification)
+- **3D Graphics & Sign Avatar**: Three.js + WebGL + GLTFLoader (Mixamo / ReadyPlayerMe 3D `.glb` model animation engine)
+- **Speech Processing**: Web Speech API (`window.SpeechRecognition` & `window.SpeechSynthesis`)
+- **State Management & Persistence**: React Context API (`AuthContext`), Custom Event Bus (`window.dispatchEvent`), LocalStorage Sync Services (`LLMService`, `UserActivityService`, `SignRecognitionService`)
 
----
+### 🐍 Backend Stack
+- **Framework**: Python 3.12 + Django 5 + Django REST Framework (DRF)
+- **Authentication**: SimpleJWT (JSON Web Tokens) with refresh/access token lifecycle
+- **Database**: PostgreSQL 16 with `pgvector` extension for AI vector embeddings and semantic search
+- **Task Queue & Async Workers**: Redis 7 + Celery for background RAG processing and vector indexing
+- **API Routing**: Django REST Framework ViewSets and Serializers (`/api/v1/auth/`, `/api/v1/master-ai/`, `/api/v1/knowledge-graph/`)
 
-## 🛠️ Technical Architecture & Tech Stack
-
-### Frontend
-- **Framework**: React 18 + Vite + TypeScript
-- **Styling**: TailwindCSS v4 + Custom Utility System
-- **Icons**: Lucide React
-- **Icons & Animations**: Framer Motion
-
-### Backend & AI
-- **Backend Framework**: Python 3.12 + Django 5 + Django REST Framework (DRF)
-- **Authentication**: SimpleJWT (JSON Web Tokens)
-- **Database**: PostgreSQL 16 + `pgvector` extension (Vector Embeddings Store)
-- **AI LLM Orchestration**: Groq API (`llama-3.3-70b-versatile` / `mixtral-8x7b-32768`) + Fallback Neural Engine
-- **Asynchronous Task Queue**: Redis + Celery
+### ⚡ AI LLM Engine Architecture
+- **Primary LLM Provider**: Groq LPUs (`llama-3.3-70b-versatile`, `mixtral-8x7b-32768`, `gemma2-9b-it`) — sub-second 500+ tokens/sec response latency
+- **Secondary LLM Providers**: Google Gemini 1.5 Flash (`gemini-1.5-flash`), OpenAI (`gpt-4o`, `gpt-4o-mini`), DeepSeek (`deepseek-chat`, `deepseek-reasoner`), Local Ollama (`http://localhost:11434`)
+- **Strategy Pattern Engine**: Clean OOP strategy interface (`ILLMProviderStrategy`) with runtime fallback & dynamic solver guarantees.
 
 ---
 
@@ -185,12 +146,14 @@ EduTech_Agents/
 ├── frontend/                       # Vite + React + TypeScript Frontend
 │   ├── src/
 │   │   ├── components/             # Reusable UI & Dashboard Components
-│   │   │   ├── dashboard/          # KnowledgeGraph, AIDebate, ExamSimulator, MasterAIChat, etc.
+│   │   │   ├── dashboard/          # KnowledgeGraph, AIDebate, ExamSimulator, MasterAIChat, UserProfileModal, ActiveAgentsBar, etc.
+│   │   │   ├── SignAI/             # Webcam, RecognitionPanel, AvatarViewer, ChatWindow
 │   │   │   └── landing/            # LearnWise-grade Landing Page components
 │   │   ├── context/                # AuthContext & Session management
-│   │   └── pages/                  # LandingPage, DashboardPage, LoginPage, SignupPage
+│   │   ├── services/               # LLMService, UserActivityService, MasterAIService, SignRecognitionService
+│   │   └── pages/                  # LandingPage, DashboardPage, SignAIPage, LoginPage, SignupPage
 │   └── package.json
-└── README.md                       # Project Overview & Setup Guide
+└── README.md                       # Project Overview & Tech Stack Guide
 ```
 
 ---
@@ -217,9 +180,9 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py runserver 8000
+python manage.py runserver 8001
 ```
-API endpoints are served at `http://localhost:8000/api/v1/`.
+API endpoints are served at `http://localhost:8001/api/v1/`.
 
 ---
 
