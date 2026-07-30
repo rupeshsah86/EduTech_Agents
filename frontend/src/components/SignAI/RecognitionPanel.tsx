@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { signRecognitionService, type RecognitionResult } from '../../services/signRecognition';
-import { Hand, Cpu, Send, CornerDownLeft } from 'lucide-react';
+import { Hand, Cpu, Send, CornerDownLeft, Sparkles } from 'lucide-react';
 
 interface RecognitionPanelProps {
   result: RecognitionResult;
@@ -21,6 +21,27 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
     status,
   } = result;
 
+  const [textInput, setTextInput] = useState('');
+
+  const handleTextToSignAndAsk = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const text = textInput.trim();
+    if (!text || isProcessing) return;
+
+    // Animate 3D Avatar for each sign letter in the typed text
+    const cleanChars = text.toUpperCase().replace(/[^A-Z]/g, '');
+    if (cleanChars.length > 0) {
+      cleanChars.split('').forEach((ch, idx) => {
+        setTimeout(() => {
+          signRecognitionService.triggerASLLetter(ch);
+        }, idx * 250);
+      });
+    }
+
+    // Send to Master AI
+    onSendToMasterAI(text);
+    setTextInput('');
+  };
 
   const handleSend = () => {
     const textToSend = (recognizedSentence || currentWord || (detectedLetter !== '-' ? detectedLetter : '')).trim();
@@ -70,6 +91,36 @@ export const RecognitionPanel: React.FC<RecognitionPanelProps> = ({
   return (
     <div className="bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 rounded-2xl p-4.5 shadow-sm space-y-3.5 font-sans">
       
+      {/* ⚡ Text-to-Sign & Ask Master AI Input Bar */}
+      <form onSubmit={handleTextToSignAndAsk} className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-2 text-left">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+            <span>Text-to-Sign Translator & Master AI</span>
+          </span>
+          <span className="text-[10px] font-bold text-slate-400">Type text → Animate 3D Sign → Ask AI</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Type any word or doubt (e.g. JAVA, DSA, OS, DBMS)..."
+            className="flex-1 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-neutral-100 focus:outline-none focus:border-purple-500"
+          />
+
+          <button
+            type="submit"
+            disabled={!textInput.trim() || isProcessing}
+            className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>Sign & Ask AI</span>
+          </button>
+        </div>
+      </form>
+
       {/* Clear Detection Status Panel Header */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-3">
         <div className="flex items-center gap-2.5">
