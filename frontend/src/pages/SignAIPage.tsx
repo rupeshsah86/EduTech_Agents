@@ -152,38 +152,36 @@ export const SignAIPage: React.FC = () => {
       </div>
 
 
-      {/* ── Main Dual Workspace Grid (Webcam + Telemetry Left, 3D Avatar Right) ── */}
+      {/* ── Main Dual Workspace Grid (Webcam Left, 3D Avatar Right) ───────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* Left Side: Webcam & Integrated Sign Telemetry (6 cols) */}
-        <div className="lg:col-span-6 flex flex-col space-y-4">
-          <div className="flex-1">
-            <WebcamComponent
-              isRecognizing={isRecognizing}
-              onStart={startRecognition}
-              onStop={stopRecognition}
-              onClear={clearSentence}
-              handDetected={result.handDetected}
-              boundingBox={result.boundingBox}
-            />
-          </div>
-
-          {/* Integrated Telemetry Status Panel */}
-          <RecognitionPanel
-            result={result}
-            onSendToMasterAI={handleSendToMasterAI}
-            isProcessing={isProcessing}
+        {/* Left Side: Live Webcam Feed (6 cols) */}
+        <div className="lg:col-span-6 flex flex-col h-[460px]">
+          <WebcamComponent
+            isRecognizing={isRecognizing}
+            onStart={startRecognition}
+            onStop={stopRecognition}
+            onClear={clearSentence}
+            handDetected={result.handDetected}
+            boundingBox={result.boundingBox}
           />
         </div>
 
         {/* Right Side: 3D GLB Sign Language Interpreter Avatar (6 cols) */}
-        <div className="lg:col-span-6 flex flex-col h-full min-h-[400px] max-h-[460px]">
+        <div className="lg:col-span-6 flex flex-col h-[460px]">
           <AvatarViewer
             signText={activeSignText}
             autoPlay={true}
           />
         </div>
       </div>
+
+      {/* ── Integrated Telemetry, Sign Palette & Text-to-Sign Panel ───────────── */}
+      <RecognitionPanel
+        result={result}
+        onSendToMasterAI={handleSendToMasterAI}
+        isProcessing={isProcessing}
+      />
 
       {/* ── Multi-Modal AI Conversation Workspace ──────────────────────────────── */}
       <div className="space-y-3 pt-2">

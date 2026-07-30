@@ -148,10 +148,10 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
     const w = el.clientWidth || 400;
     const h = el.clientHeight || 520;
 
-    // Professional Camera framing - Centered upper body & hands (Y = 1.35)
+    // Professional Camera framing - Centered upper body & hands (Y = 1.25, dist = 2.2)
     const camera = new THREE.PerspectiveCamera(28, w / h, 0.1, 1000);
-    const targetY = zoomLevel === 0.5 ? 0.95 : (zoomLevel === 1.5 ? 1.40 : 1.35);
-    const dist = 2.8 / zoomLevel;
+    const targetY = zoomLevel === 0.5 ? 0.90 : (zoomLevel === 1.5 ? 1.38 : 1.25);
+    const dist = 2.2 / zoomLevel;
     camera.position.set(0, targetY, dist);
     camera.lookAt(0, targetY, 0);
     cameraRef.current = camera;
@@ -358,8 +358,8 @@ export const AvatarViewer: React.FC<AvatarViewerProps> = ({
   const handleZoomChange = (z: number) => {
     setZoomLevel(z);
     if (cameraRef.current) {
-      const targetY = z === 0.5 ? 0.95 : (z === 1.5 ? 1.40 : 1.35);
-      const dist = 2.8 / z;
+      const targetY = z === 0.5 ? 0.90 : (z === 1.5 ? 1.38 : 1.25);
+      const dist = 2.2 / z;
       cameraRef.current.position.set(0, targetY, dist);
       cameraRef.current.lookAt(0, targetY, 0);
     }
